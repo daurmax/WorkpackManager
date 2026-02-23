@@ -1,82 +1,81 @@
 ---
-prompt_id: R1_retrospective
-workpack: <WORKPACK_ID>
-agent_role: Retrospective reviewer
-depends_on:
-  - <FINAL_A_SERIES_PROMPT>
-repos:
-  - <REPO_NAME>
-estimated_effort: S
+depends_on: [A5_integration_meta]
+repos: [<REPO_NAME>]
 ---
+# Retrospective Agent Prompt
 
-# R1 – Retrospective: <Workpack Title>
+> Capture execution outcomes, quality trends, and process improvements after merge.
 
 ## Objective
 
-Conduct a post-merge retrospective for this workpack. Evaluate what worked, what didn't, and capture lessons learned.
+Document what worked, what failed, and what should change for future workpacks.
 
-## Retrospective Template
+## Required Sections
 
-### 1. Summary
+1. Scope and delivery summary
+2. What went well
+3. What caused friction
+4. Defects and rework analysis
+5. Estimation accuracy (planned vs actual)
+6. Action items with owners
 
-- **Workpack**: `<WORKPACK_ID>`
-- **Duration**: _start date_ → _end date_
-- **Agents Used**: _list of agent providers used_
-- **Total Prompts**: _N_ (A-series + B-series + R-series)
-- **Status**: Complete / Partial / Abandoned
-
-### 2. What Went Well
-
-- _List items that worked smoothly_
-
-### 3. What Could Be Improved
-
-- _List items that caused friction or delays_
-
-### 4. Protocol Observations
-
-- Did `workpack.meta.json` and `workpack.state.json` add value?
-- Was the prompt DAG respected and useful?
-- Were the execution boundaries clear?
-- Any suggestions for protocol improvements?
-
-### 5. Agent Feedback
-
-For each provider used:
-- **Provider**: _name_
-- **Prompts handled**: _list_
-- **Quality**: _1-5 rating_
-- **Strengths**: _summary_
-- **Weaknesses**: _summary_
-
-### 6. Metrics
+## Metrics
 
 | Metric | Value |
 |--------|-------|
-| Total prompts | _N_ |
-| Completed on first try | _n_ |
-| Required rework | _n_ |
-| Blocked prompts | _n_ |
-| Average prompt duration | _time_ |
-| Total workpack duration | _time_ |
+| Total prompts | |
+| First-pass completions | |
+| B-series count | |
+| Total elapsed time | |
 
-### 7. Action Items
+## Handoff Output (JSON)
 
-| Action | Owner | Priority | Target |
-|--------|-------|----------|--------|
-| _improvement_ | _who_ | _P1/P2/P3_ | _when_ |
-
-## Output
-
-Write `outputs/R1_retrospective.json`:
+Write `outputs/R1_retrospective.json`.
 
 ```json
 {
-  "workpack_id": "<WORKPACK_ID>",
-  "prompt_id": "R1_retrospective",
-  "status": "complete",
-  "summary": "Retrospective completed with N action items.",
-  "metrics": {},
-  "action_items": []
+  "schema_version": "1.1",
+  "workpack": "<WORKPACK_ID>",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/<workpack-slug>",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Retrospective completed.",
+    "next_steps": [],
+    "known_issues": []
+  },
+  "repos": [
+    "<REPO_NAME>"
+  ],
+  "execution": {
+    "model": "<MODEL_ID>",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [],
+  "notes": ""
 }
 ```
+
+## Deliverables
+
+- [ ] Retrospective document complete
+- [ ] Action items recorded
+- [ ] `outputs/R1_retrospective.json` written

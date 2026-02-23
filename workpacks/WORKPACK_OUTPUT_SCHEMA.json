@@ -2,8 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "workpacks/WORKPACK_OUTPUT_SCHEMA.json",
   "title": "Workpack Agent Handoff Output",
-  "description": "Structured handoff produced by each agent after completing a prompt. Required for Workpack Protocol v2+. Extended in v6 with workpack.meta.json cross-references.",
+  "description": "Structured handoff produced after each prompt execution.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "schema_version",
     "workpack",
@@ -13,27 +14,42 @@
     "branch",
     "changes",
     "verification",
-    "handoff"
+    "handoff",
+    "repos",
+    "execution",
+    "change_details"
   ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workpackId": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$"
+    },
+    "promptStem": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*(?:_[a-z0-9][a-z0-9_]*)+$"
+    }
+  },
   "properties": {
     "schema_version": {
       "type": "string",
-      "description": "Schema version for this output payload.",
+      "description": "Schema version for the output payload.",
       "pattern": "^1\\.[0-9]+$",
       "examples": ["1.1"]
     },
     "workpack": {
-      "type": "string",
-      "description": "Workpack folder name (must match workpack.meta.json id).",
-      "minLength": 5
+      "$ref": "#/$defs/workpackId",
+      "description": "Workpack id (must match workpack.meta.json:id)."
     },
     "prompt": {
-      "type": "string",
-      "description": "Prompt basename without extension (e.g., A1_protocol_spec).",
-      "minLength": 3
+      "$ref": "#/$defs/promptStem",
+      "description": "Prompt filename stem without extension."
     },
     "component": {
-      "type": "string",
+      "$ref": "#/$defs/nonEmptyString",
       "description": "Affected component or domain."
     },
     "delivery_mode": {
@@ -42,104 +58,231 @@
     },
     "branch": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["base", "work", "merge_target"],
       "properties": {
-        "base": { "type": "string" },
-        "work": { "type": "string" },
-        "merge_target": { "type": "string" }
-      },
-      "additionalProperties": false
+        "base": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "work": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "merge_target": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
     },
     "artifacts": {
       "type": "object",
+      "description": "Optional links to PRs, commits, and related artifacts.",
+      "additionalProperties": true,
       "properties": {
-        "pr_url": { "type": "string" },
-        "commit_shas": { "type": "array", "items": { "type": "string" } }
-      },
-      "additionalProperties": true
+        "pr_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            {
+              "type": "string",
+              "maxLength": 0
+            }
+          ]
+        },
+        "commit_shas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "default": []
+        }
+      }
     },
     "changes": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["files_modified", "files_created", "contracts_changed", "breaking_change"],
       "properties": {
-        "files_modified": { "type": "array", "items": { "type": "string" } },
-        "files_created": { "type": "array", "items": { "type": "string" } },
-        "contracts_changed": { "type": "array", "items": { "type": "string" } },
-        "breaking_change": { "type": "boolean" }
-      },
-      "additionalProperties": true
+        "files_modified": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "default": []
+        },
+        "files_created": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "default": []
+        },
+        "contracts_changed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "default": []
+        },
+        "breaking_change": {
+          "type": "boolean"
+        }
+      }
     },
     "verification": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["commands"],
       "properties": {
         "commands": {
           "type": "array",
           "items": {
             "type": "object",
+            "additionalProperties": false,
             "required": ["cmd", "result"],
             "properties": {
-              "cmd": { "type": "string" },
-              "result": { "type": "string", "enum": ["pass", "fail", "not_run"] },
-              "notes": { "type": "string" }
-            },
-            "additionalProperties": false
-          }
+              "cmd": {
+                "$ref": "#/$defs/nonEmptyString"
+              },
+              "result": {
+                "type": "string",
+                "enum": ["pass", "fail", "not_run"]
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "default": []
         },
-        "regression_added": { "type": "boolean" },
-        "regression_notes": { "type": "string" }
-      },
-      "additionalProperties": true
+        "regression_added": {
+          "type": "boolean",
+          "default": false
+        },
+        "regression_notes": {
+          "type": "string"
+        }
+      }
     },
     "handoff": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["summary", "next_steps", "known_issues"],
       "properties": {
-        "summary": { "type": "string" },
-        "next_steps": { "type": "array", "items": { "type": "string" } },
-        "known_issues": { "type": "array", "items": { "type": "string" } }
-      },
-      "additionalProperties": true
+        "summary": {
+          "type": "string"
+        },
+        "next_steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "known_issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      }
     },
     "repos": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Repositories touched by this prompt."
+      "description": "Repositories touched by this prompt.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
     },
     "execution": {
       "type": "object",
-      "description": "Cost and execution metrics.",
+      "description": "Execution and cost metrics.",
+      "additionalProperties": false,
+      "required": ["model", "tokens_in", "tokens_out", "duration_ms"],
       "properties": {
-        "model": { "type": "string" },
-        "tokens_in": { "type": "integer", "minimum": 0 },
-        "tokens_out": { "type": "integer", "minimum": 0 },
-        "duration_ms": { "type": "integer", "minimum": 0 }
-      },
-      "additionalProperties": true
+        "model": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "tokens_in": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tokens_out": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     },
     "severity": {
       "type": ["string", "null"],
       "enum": ["blocker", "major", "minor", null]
     },
-    "iteration": { "type": "integer", "minimum": 1 },
-    "b_series_resolved": { "type": "array", "items": { "type": "string" } },
-    "b_series_remaining": { "type": "array", "items": { "type": "string" } },
-    "b_series_budget_warning": { "type": "boolean", "default": false },
-    "change_details": {
+    "iteration": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "b_series_resolved": {
       "type": "array",
       "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "default": []
+    },
+    "b_series_remaining": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "default": []
+    },
+    "b_series_budget_warning": {
+      "type": "boolean",
+      "default": false
+    },
+    "change_details": {
+      "type": "array",
+      "description": "Structured per-file change details.",
+      "default": [],
+      "items": {
         "type": "object",
+        "additionalProperties": false,
+        "required": ["repo", "file", "action"],
         "properties": {
-          "repo": { "type": "string" },
-          "file": { "type": "string" },
-          "action": { "type": "string", "enum": ["created", "modified", "deleted", "renamed"] },
-          "lines_added": { "type": "integer", "minimum": 0 },
-          "lines_removed": { "type": "integer", "minimum": 0 }
-        },
-        "required": ["repo", "file", "action"]
+          "repo": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "file": {
+            "$ref": "#/$defs/nonEmptyString"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["created", "modified", "deleted", "renamed"]
+          },
+          "lines_added": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lines_removed": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
       }
     },
-    "notes": { "type": "string" }
-  },
-  "additionalProperties": true
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
 }

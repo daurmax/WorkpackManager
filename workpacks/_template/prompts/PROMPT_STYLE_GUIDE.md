@@ -1,111 +1,88 @@
-# Prompt Style Guide — Protocol v6
+# Prompt Style Guide - Workpack Protocol v6
 
-## File Naming
+## Core Rules
 
-Prompt files follow the pattern: `<PREFIX><NUMBER>_<slug>.md`
+- Write prompts in imperative style and focus on outcomes.
+- Specify what must be delivered and how completion is verified.
+- Keep prompts project-agnostic: no framework-specific assumptions.
+- Use semantic references (file/class/function names), not fragile line numbers.
 
-| Prefix | Series | Purpose |
-|--------|--------|---------|
-| `A0` | Bootstrap | Branch setup, prerequisites, scaffolding |
-| `A1`–`A4` | Implementation | Core deliverables (one per WBS task) |
-| `A5` | Integration meta | V1 verification gate (or `A6` if more implementation prompts exist) |
-| `B1`–`B9` | Bug fix | Reactive fixes discovered during execution |
-| `V1`–`V9` | Verification | Bug-fix verification (paired with B-series) |
-| `R1` | Retrospective | Post-merge review |
+## Naming Convention
 
-## YAML Front-Matter
+Prompt filenames follow `<SERIES><NUMBER>_<slug>.md` when numbered, for example:
 
-Every prompt file begins with YAML front-matter:
+- `A0_bootstrap.md`
+- `A1_feature_slice.md`
+- `A5_integration_meta.md`
+- `B1_fix_edge_case.md`
+- `R1_retrospective.md`
+
+For reusable templates (not concrete instances), non-numbered stems such as `B_template.md` and `V_bugfix_verify.md` are acceptable.
+
+## Required YAML Front-Matter
+
+Every prompt template must start with:
 
 ```yaml
 ---
-prompt_id: A1_slug_name
-workpack: <WORKPACK_ID>
-agent_role: Brief description of agent's role
-depends_on:
-  - A0_bootstrap
-repos:
-  - RepoName
-estimated_effort: M
+depends_on: [A0_bootstrap]
+repos: [<REPO_NAME>]
 ---
 ```
 
-### Required Fields
+Rules:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `prompt_id` | string | Must match filename stem |
-| `workpack` | string | Parent workpack ID |
-| `agent_role` | string | What this agent does |
-| `depends_on` | string[] | Prompt stems this depends on |
-| `repos` | string[] | Repositories this prompt touches |
-| `estimated_effort` | enum | `XS` (<30m), `S` (30m-2h), `M` (2h-4h), `L` (4h-8h), `XL` (>8h) |
+- `depends_on` contains prompt stems only (no `.md`).
+- `repos` contains repository names touched by that prompt.
+- `A0_bootstrap` uses `depends_on: []`.
 
-## Prompt Structure
+## Required Prompt Sections
 
-### Required Sections
+1. Title and one-line objective
+2. `READ FIRST`
+3. `Objective`
+4. `Implementation Requirements`
+5. `Verification`
+6. `Handoff Output (JSON)`
+7. `Deliverables`
 
-1. **Title** — `# <PREFIX> – <Descriptive Title>`
-2. **Objective** — What the agent must accomplish.
-3. **Deliverables** — Concrete artifacts (code, config, docs).
-4. **Constraints** — Boundaries the agent must respect.
-5. **Output** — Output JSON specification per `WORKPACK_OUTPUT_SCHEMA.json`.
-6. **Gate** — Checklist of conditions that must be true when done.
+## Output JSON Contract
 
-### Optional Sections
+Prompt outputs must conform to `workpacks/WORKPACK_OUTPUT_SCHEMA.json`.
 
-- **Background** — Context or rationale.
-- **Pre-Conditions** — What must be true before starting.
-- **Implementation Requirements** — Detailed tables of approach per concern.
-- **Unit Tests** — Test specifications.
+Required top-level keys:
 
-## Writing Style
+- `schema_version`
+- `workpack`
+- `prompt`
+- `component`
+- `delivery_mode`
+- `branch`
+- `changes`
+- `verification`
+- `handoff`
+- `repos`
+- `execution`
+- `change_details`
 
-- **Imperative mood**: "Implement X", "Create Y", "Verify Z".
-- **Specific over vague**: Include file paths, function signatures, type names.
-- **Code blocks**: Use fenced code blocks with language tags.
-- **Tables**: Use for structured data (requirements, mappings, checklists).
-- **No prose padding**: Every sentence should convey information.
+## Writing Guidance
 
-## Gate Checklist Convention
+- Prefer concrete acceptance criteria over narrative text.
+- Include placeholders only where instance-specific values are required.
+- Keep code blocks limited to commands, schemas, and short contract examples.
+- Avoid embedding full implementations in prompt files.
 
-Use markdown task lists:
+## Anti-Patterns
 
-```markdown
-## Gate
+- Full production code pasted into prompts.
+- Tooling references tied to one ecosystem without placeholders.
+- Missing verification commands.
+- Output examples that do not match the output schema.
 
-- [ ] `npx tsc --noEmit` — 0 errors.
-- [ ] Unit tests pass.
-- [ ] No secrets in source code.
-```
+## Pre-Commit Checklist
 
-## Output JSON Convention
-
-Every prompt produces an output JSON file in `outputs/`:
-
-```json
-{
-  "workpack_id": "<WORKPACK_ID>",
-  "prompt_id": "<PROMPT_STEM>",
-  "status": "complete",
-  "summary": "Brief description of what was done.",
-  "files_changed": ["path/to/file1", "path/to/file2"]
-}
-```
-
-## Cross-References
-
-- Reference other prompts: `A1_slug_name`.
-- Reference other workpacks: `<NN>_<group-id>_<slug>` (grouped) or `<slug>` (standalone).
-- Reference groups: `<group-id>`.
-- Reference schema files: `WORKPACK_META_SCHEMA.json`.
-
-## Effort Estimation
-
-| Level | Duration | Example |
-|-------|----------|---------|
-| XS | <30 minutes | Branch creation, stub files |
-| S | 30 min – 2 hours | Single function, config file |
-| M | 2 – 4 hours | Module implementation with tests |
-| L | 4 – 8 hours | Complex module, multiple files |
-| XL | >8 hours | Large subsystem, integration work |
+- [ ] YAML front-matter includes `depends_on` and `repos`
+- [ ] Prompt sections are complete
+- [ ] Output JSON example matches `WORKPACK_OUTPUT_SCHEMA.json`
+- [ ] No domain-specific references
+- [ ] All placeholders are explicit and easy to replace

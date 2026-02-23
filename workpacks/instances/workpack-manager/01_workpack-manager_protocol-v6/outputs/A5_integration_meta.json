@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.1",
+  "workpack": "01_workpack-manager_protocol-v6",
+  "prompt": "A5_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/workpack-protocol-v6",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A5_integration_meta.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py --strict",
+        "result": "pass",
+        "notes": "All 5 discovered workpacks pass strict validation with no warnings."
+      },
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "Meta/state schemas valid, templates pass schema checks, front-matter checks pass, domain-leak scan passes."
+      },
+      {
+        "cmd": "python -m unittest discover -s workpacks/tools/tests -p \"test_*.py\"",
+        "result": "pass",
+        "notes": "Linter tests pass, including v5 compatibility fixture coverage."
+      },
+      {
+        "cmd": "python (jsonschema validation script for all instance workpack.meta.json/workpack.state.json + schema self-check)",
+        "result": "pass",
+        "notes": "All instance meta/state files validate against Draft 2020-12 schemas and schemas pass Draft202012Validator.check_schema."
+      },
+      {
+        "cmd": "python (validate completed outputs against WORKPACK_OUTPUT_SCHEMA.json)",
+        "result": "pass",
+        "notes": "Completed outputs A0/A1/A2/A3/A4/A6 validate; A5 report added by this prompt."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_scaffold.py <temp-workpack> && jsonschema.validate(meta/state)",
+        "result": "pass",
+        "notes": "Scaffold generated workpack.meta.json and workpack.state.json that validate against v6 schemas."
+      },
+      {
+        "cmd": "Select-String scan on workpacks/_template for domain-specific tokens",
+        "result": "pass",
+        "notes": "No project/domain-specific leakage found in template files."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Verification-only prompt; no product/runtime code changes."
+  },
+  "handoff": {
+    "summary": "V1 integration gate passed. Protocol v6 deliverables are complete and consistent; merge is authorized.",
+    "next_steps": [
+      "Merge feature/workpack-protocol-v6 into main.",
+      "Run R1_retrospective after merge."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A5_integration_meta.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "AC1-AC11 from 00_request.md verified with evidence; no B-series prompts required."
+}

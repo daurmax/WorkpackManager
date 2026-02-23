@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.1",
+  "workpack": "01_workpack-manager_protocol-v6",
+  "prompt": "A1_protocol_spec",
+  "component": "docs",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/workpack-protocol-v6",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/PROTOCOL_SPEC.md",
+      "workpacks/README.md",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A1_protocol_spec.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "Test-Path workpacks/PROTOCOL_SPEC.md",
+        "result": "pass",
+        "notes": "Protocol specification file exists."
+      },
+      {
+        "cmd": "Test-Path workpacks/README.md",
+        "result": "pass",
+        "notes": "Project-agnostic workpacks README exists."
+      },
+      {
+        "cmd": "rg -n \"FurlanPronunciation|FurlanPronunciationService\" workpacks/PROTOCOL_SPEC.md workpacks/README.md",
+        "result": "pass",
+        "notes": "No domain-specific references found in protocol docs."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Documentation-only prompt; no runtime code changes."
+  },
+  "handoff": {
+    "summary": "Created `workpacks/PROTOCOL_SPEC.md` with full Workpack Protocol v6 documentation and added a project-agnostic `workpacks/README.md` that references the spec.",
+    "next_steps": [
+      "Proceed with A2_schemas_and_templates and align schema examples with this specification.",
+      "Use A3_tooling_linter to enforce prompt/index/state drift checks described in the tooling contract."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/PROTOCOL_SPEC.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/README.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A1_protocol_spec.json",
+      "action": "created"
+    }
+  ],
+  "notes": "A1 protocol spec deliverables completed."
+}

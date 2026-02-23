@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.1",
+  "workpack": "01_workpack-manager_protocol-v6",
+  "prompt": "A0_bootstrap",
+  "component": "protocol-v6-bootstrap",
+  "delivery_mode": "direct_push",
+  "branch": {
+    "base": "main",
+    "work": "feature/workpack-protocol-v6",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A0_bootstrap.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "git branch --contains HEAD | Select-String \"feature/workpack-protocol-v6\"",
+        "result": "pass",
+        "notes": "Feature branch contains current HEAD."
+      },
+      {
+        "cmd": "Test-Path workpacks/WORKPACK_META_SCHEMA.json",
+        "result": "pass",
+        "notes": "Meta schema file exists."
+      },
+      {
+        "cmd": "Test-Path workpacks/WORKPACK_STATE_SCHEMA.json",
+        "result": "pass",
+        "notes": "State schema file exists."
+      },
+      {
+        "cmd": "Test-Path workpacks/_template/workpack.meta.json",
+        "result": "pass",
+        "notes": "Meta template file exists."
+      },
+      {
+        "cmd": "Test-Path workpacks/_template/workpack.state.json",
+        "result": "pass",
+        "notes": "State template file exists."
+      },
+      {
+        "cmd": "Test-Path workpacks/instances",
+        "result": "pass",
+        "notes": "Instances directory exists."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Bootstrap-only metadata/state updates."
+  },
+  "handoff": {
+    "summary": "Created feature/workpack-protocol-v6 from main and verified protocol v6 workspace scaffold readiness.",
+    "next_steps": [
+      "Start A1_protocol_spec on feature/workpack-protocol-v6.",
+      "Start A2_schemas_and_templates in parallel after A0 completion is acknowledged."
+    ],
+    "known_issues": [
+      "Repository default branch is master; local main was created from master to satisfy target-branch requirements."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A0_bootstrap.json",
+      "action": "created",
+      "lines_added": 86,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "A0 bootstrap completed with branch setup and scaffold verification."
+}
