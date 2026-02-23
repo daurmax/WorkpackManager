@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.1",
+  "workpack": "02_workpack-manager_core-architecture",
+  "prompt": "A1_data_models",
+  "component": "extension-core-data-models",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/extension-core-architecture",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/99_status.md",
+      "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/workpack.state.json"
+    ],
+    "files_created": [
+      "src/models/dependency-graph.ts",
+      "src/models/index.ts",
+      "src/models/output.ts",
+      "src/models/workpack-instance.ts",
+      "src/models/workpack-meta.ts",
+      "src/models/workpack-state.ts",
+      "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/outputs/A1_data_models.json"
+    ],
+    "contracts_changed": [
+      "WorkpackMeta",
+      "WorkpackState",
+      "WorkpackInstance",
+      "DependencyGraphData",
+      "AgentOutput"
+    ],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "git branch --show-current",
+        "result": "pass",
+        "notes": "Current branch is feature/extension-core-architecture."
+      },
+      {
+        "cmd": "npx tsc --noEmit",
+        "result": "pass",
+        "notes": "TypeScript strict compilation passes with the new models."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Model-only change; parser and graph behavior implementation is deferred to later prompts."
+  },
+  "handoff": {
+    "summary": "Implemented Protocol v6 TypeScript model contracts for metadata, state, instance discovery, dependency graph data, and prompt output payloads with JSDoc and index exports.",
+    "next_steps": [
+      "Use these model types in A2_parser_indexer for v6 parse and v5 fallback discovery.",
+      "Build reconciliation logic in A3_state_reconciliation using WorkpackState and AgentOutput contracts."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/workpack-meta.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/workpack-state.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/workpack-instance.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/dependency-graph.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/output.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/index.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/outputs/A1_data_models.json",
+      "action": "created"
+    }
+  ],
+  "notes": "All data model files requested by A1 are implemented and exported from src/models/index.ts."
+}

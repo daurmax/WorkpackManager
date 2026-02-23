@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.1",
+  "workpack": "02_workpack-manager_core-architecture",
+  "prompt": "A2_parser_indexer",
+  "component": "extension-core-parser-indexer",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/extension-core-architecture",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [
+      "package.json",
+      "package-lock.json",
+      "tsconfig.json",
+      "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/99_status.md",
+      "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/workpack.state.json"
+    ],
+    "files_created": [
+      "src/parser/workpack-parser.ts",
+      "src/parser/workpack-discoverer.ts",
+      "src/parser/workpack-watcher.ts",
+      "src/test/parser/workpack-parser.test.ts",
+      "src/test/parser/workpack-discoverer.test.ts",
+      "src/test/parser/fixtures/workspace-a/workpacks/instances/sample-group/group.meta.json",
+      "src/test/parser/fixtures/workspace-a/workpacks/instances/sample-group/01_sample-group_parser-v6/workpack.meta.json",
+      "src/test/parser/fixtures/workspace-a/workpacks/instances/sample-group/01_sample-group_parser-v6/workpack.state.json",
+      "src/test/parser/fixtures/workspace-a/workpacks/instances/sample-group/02_sample-group_legacy-fallback/00_request.md",
+      "src/test/parser/fixtures/workspace-a/workpacks/instances/sample-group/02_sample-group_legacy-fallback/01_plan.md",
+      "src/test/parser/fixtures/workspace-b/workpacks/instances/standalone-legacy/00_request.md",
+      "src/test/parser/fixtures/workspace-b/workpacks/instances/standalone-legacy/01_plan.md",
+      "src/test/parser/fixtures/workspace-b/workpacks/instances/bad-workpack/workpack.meta.json",
+      "src/test/parser/fixtures/manual-workpack/workpack.meta.json",
+      "src/test/parser/fixtures/manual-workpack/workpack.state.json",
+      "src/test/parser/fixtures/malformed-state/workpack.meta.json",
+      "src/test/parser/fixtures/malformed-state/workpack.state.json",
+      "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/outputs/A2_parser_indexer.json"
+    ],
+    "contracts_changed": [
+      "parseWorkpackMeta",
+      "parseWorkpackState",
+      "parseWorkpackMarkdownFallback",
+      "parseWorkpackInstance",
+      "discoverWorkpacks",
+      "isWorkpackFolder",
+      "WorkpackWatcher"
+    ],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm test -- --grep \"parser\"",
+        "result": "pass",
+        "notes": "Parser/discovery tests pass, including v6 parsing, v5 markdown fallback, malformed-file safety behavior, multi-root discovery, and manual registration."
+      },
+      {
+        "cmd": "npx tsc --noEmit",
+        "result": "pass",
+        "notes": "TypeScript strict compilation passes with parser/indexer and watcher modules."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added dedicated parser/discoverer tests and fixtures covering happy paths and malformed input handling."
+  },
+  "handoff": {
+    "summary": "Implemented filesystem parser/indexer with primary v6 meta/state parsing, legacy v5 markdown fallback extraction, multi-root discovery with grouped folder support, manual registration APIs, and a debounced VS Code filesystem watcher.",
+    "next_steps": [
+      "Wire discoverer/watcher into extension activation and UI refresh lifecycle in the integration prompt.",
+      "Run full integration verification once all pending workpack prompts are complete."
+    ],
+    "known_issues": [
+      "Workspace contains unrelated in-progress files from other prompts that were intentionally ignored for this A2 delivery."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/parser/workpack-parser.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/parser/workpack-discoverer.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/parser/workpack-watcher.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/parser/workpack-parser.test.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/parser/workpack-discoverer.test.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "package.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "package-lock.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "tsconfig.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/outputs/A2_parser_indexer.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Parser handles malformed files via warnings without crashing and supports mixed protocol fleets by preferring v6 metadata with markdown fallback for legacy workpacks."
+}
