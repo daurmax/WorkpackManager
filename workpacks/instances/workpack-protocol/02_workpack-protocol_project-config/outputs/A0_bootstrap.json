@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_project-config",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/project-config",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/outputs/A0_bootstrap.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "fail",
+        "notes": "Command runs, but repository currently has pre-existing ERR_NO_VERIFICATION failures in older workpacks (not introduced by this prompt)."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "Exit code 0 in this environment."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No code changes beyond bootstrap output artifact."
+  },
+  "handoff": {
+    "summary": "Bootstrap completed: dependency prerequisite confirmed, branch prepared, and baseline checks executed.",
+    "next_steps": [
+      "Start A1_config_schema on feature/project-config",
+      "Address repository-wide lint verification-gate errors separately if strict clean baseline is required"
+    ],
+    "known_issues": [
+      "Baseline linter is not fully clean due to existing ERR_NO_VERIFICATION issues outside this workpack."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/outputs/A0_bootstrap.json",
+      "summary": "Recorded bootstrap branch/dependency/verification state and handoff metadata.",
+      "lines": "full file"
+    }
+  ],
+  "notes": "requires_workpack dependency 01_workpack-protocol_prompt-lifecycle is complete per workpack.state.json (overall_status=complete)."
+}
