@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workpacks/WORKPACK_CONFIG_SCHEMA.json",
+  "title": "Workpack Project Configuration",
+  "description": "Optional repository-level configuration for workpack tooling behavior.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "workpackDir": {
+      "type": "string",
+      "description": "Relative path to the workpacks directory.",
+      "minLength": 1,
+      "default": "workpacks"
+    },
+    "verifyCommands": {
+      "type": "object",
+      "description": "Optional project-specific command overrides used by verification tooling.",
+      "additionalProperties": false,
+      "properties": {
+        "build": {
+          "type": "string",
+          "description": "Build command executed by project verification flows."
+        },
+        "test": {
+          "type": "string",
+          "description": "Test command executed by project verification flows."
+        },
+        "lint": {
+          "type": "string",
+          "description": "Lint command executed by project verification flows."
+        }
+      }
+    },
+    "protocolVersion": {
+      "type": "string",
+      "description": "Protocol policy value in semantic version format.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
+      "examples": [
+        "2.2.0",
+        "2.2.0-rc.1"
+      ]
+    },
+    "strictMode": {
+      "type": "boolean",
+      "description": "When true, tools should enforce stricter validation behavior.",
+      "default": false
+    },
+    "discovery": {
+      "type": "object",
+      "description": "Settings for multi-root workpack discovery.",
+      "additionalProperties": false,
+      "properties": {
+        "roots": {
+          "type": "array",
+          "description": "Additional roots to scan for workpacks.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "exclude": {
+          "type": "array",
+          "description": "Glob patterns excluded from discovery.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        }
+      }
+    }
+  }
+}

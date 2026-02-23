@@ -11,6 +11,8 @@ from typing import Any
 
 import jsonschema
 
+from workpack_config import WorkpackConfigError, load_tool_config, render_config_message
+
 
 WORKPACKS_DIR = Path(__file__).resolve().parents[1]
 TEMPLATE_DIR = WORKPACKS_DIR / "_template"
@@ -19,6 +21,7 @@ SCHEMA_FILES = {
     "meta": WORKPACKS_DIR / "WORKPACK_META_SCHEMA.json",
     "state": WORKPACKS_DIR / "WORKPACK_STATE_SCHEMA.json",
     "output": WORKPACKS_DIR / "WORKPACK_OUTPUT_SCHEMA.json",
+    "config": WORKPACKS_DIR / "WORKPACK_CONFIG_SCHEMA.json",
 }
 
 PROMPT_TEMPLATE_FILES = [
@@ -99,6 +102,23 @@ def validate_json_templates(schemas: dict[str, Any], errors: list[str]) -> None:
         errors.append(f"Template invalid ({state_template}): {exc}")
 
 
+def validate_project_config(errors: list[str]) -> None:
+    try:
+        config = load_tool_config(
+            start_dir=Path.cwd(),
+            workspace_root=WORKPACKS_DIR.parent,
+            script_workpacks_dir=WORKPACKS_DIR,
+            schema_path=SCHEMA_FILES["config"],
+        )
+    except (FileNotFoundError, WorkpackConfigError) as exc:
+        errors.append(str(exc))
+        return
+
+    print(render_config_message(config))
+    if config.config_path is not None:
+        print(f"PASS config: {config.config_path}")
+
+
 def validate_prompt_front_matter(errors: list[str]) -> None:
     front_matter_pattern = re.compile(r"^---\r?\n(.*?)\r?\n---\r?\n", re.DOTALL)
 
@@ -138,6 +158,7 @@ def main() -> int:
     schemas = validate_schemas(errors)
     if len(schemas) == len(SCHEMA_FILES):
         validate_json_templates(schemas, errors)
+        validate_project_config(errors)
 
     validate_prompt_front_matter(errors)
     scan_for_domain_leaks(errors)
