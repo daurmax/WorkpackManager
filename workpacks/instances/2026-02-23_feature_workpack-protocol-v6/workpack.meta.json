@@ -1,0 +1,73 @@
+{
+  "id": "2026-02-23_feature_workpack-protocol-v6",
+  "title": "Workpack Protocol v6 — Metadata and State Framework",
+  "summary": "Define Workpack Protocol v6 with machine-readable metadata (workpack.meta.json), runtime state separation (workpack.state.json), updated schemas, templates, linter/scaffold tooling, and an adoption guide for external projects.",
+  "protocol_version": "6",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "2026-02-23",
+  "requires_workpack": [],
+  "tags": ["protocol", "framework", "tooling", "schemas", "templates"],
+  "owners": [],
+  "repos": ["WorkpackManager"],
+  "delivery_mode": "pr",
+  "target_branch": "main",
+  "prompts": [
+    {
+      "stem": "A0_bootstrap",
+      "agent_role": "Branch setup and workspace readiness",
+      "depends_on": [],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "XS"
+    },
+    {
+      "stem": "A1_protocol_spec",
+      "agent_role": "Protocol v6 specification document with metadata/state split rationale",
+      "depends_on": ["A0_bootstrap"],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A2_schemas_and_templates",
+      "agent_role": "JSON Schema definitions and template file updates",
+      "depends_on": ["A0_bootstrap"],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A3_tooling_linter",
+      "agent_role": "Linter updates for v6 validation checks",
+      "depends_on": ["A1_protocol_spec", "A2_schemas_and_templates"],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A4_tooling_scaffold",
+      "agent_role": "Scaffold tool updates for v6 workpack generation",
+      "depends_on": ["A1_protocol_spec", "A2_schemas_and_templates"],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "A6_adoption_guide",
+      "agent_role": "Adoption guide for integrating workpacks into external projects",
+      "depends_on": ["A1_protocol_spec"],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A5_integration_meta",
+      "agent_role": "V1 verification gate and merge readiness review",
+      "depends_on": ["A1_protocol_spec", "A2_schemas_and_templates", "A3_tooling_linter", "A4_tooling_scaffold", "A6_adoption_guide"],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "R1_retrospective",
+      "agent_role": "Post-merge retrospective and lessons learned",
+      "depends_on": ["A5_integration_meta"],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "S"
+    }
+  ]
+}

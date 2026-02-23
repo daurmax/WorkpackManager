@@ -1,0 +1,25 @@
+# Node.js / VS Code Extension
+node_modules/
+out/
+dist/
+*.vsix
+.vscode-test/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+workpacks/tools/.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+*.js.map

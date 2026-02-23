@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workpacks/WORKPACK_STATE_SCHEMA.json",
+  "title": "Workpack Runtime State",
+  "description": "Mutable runtime state for a workpack instance. Separated from workpack.meta.json to allow independent updates by agents and tooling without modifying stable metadata. This file is updated by agents during execution and by the extension for status tracking.",
+  "type": "object",
+  "required": ["workpack_id", "overall_status", "last_updated"],
+  "properties": {
+    "workpack_id": {
+      "type": "string",
+      "description": "Must match the 'id' field in workpack.meta.json."
+    },
+    "overall_status": {
+      "type": "string",
+      "description": "Current lifecycle status of the workpack.",
+      "enum": [
+        "not_started",
+        "in_progress",
+        "blocked",
+        "review",
+        "complete",
+        "abandoned"
+      ]
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last state change."
+    },
+    "prompt_status": {
+      "type": "object",
+      "description": "Per-prompt runtime status, keyed by prompt stem (e.g., 'A1_protocol_spec').",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "complete", "blocked", "skipped"]
+          },
+          "assigned_agent": {
+            "type": "string",
+            "description": "Agent provider assigned (e.g., 'copilot', 'codex', 'human')."
+          },
+          "started_at": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "output_validated": {
+            "type": "boolean",
+            "description": "True if the output JSON has been validated against the schema.",
+            "default": false
+          },
+          "blocked_reason": {
+            "type": ["string", "null"],
+            "description": "Reason this prompt is blocked, if status is 'blocked'."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "agent_assignments": {
+      "type": "object",
+      "description": "Default agent assignments, keyed by prompt stem. Can be overridden per-prompt in prompt_status.",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Agent provider ID (e.g., 'copilot', 'codex', 'human')."
+      }
+    },
+    "blocked_by": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Workpack IDs currently blocking this workpack (unresolved requires_workpack entries).",
+      "default": []
+    },
+    "execution_log": {
+      "type": "array",
+      "description": "Append-only log of state transitions for audit trail.",
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "event"],
+        "properties": {
+          "timestamp": { "type": "string", "format": "date-time" },
+          "event": {
+            "type": "string",
+            "enum": ["created", "started", "prompt_started", "prompt_completed", "blocked", "unblocked", "review", "completed", "abandoned"]
+          },
+          "prompt_stem": { "type": ["string", "null"] },
+          "agent": { "type": ["string", "null"] },
+          "notes": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Free-form notes about current state."
+    }
+  },
+  "additionalProperties": false
+}

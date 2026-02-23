@@ -1,0 +1,16 @@
+{
+  "id": "YYYY-MM-DD_category_slug",
+  "title": "Workpack Title",
+  "summary": "Brief description of what this workpack accomplishes.",
+  "protocol_version": "6",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "YYYY-MM-DD",
+  "requires_workpack": [],
+  "tags": [],
+  "owners": [],
+  "repos": [],
+  "delivery_mode": "pr",
+  "target_branch": "main",
+  "prompts": []
+}

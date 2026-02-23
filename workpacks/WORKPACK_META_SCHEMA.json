@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workpacks/WORKPACK_META_SCHEMA.json",
+  "title": "Workpack Metadata",
+  "description": "Machine-readable static metadata for a workpack instance. Introduced in Protocol v6. This file is the stable, version-controlled source of truth for workpack identity, dependencies, and structure. Runtime/mutable state belongs in workpack.state.json.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "protocol_version",
+    "workpack_version",
+    "category",
+    "created_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique workpack identifier. Must match the folder name (YYYY-MM-DD_<category>_<slug>).",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}_[a-z]+_[a-z0-9-]+$"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title for display in UIs and reports.",
+      "minLength": 5,
+      "maxLength": 120
+    },
+    "summary": {
+      "type": "string",
+      "description": "Brief description of what this workpack accomplishes (1-3 sentences).",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    "protocol_version": {
+      "type": "string",
+      "description": "Workpack Protocol version this instance conforms to.",
+      "pattern": "^[0-9]+$",
+      "examples": ["6"]
+    },
+    "workpack_version": {
+      "type": "string",
+      "description": "Semantic version of this workpack instance. Bump when plan/prompts change significantly.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([a-zA-Z0-9.+-]*)?$",
+      "examples": ["1.0.0", "1.1.0-draft"]
+    },
+    "category": {
+      "type": "string",
+      "description": "Work type classification.",
+      "enum": ["feature", "refactor", "bugfix", "hotfix", "debug", "docs", "perf", "security"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 creation date (YYYY-MM-DD).",
+      "examples": ["2026-02-23"]
+    },
+    "requires_workpack": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Workpack IDs (folder names) that must be completed before this one can start execution. Defines cross-workpack DAG.",
+      "default": []
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Free-form categorization tags for filtering and grouping.",
+      "default": [],
+      "examples": [["protocol", "framework", "tooling"]]
+    },
+    "owners": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Human owners or responsible parties (names, emails, or handles).",
+      "default": []
+    },
+    "repos": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Repository names this workpack touches. Used for multi-repo awareness.",
+      "default": []
+    },
+    "delivery_mode": {
+      "type": "string",
+      "description": "How changes are delivered.",
+      "enum": ["pr", "direct_push"],
+      "default": "pr"
+    },
+    "target_branch": {
+      "type": "string",
+      "description": "Target branch for PRs/merges.",
+      "default": "main"
+    },
+    "prompts": {
+      "type": "array",
+      "description": "Machine-readable index of all prompts in this workpack. Mirrors the DAG in 01_plan.md but in a parseable format.",
+      "items": {
+        "type": "object",
+        "required": ["stem", "agent_role"],
+        "properties": {
+          "stem": {
+            "type": "string",
+            "description": "Prompt file stem without extension (e.g., 'A1_protocol_spec')."
+          },
+          "agent_role": {
+            "type": "string",
+            "description": "Short description of the agent's role for this prompt."
+          },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Prompt stems this depends on.",
+            "default": []
+          },
+          "repos": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Repos this prompt touches.",
+            "default": []
+          },
+          "estimated_effort": {
+            "type": "string",
+            "description": "Estimated effort. XS <30m, S 30m-2h, M 2h-4h, L 4h-8h, XL >8h.",
+            "enum": ["XS", "S", "M", "L", "XL"]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

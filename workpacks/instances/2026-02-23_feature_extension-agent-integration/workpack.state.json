@@ -1,0 +1,20 @@
+{
+  "workpack_id": "2026-02-23_feature_extension-agent-integration",
+  "overall_status": "not_started",
+  "last_updated": "2026-02-23T00:00:00Z",
+  "prompt_status": {
+    "A0_bootstrap": { "status": "pending" },
+    "A1_provider_interface": { "status": "pending" },
+    "A2_copilot_provider": { "status": "pending" },
+    "A3_codex_provider": { "status": "pending" },
+    "A4_assignment_orchestrator": { "status": "pending" },
+    "A5_integration_meta": { "status": "pending" },
+    "R1_retrospective": { "status": "pending" }
+  },
+  "agent_assignments": {},
+  "blocked_by": ["2026-02-23_feature_extension-core-architecture"],
+  "execution_log": [
+    { "timestamp": "2026-02-23T00:00:00Z", "event": "created", "prompt_stem": null, "agent": null, "notes": "Blocked by extension-core-architecture." }
+  ],
+  "notes": null
+}

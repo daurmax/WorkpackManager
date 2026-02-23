@@ -1,0 +1,29 @@
+{
+  "id": "2026-02-23_feature_extension-validation-quality",
+  "title": "Extension Validation, Quality, and CI",
+  "summary": "Test framework, workpack linter with VS Code diagnostics, drift detection, v5→v6 migration tool, and CI pipeline.",
+  "protocol_version": "6",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "2026-02-23",
+  "requires_workpack": [
+    "2026-02-23_feature_extension-core-architecture",
+    "2026-02-23_feature_extension-agent-integration",
+    "2026-02-23_feature_extension-ux"
+  ],
+  "tags": ["testing", "lint", "validation", "ci", "migration", "quality"],
+  "owners": [],
+  "repos": ["WorkpackManager"],
+  "delivery_mode": "pr",
+  "target_branch": "main",
+  "prompts": [
+    { "stem": "A0_bootstrap", "agent_role": "Branch setup and prerequisite check", "depends_on": [], "repos": ["WorkpackManager"], "estimated_effort": "XS" },
+    { "stem": "A1_test_strategy", "agent_role": "Test framework and coverage configuration", "depends_on": ["A0_bootstrap"], "repos": ["WorkpackManager"], "estimated_effort": "M" },
+    { "stem": "A2_protocol_linter", "agent_role": "Workpack linter with VS Code diagnostics", "depends_on": ["A0_bootstrap"], "repos": ["WorkpackManager"], "estimated_effort": "L" },
+    { "stem": "A3_drift_detection", "agent_role": "State-vs-artifact drift detection", "depends_on": ["A0_bootstrap"], "repos": ["WorkpackManager"], "estimated_effort": "M" },
+    { "stem": "A4_migration_compat", "agent_role": "Protocol v5→v6 migration tool", "depends_on": ["A0_bootstrap"], "repos": ["WorkpackManager"], "estimated_effort": "M" },
+    { "stem": "A5_ci_pipeline", "agent_role": "GitHub Actions CI pipeline", "depends_on": ["A1_test_strategy", "A2_protocol_linter", "A3_drift_detection", "A4_migration_compat"], "repos": ["WorkpackManager"], "estimated_effort": "S" },
+    { "stem": "A6_integration_meta", "agent_role": "V1 verification gate", "depends_on": ["A1_test_strategy", "A2_protocol_linter", "A3_drift_detection", "A4_migration_compat", "A5_ci_pipeline"], "repos": ["WorkpackManager"], "estimated_effort": "M" },
+    { "stem": "R1_retrospective", "agent_role": "Post-merge retrospective", "depends_on": ["A6_integration_meta"], "repos": ["WorkpackManager"], "estimated_effort": "S" }
+  ]
+}
