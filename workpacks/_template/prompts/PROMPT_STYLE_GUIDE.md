@@ -17,7 +17,7 @@ Prompt filenames follow `<SERIES><NUMBER>_<slug>.md` when numbered, for example:
 
 - `A0_bootstrap.md`
 - `A1_feature_slice.md`
-- `A5_integration_meta.md`
+- `V1_integration_meta.md`
 - `B1_fix_edge_case.md`
 - `R1_retrospective.md`
 

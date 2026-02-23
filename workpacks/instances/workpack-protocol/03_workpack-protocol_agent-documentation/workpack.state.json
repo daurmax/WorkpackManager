@@ -1,0 +1,37 @@
+{
+  "workpack_id": "03_workpack-protocol_agent-documentation",
+  "overall_status": "not_started",
+  "last_updated": "2026-02-23T22:29:24Z",
+  "prompt_status": {
+    "A0_bootstrap": {
+      "status": "pending"
+    },
+    "A1_agent_rules": {
+      "status": "pending"
+    },
+    "A2_agent_state_machine": {
+      "status": "pending"
+    },
+    "A3_agent_context_tool": {
+      "status": "pending"
+    },
+    "V1_integration_meta": {
+      "status": "pending"
+    },
+    "R1_retrospective": {
+      "status": "pending"
+    }
+  },
+  "agent_assignments": {},
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "2026-02-23T22:29:24Z",
+      "event": "created",
+      "prompt_stem": null,
+      "agent": null,
+      "notes": "Workpack scaffold created"
+    }
+  ],
+  "notes": null
+}

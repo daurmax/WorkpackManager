@@ -23,7 +23,7 @@ SCHEMA_FILES = {
 
 PROMPT_TEMPLATE_FILES = [
     TEMPLATE_DIR / "prompts" / "A0_bootstrap.md",
-    TEMPLATE_DIR / "prompts" / "A5_integration_meta.md",
+    TEMPLATE_DIR / "prompts" / "V1_integration_meta.md",
     TEMPLATE_DIR / "prompts" / "B_template.md",
     TEMPLATE_DIR / "prompts" / "V_bugfix_verify.md",
     TEMPLATE_DIR / "prompts" / "R_retrospective.md",

@@ -28,7 +28,7 @@ requires_workpack: []
 ```
 Phase 0 (sequential):  A0_bootstrap
 Phase 1 (parallel):    A1, A2, A3, A4
-Phase 2 (sequential):  A5_integration_meta (V1 gate)
+Phase 2 (sequential):  V1_integration_meta (V1 gate)
 Phase 3 (conditional): B-series → V2 (V-loop)
 Phase 4 (post-merge):  R1_retrospective
 ```

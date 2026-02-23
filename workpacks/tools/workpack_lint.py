@@ -508,7 +508,7 @@ def validate_v3_prompts(workpack_path: Path, version: int = 3) -> tuple[list[str
 def validate_v4_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
     """
     Validate 1.3.0-specific rules:
-    - ERR_NO_VERIFICATION: No A5_* or V#_* prompt exists
+    - ERR_NO_VERIFICATION: No V#_* prompt exists
     - WARN_BUGFIX_NO_VERIFY: B-series present but no V#_* prompt
     - WARN_B_SERIES_BUDGET: >5 B-series prompts
     - WARN_B_SERIES_RESCOPE: >8 B-series prompts
@@ -533,24 +533,21 @@ def validate_v4_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
     a_series = []
     b_series = []
     v_series = []
-    a5_exists = False
     
     for prompt_file in prompts_dir.glob("*.md"):
         stem = prompt_file.stem
         if re.match(r"^A\d+", stem):
             a_series.append(prompt_file)
-            if stem.startswith("A5"):
-                a5_exists = True
         elif re.match(r"^B\d+", stem):
             b_series.append(prompt_file)
         elif re.match(r"^V\d+", stem):
             v_series.append(prompt_file)
     
-    # ERR_NO_VERIFICATION: No A5 and no V-series prompt
-    if not a5_exists and not v_series:
+    # ERR_NO_VERIFICATION: No V-series prompt
+    if not v_series:
         errors.append(
-            f"[{workpack_name}] ERR_NO_VERIFICATION: No A5_* or V#_* verification prompt found. "
-            f"Protocol 1.3.0 requires at least one verification gate."
+            f"[{workpack_name}] ERR_NO_VERIFICATION: No V#_* verification prompt found. "
+            f"Protocol requires at least one V-series verification gate."
         )
     
     # WARN_BUGFIX_NO_VERIFY: B-series present but no V-series prompt

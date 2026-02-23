@@ -1,0 +1,139 @@
+{
+  "id": "02_workpack-protocol_verification-hardening",
+  "title": "Verification Hardening",
+  "summary": "Implement comprehensive protocol invariant enforcement in Python tooling. Adds state transition validation, markdown-JSON sync checking, output artifact verification, commit SHA audit, prompt style linting, git hooks/CI templates, and a unified `workpack verify` command. All checks integrate with the existing `workpack_lint.py` infrastructure and follow the same virtual-environment bootstrap pattern. requires_workpack: [01_workpack-protocol_prompt-lifecycle]",
+  "protocol_version": "2.0.0",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "2026-02-23",
+  "requires_workpack": [
+    "01_workpack-protocol_prompt-lifecycle"
+  ],
+  "tags": [],
+  "owners": [],
+  "repos": [
+    "WorkpackManager"
+  ],
+  "delivery_mode": "pr",
+  "target_branch": "main",
+  "prompts": [
+    {
+      "stem": "A0_bootstrap",
+      "agent_role": "Branch setup and baseline verification",
+      "depends_on": [],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "XS"
+    },
+    {
+      "stem": "A1_state_transition_checks",
+      "agent_role": "Legal state transition validation for workpack and prompt levels",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A2_markdown_json_sync",
+      "agent_role": "Drift detection between 01_plan.md WBS and meta.prompts, 99_status.md and state.prompt_status",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A3_output_artifact_checks",
+      "agent_role": "Validate output JSON existence, schema conformance, and declared files on disk",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "A4_commit_verification_tool",
+      "agent_role": "Verify commit SHAs exist on branch and cross-reference change_details with git show",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A5_prompt_style_lint",
+      "agent_role": "Automated prompt section structure and YAML front-matter checking",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "A6_git_hooks_ci_templates",
+      "agent_role": "Pre-commit hook template and GitHub Actions CI workflow template",
+      "depends_on": [
+        "A1_state_transition_checks",
+        "A2_markdown_json_sync",
+        "A3_output_artifact_checks",
+        "A4_commit_verification_tool",
+        "A5_prompt_style_lint"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "A7_unified_verify_command",
+      "agent_role": "Unified workpack verify command wrapping all checks with category filtering",
+      "depends_on": [
+        "A1_state_transition_checks",
+        "A2_markdown_json_sync",
+        "A3_output_artifact_checks",
+        "A4_commit_verification_tool",
+        "A5_prompt_style_lint"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "V1_integration_meta",
+      "agent_role": "V1 integration gate and merge readiness review",
+      "depends_on": [
+        "A6_git_hooks_ci_templates",
+        "A7_unified_verify_command"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "R1_retrospective",
+      "agent_role": "Post-merge retrospective",
+      "depends_on": [
+        "V1_integration_meta"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    }
+  ],
+  "group": "workpack-protocol"
+}

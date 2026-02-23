@@ -1,0 +1,40 @@
+{
+  "workpack_id": "03_workpack-protocol_human-documentation",
+  "overall_status": "not_started",
+  "last_updated": "2026-02-23T22:29:26Z",
+  "prompt_status": {
+    "A0_bootstrap": {
+      "status": "pending"
+    },
+    "A1_concepts_guide": {
+      "status": "pending"
+    },
+    "A2_quickstart_guide": {
+      "status": "pending"
+    },
+    "A3_integration_guide": {
+      "status": "pending"
+    },
+    "A4_troubleshooting_guide": {
+      "status": "pending"
+    },
+    "V1_integration_meta": {
+      "status": "pending"
+    },
+    "R1_retrospective": {
+      "status": "pending"
+    }
+  },
+  "agent_assignments": {},
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "2026-02-23T22:29:26Z",
+      "event": "created",
+      "prompt_stem": null,
+      "agent": null,
+      "notes": "Workpack scaffold created"
+    }
+  ],
+  "notes": null
+}
