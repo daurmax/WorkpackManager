@@ -1,16 +1,28 @@
 {
-  "id": "<WORKPACK_ID>",
-  "title": "Workpack Title",
-  "summary": "Brief description of what this workpack accomplishes.",
+  "id": "__WORKPACK_ID__",
+  "title": "__WORKPACK_TITLE__",
+  "summary": "__WORKPACK_SUMMARY__",
   "protocol_version": "6",
   "workpack_version": "1.0.0",
   "category": "feature",
-  "created_at": "YYYY-MM-DD",
+  "created_at": "__CREATED_AT__",
   "requires_workpack": [],
   "tags": [],
   "owners": [],
-  "repos": [],
+  "repos": [
+    "__REPO_NAME__"
+  ],
   "delivery_mode": "pr",
   "target_branch": "main",
-  "prompts": []
+  "prompts": [
+    {
+      "stem": "A0_bootstrap",
+      "agent_role": "Initialize branch and baseline prerequisites",
+      "depends_on": [],
+      "repos": [
+        "__REPO_NAME__"
+      ],
+      "estimated_effort": "XS"
+    }
+  ]
 }

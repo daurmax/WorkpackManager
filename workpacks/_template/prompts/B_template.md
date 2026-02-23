@@ -1,61 +1,101 @@
 ---
-prompt_id: B1_<descriptive_slug>
-workpack: <WORKPACK_ID>
-agent_role: Bug fix
-depends_on:
-  - <PROMPT_THAT_INTRODUCED_THE_BUG>
-repos:
-  - <REPO_NAME>
-estimated_effort: S
+depends_on: [<PROMPT_STEM_THAT_INTRODUCED_ISSUE>]
+repos: [<REPO_NAME>]
 ---
+# Bug Fix Agent Prompt
 
-# B1 – Bug Fix: <Brief Description>
+> Resolve a verified defect discovered during workpack execution.
 
 ## Bug Report
 
-- **Discovered during**: _prompt stem or testing phase_
-- **Severity**: _critical / high / medium / low_
-- **Affected component**: _module or file_
+- **Bug ID**: `B1_<bug_slug>`
+- **Discovered in**: `<PROMPT_STEM>`
+- **Affected area**: `<component_or_module>`
 
-## Description
+## Severity
 
-_Describe the bug: expected behavior, actual behavior, reproduction steps._
+| Level | Definition |
+|-------|------------|
+| blocker | Must be fixed before merge |
+| major | Significant defect that should be fixed in this workpack |
+| minor | Low impact; may be deferred with explicit approval |
+
+This bug is classified as: `<blocker|major|minor>`
+
+## Objective
+
+Fix the defect, document root cause, and add regression coverage when feasible.
 
 ## Root Cause
 
-_Analysis of why the bug occurs._
+Describe why the issue occurred and what invariant was violated.
 
-## Fix
+## Implementation Requirements
 
-_Describe the fix and list affected files._
-
-### Files to Modify
-
-| File | Change |
-|------|--------|
-| _path_ | _description of change_ |
-
-### Implementation
-
-_Code changes or approach._
+- Apply the smallest safe change that resolves the defect.
+- Preserve existing behavior outside the bug scope.
+- Add or update regression checks when feasible.
+- Update status/state files to reflect bug-fix execution.
 
 ## Verification
 
-- [ ] Bug is no longer reproducible.
-- [ ] Regression test added.
-- [ ] `npx tsc --noEmit` — 0 errors.
-- [ ] All existing tests still pass.
+```bash
+# Replace with project commands
+<reproduction_command>
+<regression_command>
+```
 
-## Output
+## Handoff Output (JSON)
 
-Write `outputs/B1_<slug>.json`:
+Write `outputs/B1_<bug_slug>.json`.
 
 ```json
 {
-  "workpack_id": "<WORKPACK_ID>",
-  "prompt_id": "B1_<slug>",
-  "status": "complete",
-  "summary": "Bug fixed: <brief description>.",
-  "files_changed": []
+  "schema_version": "1.1",
+  "workpack": "<WORKPACK_ID>",
+  "prompt": "B1_<bug_slug>",
+  "component": "bugfix",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/<workpack-slug>",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [],
+    "regression_added": true,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Bug fixed.",
+    "next_steps": [
+      "Run V-series verification prompt"
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "<REPO_NAME>"
+  ],
+  "execution": {
+    "model": "<MODEL_ID>",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "severity": "major",
+  "change_details": [],
+  "notes": ""
 }
 ```
+
+## Deliverables
+
+- [ ] Defect resolved
+- [ ] Regression coverage added or explicitly waived
+- [ ] `outputs/B1_<bug_slug>.json` written

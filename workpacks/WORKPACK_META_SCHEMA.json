@@ -2,8 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "workpacks/WORKPACK_META_SCHEMA.json",
   "title": "Workpack Metadata",
-  "description": "Machine-readable static metadata for a workpack instance. Introduced in Protocol v6. This file is the stable, version-controlled source of truth for workpack identity, dependencies, and structure. Runtime/mutable state belongs in workpack.state.json.",
+  "description": "Static, version-controlled metadata for a workpack instance. Runtime and mutable execution data belongs in workpack.state.json.",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "id",
     "title",
@@ -11,126 +12,170 @@
     "protocol_version",
     "workpack_version",
     "category",
-    "created_at"
+    "created_at",
+    "requires_workpack",
+    "tags",
+    "owners",
+    "repos",
+    "delivery_mode",
+    "target_branch",
+    "prompts"
   ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workpackId": {
+      "type": "string",
+      "description": "Workpack folder identifier. Standalone: '<slug>'. Grouped: '<NN>_<group-id>_<slug>'.",
+      "pattern": "^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$"
+    },
+    "groupId": {
+      "type": "string",
+      "description": "Group directory identifier.",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+    },
+    "promptStem": {
+      "type": "string",
+      "description": "Prompt filename stem without extension (for example: A0_bootstrap, A1_protocol_spec).",
+      "pattern": "^[A-Z][A-Za-z0-9]*(?:_[a-z0-9][a-z0-9_]*)+$"
+    },
+    "effort": {
+      "type": "string",
+      "description": "Estimated effort: XS <30m, S 30m-2h, M 2h-4h, L 4h-8h, XL >8h.",
+      "enum": ["XS", "S", "M", "L", "XL"]
+    }
+  },
   "properties": {
     "id": {
-      "type": "string",
-      "description": "Unique workpack identifier. Must match the folder name. Standalone: '<slug>'. Grouped: '<NN>_<group-id>_<slug>' where NN is the two-digit execution phase number.",
-      "pattern": "^[a-z0-9][a-z0-9_-]+$"
+      "$ref": "#/$defs/workpackId"
     },
     "group": {
-      "type": "string",
-      "description": "Group ID if this workpack belongs to a group. Must match the parent group directory name.",
-      "pattern": "^[a-z0-9][a-z0-9-]*$"
+      "$ref": "#/$defs/groupId"
     },
     "title": {
       "type": "string",
-      "description": "Human-readable title for display in UIs and reports.",
+      "description": "Human-readable workpack title.",
       "minLength": 5,
-      "maxLength": 120
+      "maxLength": 160
     },
     "summary": {
       "type": "string",
-      "description": "Brief description of what this workpack accomplishes (1-3 sentences).",
+      "description": "Brief description of the workpack objective.",
       "minLength": 10,
-      "maxLength": 500
+      "maxLength": 600
     },
     "protocol_version": {
       "type": "string",
-      "description": "Workpack Protocol version this instance conforms to.",
-      "pattern": "^[0-9]+$",
-      "examples": ["6"]
+      "description": "Workpack protocol version.",
+      "enum": ["6"]
     },
     "workpack_version": {
       "type": "string",
-      "description": "Semantic version of this workpack instance. Bump when plan/prompts change significantly.",
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([a-zA-Z0-9.+-]*)?$",
-      "examples": ["1.0.0", "1.1.0-draft"]
+      "description": "Semantic version of this workpack instance.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
+      "examples": ["1.0.0", "1.1.0-rc.1"]
     },
     "category": {
       "type": "string",
-      "description": "Work type classification.",
+      "description": "Workpack classification.",
       "enum": ["feature", "refactor", "bugfix", "hotfix", "debug", "docs", "perf", "security"]
     },
     "created_at": {
       "type": "string",
-      "format": "date",
-      "description": "ISO 8601 creation date (YYYY-MM-DD).",
-      "examples": ["2026-02-23"]
+      "description": "ISO 8601 date (YYYY-MM-DD).",
+      "format": "date"
     },
     "requires_workpack": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Workpack IDs (folder names) that must be completed before this one can start execution. Defines cross-workpack DAG.",
-      "default": []
+      "description": "Workpack IDs that must complete before this workpack starts.",
+      "items": {
+        "$ref": "#/$defs/workpackId"
+      },
+      "default": [],
+      "uniqueItems": true
     },
     "tags": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Free-form categorization tags for filtering and grouping.",
+      "description": "Free-form tags used for filtering and grouping.",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
       "default": [],
-      "examples": [["protocol", "framework", "tooling"]]
+      "uniqueItems": true
     },
     "owners": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Human owners or responsible parties (names, emails, or handles).",
-      "default": []
+      "description": "People or teams responsible for the workpack.",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "default": [],
+      "uniqueItems": true
     },
     "repos": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Repository names this workpack touches. Used for multi-repo awareness.",
-      "default": []
+      "description": "Repository names touched by this workpack.",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "default": [],
+      "uniqueItems": true
     },
     "delivery_mode": {
       "type": "string",
-      "description": "How changes are delivered.",
+      "description": "How the workpack changes are delivered.",
       "enum": ["pr", "direct_push"],
       "default": "pr"
     },
     "target_branch": {
       "type": "string",
-      "description": "Target branch for PRs/merges.",
+      "description": "Target branch for merge/push.",
+      "minLength": 1,
       "default": "main"
     },
     "prompts": {
       "type": "array",
-      "description": "Machine-readable index of all prompts in this workpack. Mirrors the DAG in 01_plan.md but in a parseable format.",
+      "description": "Machine-readable prompt DAG and ownership metadata.",
+      "default": [],
       "items": {
         "type": "object",
-        "required": ["stem", "agent_role"],
+        "additionalProperties": false,
+        "required": ["stem", "agent_role", "depends_on", "repos", "estimated_effort"],
         "properties": {
           "stem": {
-            "type": "string",
-            "description": "Prompt file stem without extension (e.g., 'A1_protocol_spec')."
+            "$ref": "#/$defs/promptStem"
           },
           "agent_role": {
             "type": "string",
-            "description": "Short description of the agent's role for this prompt."
+            "description": "Short role description for this prompt.",
+            "minLength": 3,
+            "maxLength": 200
           },
           "depends_on": {
             "type": "array",
-            "items": { "type": "string" },
-            "description": "Prompt stems this depends on.",
-            "default": []
+            "description": "Prompt stems that must complete before this prompt.",
+            "items": {
+              "$ref": "#/$defs/promptStem"
+            },
+            "default": [],
+            "uniqueItems": true
           },
           "repos": {
             "type": "array",
-            "items": { "type": "string" },
-            "description": "Repos this prompt touches.",
-            "default": []
+            "description": "Repositories touched by this prompt.",
+            "items": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "default": [],
+            "uniqueItems": true
           },
           "estimated_effort": {
-            "type": "string",
-            "description": "Estimated effort. XS <30m, S 30m-2h, M 2h-4h, L 4h-8h, XL >8h.",
-            "enum": ["XS", "S", "M", "L", "XL"]
+            "$ref": "#/$defs/effort"
           }
-        },
-        "additionalProperties": false
+        }
       }
     }
-  },
-  "additionalProperties": false
+  }
 }

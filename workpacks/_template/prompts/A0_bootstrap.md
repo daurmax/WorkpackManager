@@ -1,77 +1,98 @@
 ---
-prompt_id: A0_bootstrap
-workpack: <WORKPACK_ID>
-agent_role: Bootstrap
 depends_on: []
-repos:
-  - <REPO_NAME>
-estimated_effort: XS
+repos: [<REPO_NAME>]
 ---
+# Bootstrap Agent Prompt
 
-# A0 – Bootstrap: <Workpack Title>
+> Set up the workpack execution baseline and unblock parallel A-series prompts.
+
+## READ FIRST
+
+1. `workpacks/instances/<group>/<workpack>/00_request.md`
+2. `workpacks/instances/<group>/<workpack>/01_plan.md`
+3. `workpacks/instances/<group>/<workpack>/workpack.meta.json`
+4. `workpacks/_template/prompts/PROMPT_STYLE_GUIDE.md`
 
 ## Objective
 
-Prepare the development environment for this workpack: create the feature branch, verify pre-conditions, and scaffold the module directory structure.
+Prepare the branch, verify required dependencies, and ensure scaffold/runtime files are in place for the workpack.
 
-## Pre-Conditions
+## Implementation Requirements
 
-1. All `requires_workpack` dependencies listed in `workpack.meta.json` are merged.
-2. Repository builds successfully (`npx tsc --noEmit` or equivalent).
+- Confirm all `requires_workpack` dependencies are complete.
+- Create or switch to the feature branch defined in `01_plan.md`.
+- Verify repository baseline checks pass (build/lint/test command set for the project).
+- Ensure `outputs/` exists and is writable.
 
-## Tasks
+## Constraints
 
-### Task 1: Create Feature Branch
+- Do not implement feature code in this prompt.
+- Do not change scope beyond bootstrap prerequisites.
 
-```bash
-cd <repo-root>
-git checkout main && git pull
-git checkout -b feature/<short-slug>
-```
-
-### Task 2: Verify Prerequisites
-
-Confirm that required upstream deliverables exist and compile.
-
-_List specific modules, files, or interfaces that must be available._
-
-### Task 3: Scaffold Module
-
-Create the module directory structure:
-
-```
-src/
-  <module>/
-    index.ts
-    ...
-```
-
-_Add stub files that compile._
-
-### Task 4: Verify Build
+## Verification
 
 ```bash
-npx tsc --noEmit
+# Replace with project commands
+<build_or_sanity_command>
+<lint_or_static_check_command>
 ```
 
-## Output
+## Handoff Output (JSON)
 
-Write `outputs/A0_bootstrap.json` per WORKPACK_OUTPUT_SCHEMA.json:
+Write `outputs/A0_bootstrap.json`.
 
 ```json
 {
-  "workpack_id": "<WORKPACK_ID>",
-  "prompt_id": "A0_bootstrap",
-  "status": "complete",
-  "summary": "Feature branch created, prerequisites verified, module scaffolded.",
-  "files_changed": [],
-  "commands_run": []
+  "schema_version": "1.1",
+  "workpack": "<WORKPACK_ID>",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/<workpack-slug>",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "<build_or_sanity_command>",
+        "result": "pass",
+        "notes": ""
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Bootstrap completed and workspace is ready.",
+    "next_steps": [
+      "Start dependent A-series prompts"
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "<REPO_NAME>"
+  ],
+  "execution": {
+    "model": "<MODEL_ID>",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [],
+  "notes": ""
 }
 ```
 
-## Gate
+## Deliverables
 
-- [ ] Feature branch exists.
-- [ ] Prerequisites are available and compile.
-- [ ] Module directory structure created.
-- [ ] `npx tsc --noEmit` — 0 errors.
+- [ ] Bootstrap checks complete
+- [ ] Branch ready for dependent prompts
+- [ ] `outputs/A0_bootstrap.json` written

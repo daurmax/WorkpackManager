@@ -1,0 +1,170 @@
+{
+  "schema_version": "1.1",
+  "workpack": "01_workpack-manager_protocol-v6",
+  "prompt": "A2_schemas_and_templates",
+  "component": "protocol-v6-schemas-templates",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/workpack-protocol-v6",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": []
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/WORKPACK_META_SCHEMA.json",
+      "workpacks/WORKPACK_STATE_SCHEMA.json",
+      "workpacks/WORKPACK_OUTPUT_SCHEMA.json",
+      "workpacks/_template/workpack.meta.json",
+      "workpacks/_template/workpack.state.json",
+      "workpacks/_template/prompts/A0_bootstrap.md",
+      "workpacks/_template/prompts/A5_integration_meta.md",
+      "workpacks/_template/prompts/B_template.md",
+      "workpacks/_template/prompts/V_bugfix_verify.md",
+      "workpacks/_template/prompts/R_retrospective.md",
+      "workpacks/_template/prompts/PROMPT_STYLE_GUIDE.md",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/_template/README.md",
+      "workpacks/tools/validate_templates.py",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A2_schemas_and_templates.json"
+    ],
+    "contracts_changed": [
+      "workpacks/WORKPACK_META_SCHEMA.json",
+      "workpacks/WORKPACK_STATE_SCHEMA.json",
+      "workpacks/WORKPACK_OUTPUT_SCHEMA.json"
+    ],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -c \"import json, jsonschema; schema=json.load(open('WorkpackManager/workpacks/WORKPACK_META_SCHEMA.json', encoding='utf-8')); jsonschema.Draft202012Validator.check_schema(schema); print('Meta schema: VALID')\"",
+        "result": "pass",
+        "notes": "Meta schema validated as Draft 2020-12."
+      },
+      {
+        "cmd": "python -c \"import json, jsonschema; schema=json.load(open('WorkpackManager/workpacks/WORKPACK_STATE_SCHEMA.json', encoding='utf-8')); jsonschema.Draft202012Validator.check_schema(schema); print('State schema: VALID')\"",
+        "result": "pass",
+        "notes": "State schema validated as Draft 2020-12."
+      },
+      {
+        "cmd": "python -c \"import json, jsonschema; schema=json.load(open('WorkpackManager/workpacks/WORKPACK_OUTPUT_SCHEMA.json', encoding='utf-8')); jsonschema.Draft202012Validator.check_schema(schema); print('Output schema: VALID')\"",
+        "result": "pass",
+        "notes": "Output schema validated as Draft 2020-12."
+      },
+      {
+        "cmd": "python WorkpackManager/workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "Template JSON files validate against schemas after placeholder substitution; front-matter and domain-leak checks passed."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Protocol/schema/template update only."
+  },
+  "handoff": {
+    "summary": "Finalized v6 meta/state/output schemas, updated all required template prompts and JSON files, added template README, and added a template validation script that passes.",
+    "next_steps": [
+      "Proceed with A3_tooling_linter to align linter checks with finalized schemas.",
+      "Proceed with A4_tooling_scaffold to ensure scaffold output matches updated template placeholders and schema constraints."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/WORKPACK_META_SCHEMA.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/WORKPACK_STATE_SCHEMA.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/WORKPACK_OUTPUT_SCHEMA.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/workpack.meta.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/A0_bootstrap.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/A5_integration_meta.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/B_template.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/V_bugfix_verify.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/R_retrospective.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/PROMPT_STYLE_GUIDE.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/README.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/validate_templates.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A2_schemas_and_templates.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "A2 deliverables completed; unrelated A1 artifacts were left untouched."
+}

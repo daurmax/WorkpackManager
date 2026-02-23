@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.1",
+  "workpack": "01_workpack-manager_protocol-v6",
+  "prompt": "A4_tooling_scaffold",
+  "component": "tooling-scaffold",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/workpack-protocol-v6",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": []
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/tools/workpack_scaffold.py",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A4_tooling_scaffold.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m py_compile WorkpackManager/workpacks/tools/workpack_scaffold.py",
+        "result": "pass",
+        "notes": "Script compiles with no syntax errors."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_scaffold.py workpacks/instances/2026-01-01_feature_test-scaffold-a4verify",
+        "result": "pass",
+        "notes": "Generated prompts, workpack.meta.json, and workpack.state.json from a plan with DAG data."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_scaffold.py workpacks/instances/2026-01-01_feature_test-scaffold-a4verify",
+        "result": "pass",
+        "notes": "Second run without --force skipped existing prompt/meta/state files and emitted warnings."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_scaffold.py workpacks/instances/2026-01-01_feature_test-scaffold-a4verify --force",
+        "result": "pass",
+        "notes": "Force mode overwrote existing prompt/meta/state files."
+      },
+      {
+        "cmd": "python -c \"import json, pathlib, jsonschema; root=pathlib.Path('workpacks'); wp=pathlib.Path('workpacks/instances/2026-01-01_feature_test-scaffold-a4verify'); meta=json.loads((wp/'workpack.meta.json').read_text(encoding='utf-8')); state=json.loads((wp/'workpack.state.json').read_text(encoding='utf-8')); meta_schema=json.loads((root/'WORKPACK_META_SCHEMA.json').read_text(encoding='utf-8')); state_schema=json.loads((root/'WORKPACK_STATE_SCHEMA.json').read_text(encoding='utf-8')); jsonschema.validate(meta, meta_schema); jsonschema.validate(state, state_schema); print('schema_validation=pass')\"",
+        "result": "pass",
+        "notes": "Generated files validated against v6 meta/state schemas."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Tooling-only change with verification on a temporary scaffold instance."
+  },
+  "handoff": {
+    "summary": "Implemented a v6 scaffold tool that parses 01_plan.md, scaffolds prompts with front-matter dependencies/repos, and generates workpack.meta.json plus workpack.state.json with pending prompt status initialization.",
+    "next_steps": [
+      "Run A5_integration_meta to validate end-to-end coherence across protocol docs, schemas, linter, scaffold, and adoption guide.",
+      "Optionally add unit tests for plan table parsing edge-cases in future tooling hardening."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/workpack_scaffold.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/A4_tooling_scaffold.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Temporary verification folder workpacks/instances/2026-01-01_feature_test-scaffold-a4verify was cleaned up after tests."
+}

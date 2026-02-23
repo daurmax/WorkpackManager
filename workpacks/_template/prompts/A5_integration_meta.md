@@ -1,84 +1,94 @@
 ---
-prompt_id: A5_integration_meta
-workpack: <WORKPACK_ID>
-agent_role: V1 verification gate
-depends_on:
-  - <ALL_PRIOR_A_SERIES_PROMPTS>
-repos:
-  - <REPO_NAME>
-estimated_effort: M
+depends_on: [<ALL_REQUIRED_A_SERIES_PROMPTS>]
+repos: [<REPO_NAME>]
 ---
+# Integration and Verification Agent Prompt (V1 Gate)
 
-# A5 – V1 Verification Gate: <Workpack Title>
+> Validate all required deliverables for merge readiness.
+
+## READ FIRST
+
+1. `workpacks/instances/<group>/<workpack>/00_request.md`
+2. `workpacks/instances/<group>/<workpack>/01_plan.md`
+3. `workpacks/instances/<group>/<workpack>/workpack.meta.json`
+4. `workpacks/instances/<group>/<workpack>/workpack.state.json`
+5. `workpacks/WORKPACK_OUTPUT_SCHEMA.json`
+6. All completed prompt outputs in `outputs/`
 
 ## Objective
 
-Run a comprehensive verification pass across all deliverables from prior A-series prompts. Ensure the entire module compiles, tests pass, integration points are sound, and all acceptance criteria are met.
+Run the integration gate for this workpack: validate output payloads, verify acceptance criteria coverage, and confirm merge readiness.
 
-## Verification Checklist
+## Implementation Requirements
 
-### 1. Compilation and Type Safety
+- Validate each completed `outputs/*.json` against `WORKPACK_OUTPUT_SCHEMA.json`.
+- Run project verification commands (build/test/lint/security checks).
+- Verify each acceptance criterion from `00_request.md` has evidence.
+- Confirm status/state files reflect current execution state.
+- Produce clear pass/fail decision with blocking issues if any.
 
-```bash
-npx tsc --noEmit
-```
-
-- [ ] 0 errors, 0 warnings in strict mode.
-- [ ] No `any` types in public API surfaces.
-
-### 2. Unit Tests
+## Verification
 
 ```bash
-npm test -- --grep "<module>"
+# Replace with project commands
+<project_validation_command_1>
+<project_validation_command_2>
 ```
 
-- [ ] All tests pass.
-- [ ] Coverage meets minimum threshold.
+## Acceptance Criteria Coverage Table
 
-### 3. Integration Points
+| AC ID | Status | Evidence |
+|-------|--------|----------|
+| AC1 | pass/fail | command, file, or test reference |
 
-_Verify that the module integrates correctly with its consumers/dependencies._
+## Handoff Output (JSON)
 
-- [ ] Public API exports are correct and complete.
-- [ ] No internal types leak to public API.
-- [ ] Dependencies are properly declared.
-
-### 4. Documentation
-
-- [ ] Public API is documented with JSDoc.
-- [ ] README or module docs updated if needed.
-
-## Acceptance Criteria Coverage
-
-_Map each AC from `00_request.md` to evidence:_
-
-| AC | Status | Evidence |
-|----|--------|----------|
-| AC1: _description_ | ✅/❌ | _evidence_ |
-| AC2: _description_ | ✅/❌ | _evidence_ |
-| ... | | |
-
-## Output
-
-Write `outputs/A5_integration_meta.json`:
+Write `outputs/A5_integration_meta.json`.
 
 ```json
 {
-  "workpack_id": "<WORKPACK_ID>",
-  "prompt_id": "A5_integration_meta",
-  "status": "complete",
-  "summary": "All acceptance criteria verified.",
-  "files_changed": [],
-  "verification_results": {
-    "tsc_errors": 0,
-    "test_pass_rate": "100%",
-    "ac_coverage": "N/N"
-  }
+  "schema_version": "1.1",
+  "workpack": "<WORKPACK_ID>",
+  "prompt": "A5_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/<workpack-slug>",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Integration gate executed.",
+    "next_steps": [],
+    "known_issues": []
+  },
+  "repos": [
+    "<REPO_NAME>"
+  ],
+  "execution": {
+    "model": "<MODEL_ID>",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [],
+  "notes": ""
 }
 ```
 
-## Gate
+## Deliverables
 
-- [ ] All ACs verified ✅.
-- [ ] PR is ready for review.
-- [ ] `99_status.md` updated with results.
+- [ ] Verification report completed
+- [ ] `outputs/A5_integration_meta.json` written
+- [ ] Merge decision documented

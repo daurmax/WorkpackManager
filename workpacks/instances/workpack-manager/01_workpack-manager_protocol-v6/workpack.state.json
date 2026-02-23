@@ -1,22 +1,60 @@
 {
   "workpack_id": "01_workpack-manager_protocol-v6",
-  "overall_status": "in_progress",
-  "last_updated": "2026-02-23T16:03:24Z",
+  "overall_status": "review",
+  "last_updated": "2026-02-23T18:25:00Z",
   "prompt_status": {
     "A0_bootstrap": {
       "status": "complete",
       "assigned_agent": "codex",
       "started_at": "2026-02-23T16:03:24Z",
       "completed_at": "2026-02-23T16:03:24Z",
-      "output_validated": false
+      "output_validated": true
     },
-    "A1_protocol_spec": { "status": "pending" },
-    "A2_schemas_and_templates": { "status": "pending" },
-    "A3_tooling_linter": { "status": "pending" },
-    "A4_tooling_scaffold": { "status": "pending" },
-    "A6_adoption_guide": { "status": "pending" },
-    "A5_integration_meta": { "status": "pending" },
-    "R1_retrospective": { "status": "pending" }
+    "A1_protocol_spec": {
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-23T16:28:02Z",
+      "completed_at": "2026-02-23T16:28:02Z",
+      "output_validated": true
+    },
+    "A2_schemas_and_templates": {
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-23T16:44:04Z",
+      "completed_at": "2026-02-23T16:44:04Z",
+      "output_validated": true
+    },
+    "A3_tooling_linter": {
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-23T18:20:00Z",
+      "completed_at": "2026-02-23T18:20:00Z",
+      "output_validated": true
+    },
+    "A4_tooling_scaffold": {
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-23T16:57:01Z",
+      "completed_at": "2026-02-23T16:57:01Z",
+      "output_validated": true
+    },
+    "A6_adoption_guide": {
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-23T16:50:44Z",
+      "completed_at": "2026-02-23T16:50:44Z",
+      "output_validated": true
+    },
+    "A5_integration_meta": {
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-23T18:25:00Z",
+      "completed_at": "2026-02-23T18:25:00Z",
+      "output_validated": true
+    },
+    "R1_retrospective": {
+      "status": "pending"
+    }
   },
   "agent_assignments": {},
   "blocked_by": [],
@@ -34,6 +72,55 @@
       "prompt_stem": "A0_bootstrap",
       "agent": "codex",
       "notes": "Created feature/workpack-protocol-v6 from main and verified workspace readiness."
+    },
+    {
+      "timestamp": "2026-02-23T16:28:02Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A1_protocol_spec",
+      "agent": "codex",
+      "notes": "Authored Workpack Protocol v6 specification and project-agnostic workpacks README."
+    },
+    {
+      "timestamp": "2026-02-23T16:44:04Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A2_schemas_and_templates",
+      "agent": "codex",
+      "notes": "Finalized v6 schemas, updated project-agnostic templates, and validated scaffold templates."
+    },
+    {
+      "timestamp": "2026-02-23T16:50:44Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A6_adoption_guide",
+      "agent": "codex",
+      "notes": "Created ADOPTION_GUIDE.md with quick start, step-by-step adoption flow, customization boundaries, and FAQ."
+    },
+    {
+      "timestamp": "2026-02-23T16:57:01Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A4_tooling_scaffold",
+      "agent": "codex",
+      "notes": "Added workpack_scaffold.py to generate prompt skeletons plus workpack.meta.json/workpack.state.json from 01_plan.md, with --force overwrite and schema-validated output."
+    },
+    {
+      "timestamp": "2026-02-23T18:20:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A3_tooling_linter",
+      "agent": "codex",
+      "notes": "Implemented v2-v6 linter with v6 meta/state checks, jsonschema bootstrap/install support, path-based scanning, and unit tests."
+    },
+    {
+      "timestamp": "2026-02-23T18:25:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A5_integration_meta",
+      "agent": "codex",
+      "notes": "Executed V1 integration gate: strict lint, schema validation, template checks, AC cross-check; merge authorized."
+    },
+    {
+      "timestamp": "2026-02-23T18:25:00Z",
+      "event": "review",
+      "prompt_stem": null,
+      "agent": "codex",
+      "notes": "Workpack moved to review with merge authorization pending PR merge."
     }
   ],
   "notes": null
