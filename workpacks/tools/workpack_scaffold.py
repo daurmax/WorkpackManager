@@ -50,6 +50,12 @@ import textwrap
 from dataclasses import dataclass
 from typing import Any
 
+from workpack_config import (
+    LoadedWorkpackConfig,
+    WorkpackConfigError,
+    load_tool_config,
+    render_config_message,
+)
 from validate_workpack_files import validate_workpack_files, get_workpack_version, display_version
 
 
@@ -111,6 +117,8 @@ TEMPLATE_MAP = {
     "V": "V_bugfix_verify.md",
     "R": "R_retrospective.md",
 }
+SCRIPT_WORKPACKS_DIR = Path(__file__).resolve().parents[1]
+WORKSPACE_ROOT = SCRIPT_WORKPACKS_DIR.parent
 
 
 @dataclass
@@ -138,20 +146,22 @@ class WorkpackIdentity:
     slug: str
 
 
-def _workpacks_dir() -> Path:
-    return Path(__file__).resolve().parents[1]
+def _workpacks_dir(config: LoadedWorkpackConfig | None = None) -> Path:
+    if config is not None:
+        return config.workpacks_dir
+    return SCRIPT_WORKPACKS_DIR.resolve()
 
 
-def _template_dir() -> Path:
-    return _workpacks_dir() / "_template"
+def _template_dir(config: LoadedWorkpackConfig | None = None) -> Path:
+    return _workpacks_dir(config) / "_template"
 
 
-def _templates_prompt_dir() -> Path:
-    return _template_dir() / "prompts"
+def _templates_prompt_dir(config: LoadedWorkpackConfig | None = None) -> Path:
+    return _template_dir(config) / "prompts"
 
 
-def _resolve_template(stem: str) -> Path | None:
-    prompt_dir = _templates_prompt_dir()
+def _resolve_template(stem: str, config: LoadedWorkpackConfig | None = None) -> Path | None:
+    prompt_dir = _templates_prompt_dir(config)
     exact = prompt_dir / f"{stem}.md"
     if exact.exists():
         return exact
@@ -624,6 +634,7 @@ def scaffold_prompts(
     workpack_ref: str,
     prompts: list[PromptSpec],
     force: bool,
+    config: LoadedWorkpackConfig | None = None,
 ) -> tuple[int, int, int]:
     prompts_dir = workpack_path / "prompts"
     prompts_dir.mkdir(parents=True, exist_ok=True)
@@ -640,7 +651,7 @@ def scaffold_prompts(
             skipped += 1
             continue
 
-        template = _resolve_template(prompt.stem)
+        template = _resolve_template(prompt.stem, config)
         if template:
             content = template.read_text(encoding="utf-8")
         else:
@@ -679,6 +690,17 @@ def main() -> None:
         print(f"ERROR: Workpack folder not found: {workpack_path}", file=sys.stderr)
         sys.exit(1)
 
+    try:
+        tool_config = load_tool_config(
+            start_dir=Path.cwd(),
+            workspace_root=WORKSPACE_ROOT,
+            script_workpacks_dir=SCRIPT_WORKPACKS_DIR,
+            schema_path=SCRIPT_WORKPACKS_DIR / "WORKPACK_CONFIG_SCHEMA.json",
+        )
+    except (FileNotFoundError, WorkpackConfigError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        sys.exit(1)
+
     plan_path = workpack_path / "01_plan.md"
     try:
         plan = parse_plan(plan_path)
@@ -693,7 +715,7 @@ def main() -> None:
     identity = derive_workpack_identity(workpack_path)
     default_repo = _infer_repo_name(workpack_path)
 
-    workpacks_dir = _workpacks_dir()
+    workpacks_dir = _workpacks_dir(tool_config)
     meta_template_path = workpacks_dir / "_template" / "workpack.meta.json"
     state_template_path = workpacks_dir / "_template" / "workpack.state.json"
     if not meta_template_path.exists():
@@ -721,6 +743,7 @@ def main() -> None:
         workpack_ref = identity.workpack_id
 
     print(f"Workpack: {workpack_ref}")
+    print(render_config_message(tool_config))
     print(f"Prompt count: {len(plan.prompts)}")
     print(f"Category: {identity.category}")
     print(f"Created at: {identity.created_at}")
@@ -731,6 +754,7 @@ def main() -> None:
         workpack_ref=workpack_ref,
         prompts=plan.prompts,
         force=args.force,
+        config=tool_config,
     )
 
     meta_status = _write_if_allowed(

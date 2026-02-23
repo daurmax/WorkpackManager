@@ -26,12 +26,20 @@ import re
 import sys
 from pathlib import Path
 from typing import Any
+from workpack_config import (
+    LoadedWorkpackConfig,
+    WorkpackConfigError,
+    load_tool_config,
+    render_config_message,
+)
 
 
 # ---------------------------------------------------------------------------
 # Virtual-environment bootstrap (shared pattern with other workpack tools)
 # ---------------------------------------------------------------------------
 def _ensure_venv() -> None:
+    if os.environ.get("WORKPACK_VALIDATE_FILES_SKIP_VENV_BOOTSTRAP") == "1":
+        return
     if sys.prefix != sys.base_prefix:
         return
     venv_dir = Path(__file__).resolve().parent / ".venv"
@@ -58,6 +66,8 @@ _ensure_venv()
 # Constants
 # ---------------------------------------------------------------------------
 REQUEST_FILE = "00_request.md"
+SCRIPT_WORKPACKS_DIR = Path(__file__).resolve().parents[1]
+WORKSPACE_ROOT = SCRIPT_WORKPACKS_DIR.parent
 
 
 # ---------------------------------------------------------------------------
@@ -123,10 +133,13 @@ def get_workpack_version(workpack_path: Path) -> int:
 # ---------------------------------------------------------------------------
 # Discovery (same logic as workpack_lint.py)
 # ---------------------------------------------------------------------------
-def get_workpacks_dir() -> Path:
-    script_workpacks = Path(__file__).resolve().parents[1]
+def get_workpacks_dir(config: LoadedWorkpackConfig | None = None) -> Path:
+    if config is not None:
+        return config.workpacks_dir
+
+    script_workpacks = SCRIPT_WORKPACKS_DIR
     if script_workpacks.name == "workpacks" and script_workpacks.exists():
-        return script_workpacks
+        return script_workpacks.resolve()
 
     cwd = Path.cwd()
     for parent in [cwd] + list(cwd.parents):
@@ -285,11 +298,20 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Validate that workpack instances contain all protocol-required files.",
     )
-    parser.add_argument(
+    strict_group = parser.add_mutually_exclusive_group()
+    strict_group.add_argument(
         "--strict",
+        dest="strict",
         action="store_true",
         help="Treat warnings as errors (exit code 2).",
     )
+    strict_group.add_argument(
+        "--no-strict",
+        dest="strict",
+        action="store_false",
+        help="Disable strict warnings mode even when strictMode=true in config.",
+    )
+    parser.set_defaults(strict=None)
     parser.add_argument(
         "paths",
         nargs="*",
@@ -301,12 +323,27 @@ def main() -> int:
     print("=" * 40)
 
     try:
-        workpacks_dir = get_workpacks_dir()
-    except FileNotFoundError as exc:
+        tool_config = load_tool_config(
+            start_dir=Path.cwd(),
+            workspace_root=WORKSPACE_ROOT,
+            script_workpacks_dir=SCRIPT_WORKPACKS_DIR,
+            schema_path=SCRIPT_WORKPACKS_DIR / "WORKPACK_CONFIG_SCHEMA.json",
+        )
+        workpacks_dir = get_workpacks_dir(tool_config)
+    except (FileNotFoundError, WorkpackConfigError) as exc:
         print(f"ERROR: {exc}")
         return 1
 
+    print(render_config_message(tool_config))
     print(f"Detected workpacks dir: {workpacks_dir}")
+
+    strict_mode = bool(args.strict) if args.strict is not None else tool_config.strict_mode
+    if args.strict is True:
+        print("Mode: --strict (warnings treated as errors)")
+    elif args.strict is False:
+        print("Mode: --no-strict (warnings do not fail the run)")
+    elif strict_mode:
+        print("Mode: strictMode=true from workpack.config.json (warnings treated as errors)")
 
     if args.paths:
         scan_targets = [Path(p).resolve() for p in args.paths]
@@ -362,8 +399,11 @@ def main() -> int:
         print(f"Total errors: {len(all_errors)}")
         return 1
 
-    if all_warnings and args.strict:
-        print("Warnings found and --strict mode is enabled.")
+    if all_warnings and strict_mode:
+        if args.strict is None:
+            print("Warnings found and strictMode=true from workpack.config.json.")
+        else:
+            print("Warnings found and --strict mode is enabled.")
         return 2
 
     print("All workpacks contain required files.")

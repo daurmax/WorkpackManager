@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_project-config",
+  "prompt": "A2_config_tool_integration",
+  "component": "tooling",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/project-config",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "<COMMIT_SHA>"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/tools/workpack_lint.py",
+      "workpacks/tools/workpack_scaffold.py",
+      "workpacks/tools/validate_workpack_files.py",
+      "workpacks/tools/validate_templates.py",
+      "workpacks/tools/tests/test_workpack_lint.py",
+      "workpacks/tools/tests/test_validate_workpack_files.py"
+    ],
+    "files_created": [
+      "workpacks/tools/workpack_config.py",
+      "outputs/A2_config_tool_integration.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      "python workpacks/tools/validate_templates.py",
+      "python workpacks/tools/workpack_lint.py --help",
+      "python workpacks/tools/workpack_scaffold.py --help",
+      "python workpacks/tools/validate_workpack_files.py --help",
+      "python -m pytest workpacks/tools/tests/ -k \"config or strict or fallback\" -v",
+      "python -m pytest workpacks/tools/tests/ -v"
+    ],
+    "regression_added": true,
+    "regression_notes": "Added config integration tests for lint/file validator (config found vs fallback, workpackDir resolution, strictMode defaulting, and output messaging)."
+  },
+  "handoff": {
+    "summary": "Config loader integrated into Python tools with backward-compatible defaults.",
+    "next_steps": [
+      "Proceed to A3_multi_workspace_discovery"
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    "Added shared optional config loader/validator and standardized config detection messaging.",
+    "Integrated workpackDir/strictMode/protocolVersion behavior into lint and validate_workpack_files.",
+    "Integrated workpackDir resolution into scaffold template/meta/state paths.",
+    "Extended template validation to validate config schema and repository-level config when present."
+  ],
+  "notes": ""
+}
