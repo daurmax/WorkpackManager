@@ -239,6 +239,21 @@ class ValidateWorkpackFilesTests(unittest.TestCase):
             self.assertFalse(any("workpack.meta.json" in e for e in errors))
             self.assertFalse(any("workpack.state.json" in e for e in errors))
 
+    def test_discover_workpack_paths_applies_exclude_patterns(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            keep = self._build_complete_workpack(root / "workspace_a", name="01_keep")
+            excluded = self._build_complete_workpack(root / "workspace_b" / "excluded", name="01_skip")
+
+            discovered = vwf.discover_workpack_paths(
+                [root / "workspace_a", root / "workspace_b"],
+                exclude_patterns=["excluded", "**/01_skip"],
+                workspace_root=root,
+            )
+
+            self.assertIn(keep.resolve(), discovered)
+            self.assertNotIn(excluded.resolve(), discovered)
+
     def test_main_uses_configured_workpack_dir(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
@@ -295,6 +310,44 @@ class ValidateWorkpackFilesTests(unittest.TestCase):
             self.assertEqual(exit_code, 2)
             self.assertIn("Mode: strictMode=true from workpack.config.json", output)
             self.assertIn("Warnings found and strictMode=true from workpack.config.json.", output)
+
+    def test_main_uses_discovery_roots_and_excludes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            workpacks_dir = repo_root / "workpacks"
+            self._write_config_schema(workpacks_dir)
+            self._build_complete_workpack(workpacks_dir / "instances" / "default-group", name="01_default")
+
+            extra_root = repo_root / "extra-root"
+            self._build_complete_workpack(extra_root / "extra-group", name="01_extra")
+            self._build_complete_workpack(extra_root / "excluded-group", name="01_filtered")
+
+            _write_json(
+                repo_root / "workpack.config.json",
+                {
+                    "workpackDir": "workpacks",
+                    "discovery": {
+                        "roots": ["extra-root", "missing-root"],
+                        "exclude": ["excluded-group", "**/01_filtered/**"],
+                    },
+                },
+            )
+
+            with (
+                patch.object(vwf, "SCRIPT_WORKPACKS_DIR", workpacks_dir),
+                patch.object(vwf, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_main(repo_root, [])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("WARNING: Configured discovery root 'missing-root' does not exist", output)
+            self.assertIn("Scan targets:", output)
+            self.assertIn(str(extra_root.resolve()), output)
+            self.assertIn("Discovery excludes: excluded-group, **/01_filtered/**", output)
+            self.assertIn("Discovered workpacks: 2", output)
+            self.assertIn("01_default", output)
+            self.assertIn("01_extra", output)
+            self.assertNotIn("] 01_filtered —", output)
 
 
 if __name__ == "__main__":

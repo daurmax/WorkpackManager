@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+from fnmatch import fnmatchcase
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,7 @@ from typing import Any
 CONFIG_FILE_NAME = "workpack.config.json"
 DEFAULT_WORKPACK_DIR = "workpacks"
 CONFIG_SCHEMA_FILE_NAME = "WORKPACK_CONFIG_SCHEMA.json"
+DEFAULT_REQUEST_FILE_NAME = "00_request.md"
 
 
 class WorkpackConfigError(RuntimeError):
@@ -225,3 +227,194 @@ def render_config_message(config: LoadedWorkpackConfig) -> str:
         f"Config not found: {CONFIG_FILE_NAME}; using defaults "
         f"(workpackDir='{DEFAULT_WORKPACK_DIR}', strictMode=false) -> {config.workpacks_dir}"
     )
+
+
+def normalize_discovery_excludes(exclude_patterns: list[str] | None) -> list[str]:
+    """Normalize configured exclude glob patterns while preserving order."""
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for raw in exclude_patterns or []:
+        if not isinstance(raw, str):
+            continue
+        value = raw.strip().replace("\\", "/")
+        if not value:
+            continue
+        dedupe_key = value.casefold()
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        normalized.append(value)
+    return normalized
+
+
+def _dedupe_paths_keep_order(paths: list[Path]) -> list[Path]:
+    deduped: list[Path] = []
+    seen: set[str] = set()
+    for path in paths:
+        key = str(path.resolve()).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(path.resolve())
+    return deduped
+
+
+def _resolve_discovery_base_dir(
+    config: LoadedWorkpackConfig,
+    workspace_root: Path | None,
+    current_dir: Path | None,
+) -> Path:
+    if config.config_path is not None:
+        return config.config_path.parent.resolve()
+    if workspace_root is not None:
+        return workspace_root.resolve()
+    return (current_dir or Path.cwd()).resolve()
+
+
+def build_discovery_scan_targets(
+    config: LoadedWorkpackConfig,
+    *,
+    explicit_paths: list[Path] | None = None,
+    workspace_root: Path | None = None,
+    current_dir: Path | None = None,
+) -> tuple[list[Path], list[str]]:
+    """Resolve scan targets from explicit CLI paths or config discovery settings."""
+    if explicit_paths:
+        return _dedupe_paths_keep_order([path.resolve() for path in explicit_paths]), []
+
+    warnings: list[str] = []
+    scan_targets: list[Path] = []
+
+    default_workpacks_dir = config.workpacks_dir.resolve()
+    default_instances_dir = (default_workpacks_dir / "instances").resolve()
+    default_candidates = [default_instances_dir, default_workpacks_dir] if default_instances_dir.exists() else [default_workpacks_dir]
+    for candidate in default_candidates:
+        if not candidate.exists():
+            warnings.append(
+                "Configured default discovery root does not exist: "
+                f"{candidate} (derived from workpackDir='{config.workpack_dir_value}')."
+            )
+            continue
+        scan_targets.append(candidate)
+
+    base_dir = _resolve_discovery_base_dir(config, workspace_root, current_dir)
+    for raw_root in config.discovery_roots:
+        root_path = Path(raw_root)
+        resolved_root = root_path.resolve() if root_path.is_absolute() else (base_dir / root_path).resolve()
+        if not resolved_root.exists():
+            warnings.append(
+                f"Configured discovery root '{raw_root}' does not exist at {resolved_root}; skipping."
+            )
+            continue
+        scan_targets.append(resolved_root)
+
+    return _dedupe_paths_keep_order(scan_targets), warnings
+
+
+def _iter_path_segments(path_text: str) -> list[str]:
+    return [segment for segment in path_text.split("/") if segment and segment != "."]
+
+
+def _match_exclude_pattern(
+    path: Path,
+    *,
+    source_target: Path,
+    workspace_root: Path | None,
+    normalized_pattern: str,
+) -> bool:
+    if not normalized_pattern:
+        return False
+
+    resolved_path = path.resolve()
+    resolved_source_target = source_target.resolve()
+
+    candidate_paths: list[str] = [resolved_path.as_posix()]
+    if resolved_source_target.is_file():
+        resolved_source_target = resolved_source_target.parent
+    try:
+        candidate_paths.append(resolved_path.relative_to(resolved_source_target).as_posix())
+    except ValueError:
+        pass
+    if workspace_root is not None:
+        try:
+            candidate_paths.append(resolved_path.relative_to(workspace_root.resolve()).as_posix())
+        except ValueError:
+            pass
+
+    path_candidates = list(dict.fromkeys(candidate_paths))
+    has_separator = "/" in normalized_pattern
+
+    if has_separator:
+        pattern_candidates = [normalized_pattern]
+        if not normalized_pattern.startswith("**/"):
+            pattern_candidates.append(f"**/{normalized_pattern}")
+        if normalized_pattern.endswith("/**"):
+            pattern_candidates.append(normalized_pattern.removesuffix("/**"))
+
+        for candidate_path in path_candidates:
+            folded_path = candidate_path.casefold()
+            for pattern_candidate in pattern_candidates:
+                if fnmatchcase(folded_path, pattern_candidate.casefold()):
+                    return True
+        return False
+
+    segment_candidates: list[str] = []
+    for candidate_path in path_candidates:
+        segment_candidates.extend(_iter_path_segments(candidate_path))
+
+    for segment in dict.fromkeys(segment_candidates):
+        if fnmatchcase(segment.casefold(), normalized_pattern.casefold()):
+            return True
+    return False
+
+
+def discover_workpack_paths_in_targets(
+    scan_targets: list[Path],
+    *,
+    request_file_name: str = DEFAULT_REQUEST_FILE_NAME,
+    exclude_patterns: list[str] | None = None,
+    workspace_root: Path | None = None,
+) -> list[Path]:
+    """Discover workpack paths by scanning request files with exclude filtering."""
+    resolved_workspace_root = workspace_root.resolve() if workspace_root is not None else None
+    normalized_excludes = normalize_discovery_excludes(exclude_patterns)
+    found: dict[str, Path] = {}
+
+    def should_skip_hidden(path: Path) -> bool:
+        return any(part.startswith("_") or part.startswith(".") for part in path.parts)
+
+    def should_exclude(path: Path, source_target: Path) -> bool:
+        for pattern in normalized_excludes:
+            if _match_exclude_pattern(
+                path,
+                source_target=source_target,
+                workspace_root=resolved_workspace_root,
+                normalized_pattern=pattern,
+            ):
+                return True
+        return False
+
+    def register(path: Path, source_target: Path) -> None:
+        resolved = path.resolve()
+        if should_skip_hidden(resolved):
+            return
+        if should_exclude(resolved, source_target):
+            return
+        found[str(resolved).lower()] = resolved
+
+    for target in scan_targets:
+        if not target.exists():
+            continue
+
+        if target.is_file():
+            if target.name == request_file_name:
+                register(target.parent, target)
+            continue
+
+        if (target / request_file_name).exists():
+            register(target, target)
+
+        for request_file in target.rglob(request_file_name):
+            register(request_file.parent, target)
+
+    return sorted(found.values(), key=lambda path: str(path).lower())

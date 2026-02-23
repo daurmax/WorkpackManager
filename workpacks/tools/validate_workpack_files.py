@@ -29,7 +29,10 @@ from typing import Any
 from workpack_config import (
     LoadedWorkpackConfig,
     WorkpackConfigError,
+    build_discovery_scan_targets,
+    discover_workpack_paths_in_targets,
     load_tool_config,
+    normalize_discovery_excludes,
     render_config_message,
 )
 
@@ -150,30 +153,17 @@ def get_workpacks_dir(config: LoadedWorkpackConfig | None = None) -> Path:
     raise FileNotFoundError("Could not find workpacks directory")
 
 
-def discover_workpack_paths(scan_targets: list[Path]) -> list[Path]:
-    found: dict[str, Path] = {}
-
-    def should_skip(path: Path) -> bool:
-        return any(part.startswith("_") or part.startswith(".") for part in path.parts)
-
-    def register(path: Path) -> None:
-        resolved = path.resolve()
-        if not should_skip(resolved):
-            found[str(resolved).lower()] = resolved
-
-    for target in scan_targets:
-        if not target.exists():
-            continue
-        if target.is_file():
-            if target.name == REQUEST_FILE:
-                register(target.parent)
-            continue
-        if (target / REQUEST_FILE).exists():
-            register(target)
-        for req in target.rglob(REQUEST_FILE):
-            register(req.parent)
-
-    return sorted(found.values(), key=lambda p: str(p).lower())
+def discover_workpack_paths(
+    scan_targets: list[Path],
+    exclude_patterns: list[str] | None = None,
+    workspace_root: Path | None = None,
+) -> list[Path]:
+    return discover_workpack_paths_in_targets(
+        scan_targets,
+        request_file_name=REQUEST_FILE,
+        exclude_patterns=exclude_patterns,
+        workspace_root=workspace_root,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -345,20 +335,43 @@ def main() -> int:
     elif strict_mode:
         print("Mode: strictMode=true from workpack.config.json (warnings treated as errors)")
 
-    if args.paths:
-        scan_targets = [Path(p).resolve() for p in args.paths]
-    else:
-        instances_dir = workpacks_dir / "instances"
-        if instances_dir.exists():
-            scan_targets = [instances_dir, workpacks_dir]
-        else:
-            scan_targets = [workpacks_dir]
+    explicit_targets = [Path(raw_path).resolve() for raw_path in args.paths] if args.paths else None
+    scan_targets, scan_target_warnings = build_discovery_scan_targets(
+        tool_config,
+        explicit_paths=explicit_targets,
+        workspace_root=WORKSPACE_ROOT,
+        current_dir=Path.cwd(),
+    )
+    for warning in scan_target_warnings:
+        print(f"WARNING: {warning}")
 
-    workpack_paths = discover_workpack_paths(scan_targets)
+    if args.paths:
+        missing_targets = [target for target in scan_targets if not target.exists()]
+        if missing_targets:
+            print("ERROR: One or more scan targets do not exist:")
+            for target in missing_targets:
+                print(f"  - {target}")
+            return 1
+
+    if not scan_targets:
+        print("ERROR: No valid scan targets resolved.")
+        return 1
+
+    discovery_excludes = normalize_discovery_excludes(tool_config.discovery_exclude)
+    workpack_paths = discover_workpack_paths(
+        scan_targets,
+        exclude_patterns=discovery_excludes,
+        workspace_root=WORKSPACE_ROOT,
+    )
     if not workpack_paths:
         print("ERROR: No workpack directories found.")
         return 1
 
+    print(f"Scan targets: {', '.join(str(target) for target in scan_targets)}")
+    print(
+        "Discovery excludes: "
+        + (", ".join(discovery_excludes) if discovery_excludes else "none")
+    )
     print(f"Discovered workpacks: {len(workpack_paths)}")
     print()
 

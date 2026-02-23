@@ -245,6 +245,21 @@ class WorkpackLintTests(unittest.TestCase):
             discovered = lint.discover_workpack_paths([root / "instances"])
             self.assertIn(wp.resolve(), discovered)
 
+    def test_discover_workpack_paths_excludes_matching_request_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            keep = self._build_workpack(root / "workspace_a", "01_keep", 6, ["A1_task"])
+            excluded = self._build_workpack(root / "workspace_b" / "excluded", "01_skip", 6, ["A1_task"])
+
+            discovered = lint.discover_workpack_paths(
+                [root / "workspace_a", root / "workspace_b"],
+                exclude_patterns=["excluded", "**/01_skip"],
+                workspace_root=root,
+            )
+
+            self.assertIn(keep.resolve(), discovered)
+            self.assertNotIn(excluded.resolve(), discovered)
+
     def test_v6_missing_meta_is_error(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -469,6 +484,39 @@ class WorkpackLintTests(unittest.TestCase):
             self.assertEqual(exit_code, 1)
             self.assertIn("ERR_PROTOCOL_VERSION_POLICY", output)
             self.assertIn("Protocol policy: minimum 2.2.0", output)
+
+    def test_main_uses_discovery_roots_and_excludes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            workpacks_dir = self._build_cli_fixture(repo_root)
+            extra_root = repo_root / "other-root"
+            self._build_workpack(extra_root / "extra-group", "01_extra", 2, ["A1_task"])
+            self._build_workpack(extra_root / "excluded-group", "01_filtered", 2, ["A1_task"])
+
+            _write_json(
+                repo_root / "workpack.config.json",
+                {
+                    "workpackDir": "workpacks",
+                    "discovery": {
+                        "roots": ["other-root", "missing-root"],
+                        "exclude": ["excluded-group", "**/01_filtered/**"],
+                    },
+                },
+            )
+
+            with (
+                patch.object(lint, "SCRIPT_WORKPACKS_DIR", workpacks_dir),
+                patch.object(lint, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_lint_main(repo_root, [])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("WARNING: Configured discovery root 'missing-root' does not exist", output)
+            self.assertIn("Scan targets:", output)
+            self.assertIn(str(extra_root.resolve()), output)
+            self.assertIn("Discovery excludes: excluded-group, **/01_filtered/**", output)
+            self.assertIn("Discovered workpacks: 2", output)
+            self.assertNotIn("01_filtered —", output)
 
 
 if __name__ == "__main__":
