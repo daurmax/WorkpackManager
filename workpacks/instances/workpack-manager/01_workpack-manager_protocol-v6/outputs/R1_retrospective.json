@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.1",
+  "workpack": "01_workpack-manager_protocol-v6",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "main",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/R1_retrospective.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "git branch --show-current",
+        "result": "pass",
+        "notes": "Post-merge retrospective executed on main."
+      },
+      {
+        "cmd": "git show --no-patch --format=%H HEAD",
+        "result": "pass",
+        "notes": "HEAD includes merge commit 4a07fedd076b9b1c9592118ea127598bae68a9d0."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py --strict",
+        "result": "pass",
+        "notes": "Strict lint remains clean after merge and retrospective state updates."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Retrospective-only documentation/state updates."
+  },
+  "handoff": {
+    "summary": "Retrospective completed after merge to main. Protocol v6 workpack closed.",
+    "next_steps": [
+      "Use this workpack as baseline for subsequent workpack-manager streams.",
+      "Capture non-zero execution metrics in future outputs to improve effort calibration."
+    ],
+    "known_issues": [
+      "Execution metrics (tokens and duration) are 0 across A-series outputs, limiting quantitative estimation analysis."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/outputs/R1_retrospective.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/01_workpack-manager_protocol-v6/workpack.state.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "Retrospective summary\\n- What went well: clear A-series decomposition, schema-first contracts, strict lint gate, and complete output artifacts improved merge readiness.\\n- What did not go well: runtime execution metrics were not captured (all zeros), reducing visibility into real effort and latency.\\n- Estimation accuracy: directionally good (scope completed in one merge cycle); quantitatively inconclusive due missing cost telemetry.\\n- Improvements: make non-zero execution metrics mandatory in output generation and add CI checks for output/state timestamp ordering."
+}
