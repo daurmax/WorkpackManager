@@ -1,0 +1,22 @@
+{
+  "workpack_id": "01_workpack-protocol_prompt-lifecycle",
+  "overall_status": "not_started",
+  "last_updated": "2026-02-23T22:00:00Z",
+  "prompt_status": {
+    "A0_bootstrap": { "status": "pending" },
+    "A1_b_series_dag": { "status": "pending" },
+    "A2_commit_tracking": { "status": "pending" },
+    "A3_integration_verification": { "status": "pending" },
+    "A5_integration_meta": { "status": "pending" }
+  },
+  "agent_assignments": {},
+
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "2026-02-23T22:00:00Z",
+      "event": "created",
+      "notes": "Workpack scaffolded for prompt lifecycle enhancements."
+    }
+  ]
+}

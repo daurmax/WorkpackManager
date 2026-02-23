@@ -1,0 +1,24 @@
+{
+  "id": "workpack-protocol",
+  "title": "Workpack Protocol Evolution",
+  "summary": "Meta-group for changes to the Workpack Protocol itself. Tracks protocol specification updates, schema changes, tooling adaptations, and process improvements that evolve how workpacks work — as distinct from any specific project that uses them.",
+  "protocol_version": "2.1.0",
+  "created_at": "2026-02-23",
+  "owners": [],
+  "tags": ["workpack-protocol", "meta", "process-improvement"],
+  "repos": ["WorkpackManager"],
+  "workpacks": [
+    { "id": "01_workpack-protocol_prompt-lifecycle", "execution_order": 1, "title": "Prompt Lifecycle Enhancements (B-series DAG + Commit Tracking)" }
+  ],
+  "execution_dag": {
+    "phases": [
+      {
+        "order": 1,
+        "workpacks": ["01_workpack-protocol_prompt-lifecycle"],
+        "mode": "serial",
+        "description": "First protocol evolution: add B-series dependency DAG and per-prompt commit tracking with integration verification."
+      }
+    ],
+    "edges": []
+  }
+}
