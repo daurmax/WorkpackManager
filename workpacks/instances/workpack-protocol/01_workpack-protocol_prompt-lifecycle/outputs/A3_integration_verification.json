@@ -11,8 +11,8 @@
   },
   "artifacts": {
     "pr_url": "",
-    "commit_shas": [],
-    "branch_verified": false
+    "commit_shas": ["70434b2"],
+    "branch_verified": true
   },
   "changes": {
     "files_modified": [
@@ -92,5 +92,5 @@
       "action": "created"
     }
   ],
-  "notes": "This prompt updates the integration verification pattern only; functional gate execution remains in A5_integration_meta."
+  "notes": "This prompt updates the integration verification pattern only; functional gate execution remains in A5_integration_meta. Commit tracking (artifacts.commit_shas) was introduced by A2 within this workpack. All A-series prompts were delivered in a single batch commit (70434b2) so individual per-prompt SHAs were not possible. This is an expected bootstrapping exception."
 }

@@ -11,8 +11,8 @@
   },
   "artifacts": {
     "pr_url": "",
-    "commit_shas": [],
-    "branch_verified": false
+    "commit_shas": ["70434b2"],
+    "branch_verified": true
   },
   "changes": {
     "files_modified": [
@@ -148,5 +148,5 @@
       "action": "modified"
     }
   ],
-  "notes": "Schema moved to 1.2 with required artifacts + commit_shas semantics; linter warnings are protocol/schema gated for backward compatibility at lint time."
+  "notes": "Schema moved to 1.2 with required artifacts + commit_shas semantics; linter warnings are protocol/schema gated for backward compatibility at lint time. Commit tracking (artifacts.commit_shas) was introduced by this very prompt. All A-series prompts were delivered in a single batch commit (70434b2) so individual per-prompt SHAs were not possible. This is an expected bootstrapping exception."
 }

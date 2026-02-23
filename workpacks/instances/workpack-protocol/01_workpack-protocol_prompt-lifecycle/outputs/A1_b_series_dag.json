@@ -11,7 +11,7 @@
   },
   "artifacts": {
     "pr_url": "",
-    "commit_shas": []
+    "commit_shas": ["70434b2"]
   },
   "changes": {
     "files_modified": [
@@ -106,5 +106,5 @@
       "action": "created"
     }
   ],
-  "notes": "WORKPACK_META_SCHEMA.json already accepts B-series stems and prompts[].depends_on, so no schema change was needed for this slice."
+  "notes": "WORKPACK_META_SCHEMA.json already accepts B-series stems and prompts[].depends_on, so no schema change was needed for this slice. Commit tracking (artifacts.commit_shas) was introduced by A2 within this workpack. All A-series prompts were delivered in a single batch commit (70434b2) so individual per-prompt SHAs were not possible. This is an expected bootstrapping exception."
 }

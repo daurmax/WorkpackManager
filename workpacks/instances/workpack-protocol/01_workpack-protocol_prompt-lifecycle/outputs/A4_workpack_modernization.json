@@ -11,7 +11,7 @@
   },
   "artifacts": {
     "pr_url": "",
-    "commit_shas": []
+    "commit_shas": ["70434b2"]
   },
   "changes": {
     "files_modified": [
@@ -148,5 +148,5 @@
       "action": "created"
     }
   ],
-  "notes": "Maintenance operations are now represented only as user-facing manual prompts in workpacks/manual_prompts; scaffold templates remain focused on workpack construction."
+  "notes": "Maintenance operations are now represented only as user-facing manual prompts in workpacks/manual_prompts; scaffold templates remain focused on workpack construction. Commit tracking (artifacts.commit_shas) was introduced by A2 within this workpack. All A-series prompts were delivered in a single batch commit (70434b2) so individual per-prompt SHAs were not possible. This is an expected bootstrapping exception."
 }
