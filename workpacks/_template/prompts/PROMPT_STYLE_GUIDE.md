@@ -20,7 +20,7 @@ Every prompt file begins with YAML front-matter:
 ```yaml
 ---
 prompt_id: A1_slug_name
-workpack: 2026-MM-DD_category_short-slug
+workpack: <WORKPACK_ID>
 agent_role: Brief description of agent's role
 depends_on:
   - A0_bootstrap
@@ -96,7 +96,8 @@ Every prompt produces an output JSON file in `outputs/`:
 ## Cross-References
 
 - Reference other prompts: `A1_slug_name`.
-- Reference other workpacks: `2026-MM-DD_category_slug`.
+- Reference other workpacks: `<group-id>_<slug>_<NN>` (grouped) or `<slug>` (standalone).
+- Reference groups: `<group-id>`.
 - Reference schema files: `WORKPACK_META_SCHEMA.json`.
 
 ## Effort Estimation

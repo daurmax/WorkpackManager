@@ -28,11 +28,25 @@ A protocol specification and toolkit for structured AI-agent-driven development:
 
 This project is bootstrapped via workpacks. See `workpacks/instances/` for the implementation plan.
 
-## Workpack Protocol v6 — Key Improvement
+## Workpack Protocol v6 — Key Improvements
+
+### Metadata/State Split
 
 Protocol v6 introduces **`workpack.meta.json`** — a machine-readable metadata file for each workpack instance — and **`workpack.state.json`** for runtime state. This separates stable metadata from mutable execution state, enabling tooling (like this extension) to index, filter, and orchestrate workpacks without parsing markdown.
 
-See `workpacks/WORKPACK_META_SCHEMA.json` and `workpacks/WORKPACK_STATE_SCHEMA.json` for the schemas.
+### Workpack Groups
+
+Workpacks can be organized into **groups** inside `instances/`. A group is a directory containing related workpacks together with:
+
+- **`group.meta.json`** — formal execution DAG with phases (parallel/serial), directed edges, and workpack inventory.
+- **`GROUP.md`** — human-readable companion with dependency graph, phase plan, and rationale.
+
+### Naming Convention
+
+- **Standalone workpacks**: `<slug>` (e.g., `my-feature`)
+- **Grouped workpacks**: `<group-id>_<slug>_<NN>` (e.g., `workpack-manager_core-architecture_02`), where `NN` is the execution phase number. Workpacks sharing the same `NN` can run in parallel.
+
+See `workpacks/WORKPACK_META_SCHEMA.json`, `workpacks/WORKPACK_STATE_SCHEMA.json`, and `workpacks/WORKPACK_GROUP_SCHEMA.json` for the schemas.
 
 ## Getting Started
 

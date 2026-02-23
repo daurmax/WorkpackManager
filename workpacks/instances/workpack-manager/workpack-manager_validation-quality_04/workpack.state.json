@@ -1,0 +1,25 @@
+{
+  "workpack_id": "workpack-manager_validation-quality_04",
+  "overall_status": "not_started",
+  "last_updated": "2026-02-23T00:00:00Z",
+  "prompt_status": {
+    "A0_bootstrap": { "status": "pending" },
+    "A1_test_strategy": { "status": "pending" },
+    "A2_protocol_linter": { "status": "pending" },
+    "A3_drift_detection": { "status": "pending" },
+    "A4_migration_compat": { "status": "pending" },
+    "A5_ci_pipeline": { "status": "pending" },
+    "A6_integration_meta": { "status": "pending" },
+    "R1_retrospective": { "status": "pending" }
+  },
+  "agent_assignments": {},
+  "blocked_by": [
+    "workpack-manager_core-architecture_02",
+    "workpack-manager_agent-integration_03",
+    "workpack-manager_extension-ux_03"
+  ],
+  "execution_log": [
+    { "timestamp": "2026-02-23T00:00:00Z", "event": "created", "prompt_stem": null, "agent": null, "notes": "Blocked by core, agent, and UX workpacks." }
+  ],
+  "notes": null
+}

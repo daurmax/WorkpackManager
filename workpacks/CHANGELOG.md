@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [6.1] - 2026-02-23
+
+### Added
+
+- **Workpack Groups**: `instances/` can now contain group directories alongside standalone workpacks. A group is a directory containing multiple related workpacks plus `group.meta.json` and `GROUP.md`. Validated against `WORKPACK_GROUP_SCHEMA.json`.
+- **`group.meta.json`**: Machine-readable group metadata with formal execution DAG — phases (parallel/serial), directed edges, and workpack inventory. Enables tooling to understand execution order across workpacks.
+- **`GROUP.md`**: Human-readable companion with dependency graph visualization, phase execution plan, edge rationale, and naming convention.
+- **`WORKPACK_GROUP_SCHEMA.json`**: JSON Schema for group metadata.
+- **`group` field in `workpack.meta.json`**: Optional field linking a workpack to its parent group.
+
+### Changed
+
+- **Workpack Naming Convention**: Date prefix removed from workpack folder names.
+  - **Standalone workpacks**: `<slug>` (kebab-case slug only).
+  - **Grouped workpacks**: `<group-id>_<slug>_<NN>` where `NN` is the two-digit execution phase number. Workpacks with the same `NN` may run in parallel.
+- **`id` pattern in WORKPACK_META_SCHEMA.json**: Updated from `YYYY-MM-DD_category_slug` to `^[a-z0-9][a-z0-9_-]+$`.
+- **`created_at` field**: Remains in `workpack.meta.json` as metadata but is no longer encoded in the folder name.
+- **Linter rule WP001**: Updated to validate new naming convention.
+
+### Backward Compatibility
+
+- Workpacks using the old `YYYY-MM-DD_category_slug` naming are still supported by the linter (legacy pattern detected and warned).
+- The `created_at` field is still required in `workpack.meta.json`.
+- Standalone workpacks (not in a group) continue to work as before, just without the date prefix.
+
+---
+
 ## [6.0] - 2026-02-23
 
 ### Added

@@ -1,5 +1,5 @@
 {
-  "workpack_id": "YYYY-MM-DD_category_slug",
+  "workpack_id": "<WORKPACK_ID>",
   "overall_status": "not_started",
   "last_updated": "2026-02-23T00:00:00Z",
   "prompt_status": {},

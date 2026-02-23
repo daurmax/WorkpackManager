@@ -1,5 +1,5 @@
 {
-  "id": "YYYY-MM-DD_category_slug",
+  "id": "<WORKPACK_ID>",
   "title": "Workpack Title",
   "summary": "Brief description of what this workpack accomplishes.",
   "protocol_version": "6",

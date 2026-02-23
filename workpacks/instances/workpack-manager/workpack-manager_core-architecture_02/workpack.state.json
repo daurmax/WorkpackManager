@@ -1,0 +1,26 @@
+{
+  "workpack_id": "workpack-manager_core-architecture_02",
+  "overall_status": "not_started",
+  "last_updated": "2026-02-23T00:00:00Z",
+  "prompt_status": {
+    "A0_bootstrap": { "status": "pending" },
+    "A1_data_models": { "status": "pending" },
+    "A2_parser_indexer": { "status": "pending" },
+    "A3_state_reconciliation": { "status": "pending" },
+    "A4_dependency_graph": { "status": "pending" },
+    "A5_integration_meta": { "status": "pending" },
+    "R1_retrospective": { "status": "pending" }
+  },
+  "agent_assignments": {},
+  "blocked_by": ["workpack-manager_protocol-v6_01"],
+  "execution_log": [
+    {
+      "timestamp": "2026-02-23T00:00:00Z",
+      "event": "created",
+      "prompt_stem": null,
+      "agent": null,
+      "notes": "Workpack scaffolded. Blocked by workpack-protocol-v6."
+    }
+  ],
+  "notes": "Blocked until WP00 (workpack-protocol-v6) is complete."
+}

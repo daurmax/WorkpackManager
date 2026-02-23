@@ -1,0 +1,52 @@
+{
+  "id": "workpack-manager",
+  "title": "WorkpackManager VS Code Extension",
+  "summary": "Full initiative to build the WorkpackManager VS Code extension and the reusable workpack protocol v6 framework. Covers protocol design, extension core architecture, agent integration, UX layer, and validation/quality infrastructure.",
+  "protocol_version": "6",
+  "created_at": "2026-02-23",
+  "owners": [],
+  "tags": ["vscode-extension", "workpack-protocol", "agent-integration", "developer-tools"],
+  "repos": ["WorkpackManager"],
+  "workpacks": [
+    { "id": "workpack-manager_protocol-v6_01", "execution_order": 1, "title": "Protocol v6 Framework" },
+    { "id": "workpack-manager_core-architecture_02", "execution_order": 2, "title": "Extension Core Architecture" },
+    { "id": "workpack-manager_agent-integration_03", "execution_order": 3, "title": "Agent Integration Layer" },
+    { "id": "workpack-manager_extension-ux_03", "execution_order": 3, "title": "Extension UX Layer" },
+    { "id": "workpack-manager_validation-quality_04", "execution_order": 4, "title": "Validation & Quality" }
+  ],
+  "execution_dag": {
+    "phases": [
+      {
+        "order": 1,
+        "workpacks": ["workpack-manager_protocol-v6_01"],
+        "mode": "serial",
+        "description": "Foundation: define Protocol v6, schemas, templates, and tooling."
+      },
+      {
+        "order": 2,
+        "workpacks": ["workpack-manager_core-architecture_02"],
+        "mode": "serial",
+        "description": "Core: data models, parser/indexer, state reconciliation, dependency graph."
+      },
+      {
+        "order": 3,
+        "workpacks": ["workpack-manager_agent-integration_03", "workpack-manager_extension-ux_03"],
+        "mode": "parallel",
+        "description": "Parallel feature tracks: agent provider layer and VS Code UX layer. Independent of each other, both depend on core."
+      },
+      {
+        "order": 4,
+        "workpacks": ["workpack-manager_validation-quality_04"],
+        "mode": "serial",
+        "description": "Quality backbone: test framework, linter, drift detection, migration tool, CI. Depends on all prior workpacks."
+      }
+    ],
+    "edges": [
+      ["workpack-manager_protocol-v6_01", "workpack-manager_core-architecture_02"],
+      ["workpack-manager_core-architecture_02", "workpack-manager_agent-integration_03"],
+      ["workpack-manager_core-architecture_02", "workpack-manager_extension-ux_03"],
+      ["workpack-manager_agent-integration_03", "workpack-manager_validation-quality_04"],
+      ["workpack-manager_extension-ux_03", "workpack-manager_validation-quality_04"]
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "workpack_id": "workpack-manager_extension-ux_03",
+  "overall_status": "not_started",
+  "last_updated": "2026-02-23T00:00:00Z",
+  "prompt_status": {
+    "A0_bootstrap": { "status": "pending" },
+    "A1_tree_view": { "status": "pending" },
+    "A2_detail_panel": { "status": "pending" },
+    "A3_commands_actions": { "status": "pending" },
+    "A4_status_visualization": { "status": "pending" },
+    "A5_integration_meta": { "status": "pending" },
+    "R1_retrospective": { "status": "pending" }
+  },
+  "agent_assignments": {},
+  "blocked_by": ["workpack-manager_core-architecture_02"],
+  "execution_log": [
+    { "timestamp": "2026-02-23T00:00:00Z", "event": "created", "prompt_stem": null, "agent": null, "notes": "Blocked by extension-core-architecture." }
+  ],
+  "notes": null
+}

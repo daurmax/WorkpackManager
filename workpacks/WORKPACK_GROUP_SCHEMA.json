@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "WORKPACK_GROUP_SCHEMA.json",
+  "title": "Workpack Group Metadata",
+  "description": "Schema for group.meta.json — defines a group of related workpacks, their execution DAG, and parallelization constraints (Protocol v6).",
+  "type": "object",
+  "required": ["id", "title", "summary", "protocol_version", "created_at", "workpacks", "execution_dag"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique group identifier, used as the group directory name.",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable group title."
+    },
+    "summary": {
+      "type": "string",
+      "description": "One-paragraph description of the group's purpose."
+    },
+    "protocol_version": {
+      "type": "string",
+      "enum": ["6"],
+      "description": "Protocol version. Must be 6 or higher for groups."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date when the group was created."
+    },
+    "owners": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "People or teams responsible for the group.",
+      "default": []
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Searchable tags.",
+      "default": []
+    },
+    "repos": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Repositories involved across the group.",
+      "default": []
+    },
+    "workpacks": {
+      "type": "array",
+      "description": "Ordered list of workpacks in this group, with their execution order.",
+      "items": {
+        "type": "object",
+        "required": ["id", "execution_order"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Workpack ID (must match a subdirectory name in the group)."
+          },
+          "execution_order": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Execution phase number. Workpacks with the same number MAY run in parallel."
+          },
+          "title": {
+            "type": "string",
+            "description": "Short title for quick reference."
+          }
+        }
+      },
+      "minItems": 2
+    },
+    "execution_dag": {
+      "type": "object",
+      "description": "Formal execution DAG: edges and parallelization constraints.",
+      "required": ["phases", "edges"],
+      "additionalProperties": false,
+      "properties": {
+        "phases": {
+          "type": "array",
+          "description": "Execution phases. Workpacks within the same phase run in parallel; phases execute sequentially.",
+          "items": {
+            "type": "object",
+            "required": ["order", "workpacks", "mode"],
+            "additionalProperties": false,
+            "properties": {
+              "order": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Phase number (sequential)."
+              },
+              "workpacks": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Workpack IDs in this phase."
+              },
+              "mode": {
+                "type": "string",
+                "enum": ["serial", "parallel"],
+                "description": "'serial' if only one workpack in the phase, 'parallel' if multiple can run concurrently."
+              },
+              "description": {
+                "type": "string",
+                "description": "Optional human-readable description of this phase."
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "description": "Directed edges: each entry is [from_workpack_id, to_workpack_id] meaning 'from' must complete before 'to' can start.",
+          "items": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    }
+  }
+}
