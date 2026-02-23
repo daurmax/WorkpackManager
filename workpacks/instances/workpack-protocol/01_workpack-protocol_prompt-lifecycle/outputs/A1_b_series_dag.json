@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.1",
+  "workpack": "01_workpack-protocol_prompt-lifecycle",
+  "prompt": "A1_b_series_dag",
+  "component": "workpack-protocol / prompt-lifecycle b-series dag",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/workpack-protocol-evolution",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": []
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/PROTOCOL_SPEC.md",
+      "workpacks/_template/01_plan.md",
+      "workpacks/_template/prompts/PROMPT_STYLE_GUIDE.md",
+      "workpacks/tools/workpack_lint.py",
+      "workpacks/tools/tests/test_workpack_lint.py",
+      "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/workpack.state.json",
+      "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/99_status.md"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/outputs/A1_b_series_dag.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/test_workpack_lint.py -v",
+        "result": "pass",
+        "notes": "13 tests passed, including new B-series DAG coverage."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "pass"
+      },
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass"
+      }
+    ],
+    "regression_added": false
+  },
+  "handoff": {
+    "summary": "B-series dependency DAG support is now documented in the protocol and templates, and linter drift checks now compare B-series depends_on between prompt front-matter and workpack.meta.json.",
+    "next_steps": [
+      "Run A2_commit_tracking to implement the per-prompt commit SHA protocol changes.",
+      "Follow with A3_integration_verification to update integration-gate verification flow."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/PROTOCOL_SPEC.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/01_plan.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/PROMPT_STYLE_GUIDE.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/workpack_lint.py",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/tests/test_workpack_lint.py",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/outputs/A1_b_series_dag.json",
+      "action": "created"
+    }
+  ],
+  "notes": "WORKPACK_META_SCHEMA.json already accepts B-series stems and prompts[].depends_on, so no schema change was needed for this slice."
+}

@@ -31,9 +31,13 @@ class WorkpackLintTests(unittest.TestCase):
         name: str,
         version: int,
         prompt_stems: list[str],
+        front_matter_depends: dict[str, list[str]] | None = None,
+        meta_depends: dict[str, list[str]] | None = None,
         with_meta: bool = True,
         with_state: bool = True,
     ) -> Path:
+        front_matter_depends = front_matter_depends or {}
+        meta_depends = meta_depends or {}
         wp = root / name
         prompts = wp / "prompts"
         outputs = wp / "outputs"
@@ -47,9 +51,11 @@ class WorkpackLintTests(unittest.TestCase):
         _write_text(wp / "99_status.md", "# Status\n\nNo completions yet.\n")
 
         for stem in prompt_stems:
+            depends_on = front_matter_depends.get(stem, [])
+            depends_on_text = ", ".join(depends_on)
             _write_text(
                 prompts / f"{stem}.md",
-                "---\ndepends_on: []\nrepos: [WorkpackManager]\n---\n# Prompt\n",
+                f"---\ndepends_on: [{depends_on_text}]\nrepos: [WorkpackManager]\n---\n# Prompt\n",
             )
 
         if with_meta:
@@ -73,7 +79,7 @@ class WorkpackLintTests(unittest.TestCase):
                         {
                             "stem": stem,
                             "agent_role": "test",
-                            "depends_on": [],
+                            "depends_on": meta_depends.get(stem, []),
                             "repos": ["WorkpackManager"],
                             "estimated_effort": "S",
                         }
@@ -105,6 +111,61 @@ class WorkpackLintTests(unittest.TestCase):
             )
 
         return wp
+
+    def _mark_prompt_complete(self, workpack_path: Path, prompt_stem: str) -> None:
+        _write_text(workpack_path / "99_status.md", f"# Status\n\n{prompt_stem} 🟢 Complete\n")
+
+    def _build_output_payload(
+        self,
+        workpack_name: str,
+        prompt_stem: str,
+        schema_version: str = "1.2",
+        include_artifacts: bool = True,
+        commit_shas: list[str] | None = None,
+        branch_work: str = "feature/test-branch",
+    ) -> dict:
+        payload = {
+            "schema_version": schema_version,
+            "workpack": workpack_name,
+            "prompt": prompt_stem,
+            "component": "tests",
+            "delivery_mode": "pr",
+            "branch": {
+                "base": "main",
+                "work": branch_work,
+                "merge_target": "main",
+            },
+            "changes": {
+                "files_modified": [],
+                "files_created": [],
+                "contracts_changed": [],
+                "breaking_change": False,
+            },
+            "verification": {
+                "commands": [],
+                "regression_added": False,
+            },
+            "handoff": {
+                "summary": "fixture",
+                "next_steps": [],
+                "known_issues": [],
+            },
+            "repos": ["WorkpackManager"],
+            "execution": {
+                "model": "gpt-5-codex",
+                "tokens_in": 0,
+                "tokens_out": 0,
+                "duration_ms": 0,
+            },
+            "change_details": [],
+        }
+        if include_artifacts:
+            payload["artifacts"] = {
+                "pr_url": "",
+                "commit_shas": commit_shas if commit_shas is not None else ["abc123"],
+                "branch_verified": False,
+            }
+        return payload
 
     def test_parse_protocol_version(self) -> None:
         content = "Workpack Protocol Version: 6\n"
@@ -182,6 +243,120 @@ class WorkpackLintTests(unittest.TestCase):
             self.assertEqual(version, 5)
             errors = lint.validate_workpack(wp, root / "WORKPACK_OUTPUT_SCHEMA.json")
             self.assertEqual(errors, [f"[01_v5_legacy] Schema file not found: {root / 'WORKPACK_OUTPUT_SCHEMA.json'}"])
+
+    def test_v5_b_series_depends_on_valid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            wp = self._build_workpack(
+                root,
+                "01_b_valid_dag",
+                5,
+                ["B1_fix_base", "B2_fix_followup"],
+                front_matter_depends={"B2_fix_followup": ["B1_fix_base"]},
+                with_meta=False,
+                with_state=False,
+            )
+            errors, warnings = lint.validate_v5_checks(wp, 5)
+            self.assertEqual(errors, [])
+            self.assertFalse(any("WARN_DAG_UNKNOWN_DEP" in warning for warning in warnings))
+
+    def test_v5_b_series_cycle_is_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            wp = self._build_workpack(
+                root,
+                "01_b_cycle",
+                5,
+                ["B1_fix_one", "B2_fix_two"],
+                front_matter_depends={
+                    "B1_fix_one": ["B2_fix_two"],
+                    "B2_fix_two": ["B1_fix_one"],
+                },
+                with_meta=False,
+                with_state=False,
+            )
+            errors, warnings = lint.validate_v5_checks(wp, 5)
+            self.assertEqual(warnings, [])
+            self.assertTrue(any("ERR_DAG_CYCLE" in error for error in errors))
+
+    def test_v5_b_series_unknown_dependency_warns(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            wp = self._build_workpack(
+                root,
+                "01_b_unknown_dep",
+                5,
+                ["B1_fix_only"],
+                front_matter_depends={"B1_fix_only": ["B9_missing_fix"]},
+                with_meta=False,
+                with_state=False,
+            )
+            errors, warnings = lint.validate_v5_checks(wp, 5)
+            self.assertEqual(errors, [])
+            self.assertTrue(any("WARN_DAG_UNKNOWN_DEP" in warning for warning in warnings))
+
+    def test_v8_commit_tracking_valid_commit_shas_has_no_warning(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            wp = self._build_workpack(root, "01_commit_ok", 8, ["A1_task"], with_meta=False, with_state=False)
+            self._mark_prompt_complete(wp, "A1_task")
+            _write_json(
+                wp / "outputs" / "A1_task.json",
+                self._build_output_payload("01_commit_ok", "A1_task", commit_shas=["deadbeef"]),
+            )
+
+            errors, warnings = lint.validate_v5_checks(wp, 8)
+            self.assertEqual(errors, [])
+            self.assertFalse(any("WARN_MISSING_COMMIT_SHAS" in warning for warning in warnings))
+            self.assertFalse(any("WARN_MISSING_ARTIFACTS" in warning for warning in warnings))
+
+    def test_v8_commit_tracking_empty_commit_shas_warns(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            wp = self._build_workpack(root, "01_commit_empty", 8, ["A1_task"], with_meta=False, with_state=False)
+            self._mark_prompt_complete(wp, "A1_task")
+            _write_json(
+                wp / "outputs" / "A1_task.json",
+                self._build_output_payload("01_commit_empty", "A1_task", commit_shas=[]),
+            )
+
+            errors, warnings = lint.validate_v5_checks(wp, 8)
+            self.assertEqual(errors, [])
+            self.assertTrue(any("WARN_MISSING_COMMIT_SHAS" in warning for warning in warnings))
+
+    def test_v8_commit_tracking_missing_artifacts_warns(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            wp = self._build_workpack(root, "01_commit_no_artifacts", 8, ["A1_task"], with_meta=False, with_state=False)
+            self._mark_prompt_complete(wp, "A1_task")
+            _write_json(
+                wp / "outputs" / "A1_task.json",
+                self._build_output_payload("01_commit_no_artifacts", "A1_task", include_artifacts=False),
+            )
+
+            errors, warnings = lint.validate_v5_checks(wp, 8)
+            self.assertEqual(errors, [])
+            self.assertTrue(any("WARN_MISSING_ARTIFACTS" in warning for warning in warnings))
+
+    def test_v6_b_series_depends_on_meta_drift_warning(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            wp = self._build_workpack(
+                root,
+                "01_b_dep_drift",
+                6,
+                ["B1_fix_base", "B2_fix_followup"],
+                front_matter_depends={"B2_fix_followup": ["B1_fix_base"]},
+                meta_depends={"B1_fix_base": [], "B2_fix_followup": []},
+            )
+            errors, warnings = lint.validate_v6_checks(wp, lint.SchemaBundle(output=None, meta=None, state=None))
+            self.assertEqual(errors, [])
+            self.assertTrue(
+                any(
+                    "WARN_META_PROMPTS_DRIFT" in warning and "B-series depends_on mismatch" in warning
+                    for warning in warnings
+                )
+            )
 
 
 if __name__ == "__main__":

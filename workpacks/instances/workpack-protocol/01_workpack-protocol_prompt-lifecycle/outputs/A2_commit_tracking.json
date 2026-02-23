@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.1",
+  "workpack": "01_workpack-protocol_prompt-lifecycle",
+  "prompt": "A2_commit_tracking",
+  "component": "workpack protocol / commit tracking",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/workpack-protocol-evolution",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/WORKPACK_OUTPUT_SCHEMA.json",
+      "workpacks/PROTOCOL_SPEC.md",
+      "workpacks/_template/prompts/PROMPT_STYLE_GUIDE.md",
+      "workpacks/_template/prompts/A0_bootstrap.md",
+      "workpacks/_template/prompts/A5_integration_meta.md",
+      "workpacks/_template/prompts/B_template.md",
+      "workpacks/_template/prompts/V_bugfix_verify.md",
+      "workpacks/_template/prompts/R_retrospective.md",
+      "workpacks/tools/workpack_lint.py",
+      "workpacks/tools/tests/test_workpack_lint.py",
+      "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/workpack.state.json",
+      "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/99_status.md"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/outputs/A2_commit_tracking.json"
+    ],
+    "contracts_changed": [
+      "workpacks/WORKPACK_OUTPUT_SCHEMA.json",
+      "workpacks/PROTOCOL_SPEC.md"
+    ],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/test_workpack_lint.py -v",
+        "result": "pass",
+        "notes": "16 tests passed."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "pass",
+        "notes": "Linter passes; concurrent A4 planning changes are present in this workpack while remaining schema-valid."
+      },
+      {
+        "cmd": "python -c \"import json; s=json.load(open('workpacks/WORKPACK_OUTPUT_SCHEMA.json')); assert 'artifacts' in s['required']\"",
+        "result": "pass"
+      },
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass"
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added linter coverage for commit tracking warnings (valid/empty/missing artifacts scenarios)."
+  },
+  "handoff": {
+    "summary": "Implemented per-prompt commit tracking contract updates across schema, protocol spec, template guidance, linter checks, and linter tests.",
+    "next_steps": [
+      "Run A3_integration_verification to extend integration prompt requirements and cross-check A1/A2 combined behavior.",
+      "Decide whether to finalize protocol bump to 2.2.0 in request/meta/changelog during integration prompt."
+    ],
+    "known_issues": [
+      "An unrelated untracked output file `outputs/A1_b_series_dag.json` appeared during execution and was left untouched."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/WORKPACK_OUTPUT_SCHEMA.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/PROTOCOL_SPEC.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/PROMPT_STYLE_GUIDE.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/A0_bootstrap.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/A5_integration_meta.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/B_template.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/V_bugfix_verify.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/_template/prompts/R_retrospective.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/workpack_lint.py",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/tests/test_workpack_lint.py",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/outputs/A2_commit_tracking.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/99_status.md",
+      "action": "modified"
+    }
+  ],
+  "notes": "Schema moved to 1.2 with required artifacts + commit_shas semantics; linter warnings are protocol/schema gated for backward compatibility at lint time."
+}

@@ -366,6 +366,59 @@ Tooling should:
 - apply matching validation profile,
 - emit explicit diagnostics for mismatches.
 
+### 7.4 Legacy-to-Modern Migration Method (2.0.0/2.1.0 -> 2.2.0+)
+
+This section defines the standard modernization workflow for existing 2.x workpacks.
+
+#### 7.4.1 Supported Source and Target Versions
+
+- Supported source versions: `2.0.0`, `2.1.0`.
+- Supported target versions: `2.2.0` and higher minor/patch releases in the 2.x line.
+- 1.x workpacks should first complete the 1.x -> 2.0.0 upgrade path before applying this 2.x modernization checklist.
+
+#### 7.4.2 Ordered Migration Checklist
+
+1. Update `00_request.md`:
+   - Confirm the request states modernization intent and target protocol `2.2.0+`.
+   - Ensure acceptance criteria include commit tracking and maintenance prompt expectations where applicable.
+2. Update `01_plan.md`:
+   - Confirm prompt DAG still reflects current execution order after modernization tasks are introduced.
+   - Ensure the post-verification B-series DAG section exists for bug-fix ordering.
+3. Update `workpack.meta.json`:
+   - Set `protocol_version` to `2.2.0` or higher.
+   - Keep `prompts[]` synchronized with `prompts/*.md` stems and `depends_on` edges.
+   - Preserve existing IDs/slugs; do not rename workpack identity fields solely for modernization.
+4. Update `workpack.state.json`:
+   - Add missing prompt status entries for newly introduced prompts.
+   - Preserve historical `execution_log` entries (append-only); do not rewrite prior events.
+   - Refresh `last_updated` and keep `workpack_id` aligned with `workpack.meta.json.id`.
+5. Update prompt front-matter and output contracts:
+   - Ensure each prompt uses required YAML front-matter (`depends_on`, `repos`).
+   - For output payloads using schema `1.2+`, ensure `artifacts.commit_shas` is present and non-empty when files changed.
+   - Ensure integration verification prompts set `artifacts.branch_verified` after commit/branch checks.
+
+#### 7.4.3 Backward Compatibility Guardrails
+
+- Migration must be additive and non-destructive: keep legacy outputs and history unless intentionally superseded.
+- Mixed fleets remain valid: non-modernized `2.0.0`/`2.1.0` workpacks continue to lint under their original profile.
+- Commit-tracking strictness applies when the workpack is modernized to protocol `2.2.0+` (or outputs adopt schema `1.2+`).
+- Avoid introducing required-field changes to `workpack.meta.json`/`workpack.state.json` that would break older workpacks.
+
+#### 7.4.4 Required Post-Migration Verification
+
+Run all of the following after modernization updates:
+
+```bash
+python workpacks/tools/validate_templates.py
+python workpacks/tools/workpack_lint.py
+```
+
+If protocol tooling or lint rules were changed during migration, also run:
+
+```bash
+python -m pytest workpacks/tools/tests/ -v
+```
+
 ---
 
 ## 8. Tooling Contract
@@ -438,10 +491,11 @@ When unresolved dependencies exist:
 ### 10.2 Completion Flow
 
 1. Apply file changes for the prompt scope.
-2. Write/update `outputs/<PROMPT>.json` to satisfy `WORKPACK_OUTPUT_SCHEMA.json`.
-3. Update `99_status.md`.
-4. Set prompt status to `complete`, set `completed_at`, optionally set `output_validated`.
-5. Append `prompt_completed` event and update `last_updated`.
+2. Commit prompt changes on the work branch.
+3. Write/update `outputs/<PROMPT>.json` to satisfy `WORKPACK_OUTPUT_SCHEMA.json`.
+4. Update `99_status.md`.
+5. Set prompt status to `complete`, set `completed_at`, optionally set `output_validated`.
+6. Append `prompt_completed` event and update `last_updated`.
 
 ### 10.3 Output JSON Expectations
 
@@ -462,6 +516,51 @@ Recommended additions:
 - Never include secrets in prompts, state, or outputs.
 - Do not mark prompts complete without corresponding output artifacts.
 - Keep state mutations minimal, explicit, and timestamped.
+
+### 10.5 B-series Dependency DAG (Post-Verification)
+
+When a verification/integration gate (for example `A5_*` or `V1_*`) identifies bugs and emits B-series prompts:
+
+- Each B-series prompt MAY declare `depends_on` in YAML front-matter (example: `depends_on: [B1_shared_refactor]`).
+- `workpack.meta.json.prompts[]` MAY include dynamically-added B-series entries with matching `depends_on`.
+- B-series prompts at the same DAG depth (no dependency edges between them) MAY run in parallel.
+- The integration prompt that generates B-series prompts MUST also produce a B-series dependency plan that makes ordering/parallelization explicit.
+- `01_plan.md` SHOULD include a post-verification B-series DAG section that captures dependency ordering once bugs are known.
+
+### 10.6 Commit Tracking
+
+For protocol version 2.2.0+:
+
+- Every prompt that modifies files MUST commit changes before writing `outputs/<PROMPT>.json`.
+- Commit message format MUST follow `<type>(<workpack-slug>/<prompt-stem>): <summary>`.
+- Commit SHA values MUST be recorded in `output.json` under `artifacts.commit_shas`.
+- `branch.work` in output payloads MUST match the actual branch where those commits exist.
+- Pure verification/integration prompts that do not modify source files MAY set `artifacts.commit_shas` to `[]` only when no files were changed.
+
+### 10.7 Integration Prompt Verification Responsibilities (A5 / V-series)
+
+Integration prompts (`A5_*` and `V*_...`) MUST verify upstream output integrity before authorizing merge readiness.
+
+#### 10.7.1 Commit Verification
+
+For each prior prompt output JSON:
+
+1. Extract `artifacts.commit_shas`.
+2. Verify each SHA exists on the work branch with `git log --oneline <branch> | grep <sha>`.
+3. For each commit, inspect changed files with `git show --stat <sha>`.
+4. Cross-reference diffed files against `change_details[].file` in that output JSON.
+5. Report discrepancies:
+   - files present in commit but not declared in `change_details`, and
+   - files declared in `change_details` but absent from commit.
+6. Set `artifacts.branch_verified` to `true` in the integration prompt's own output only when all checks pass.
+
+#### 10.7.2 B-series DAG Verification
+
+If B-series prompts exist, integration prompts MUST:
+
+1. Verify the B-series DAG is acyclic.
+2. Verify B-series execution order respected declared dependencies.
+3. Verify every B-series prompt referenced in the DAG has a corresponding `outputs/<PROMPT>.json`.
 
 ---
 

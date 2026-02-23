@@ -51,7 +51,7 @@ Write `outputs/B1_<bug_slug>.json`.
 
 ```json
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "workpack": "<WORKPACK_ID>",
   "prompt": "B1_<bug_slug>",
   "component": "bugfix",
@@ -60,6 +60,13 @@ Write `outputs/B1_<bug_slug>.json`.
     "base": "main",
     "work": "feature/<workpack-slug>",
     "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "<COMMIT_SHA>"
+    ],
+    "branch_verified": false
   },
   "changes": {
     "files_modified": [],
@@ -98,4 +105,5 @@ Write `outputs/B1_<bug_slug>.json`.
 
 - [ ] Defect resolved
 - [ ] Regression coverage added or explicitly waived
+- [ ] Commit(s) recorded in `artifacts.commit_shas`
 - [ ] `outputs/B1_<bug_slug>.json` written

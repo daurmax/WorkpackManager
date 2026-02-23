@@ -11,6 +11,7 @@ Version capability map:
 - 1.3.0+: code-blocks become errors + verification/severity checks.
 - 1.4.0+: DAG checks, dependency checks, execution warnings.
 - 2.0.0+: workpack.meta.json/workpack.state.json checks + schema validation.
+- 2.2.0+: commit-tracking warnings (artifacts/commit_shas/branch.work).
 
 Exit codes:
   0 - pass
@@ -170,8 +171,9 @@ def _semver_to_internal(raw: str) -> int:
         1.4.0       ->  5
         2.0.0       ->  6
         2.1.0       ->  7
+        2.2.0       ->  8
         future 2.N  ->  6+N
-        future 3.0  ->  8+  (heuristic)
+        future 3.0  ->  9+  (heuristic)
     """
     parts = raw.strip().split(".")
     if len(parts) == 1:
@@ -195,13 +197,41 @@ def _semver_to_internal(raw: str) -> int:
 
 _INTERNAL_TO_DISPLAY = {
     1: "1.0.0", 2: "1.1.0", 3: "1.2.0", 4: "1.3.0", 5: "1.4.0",
-    6: "2.0.0", 7: "2.1.0",
+    6: "2.0.0", 7: "2.1.0", 8: "2.2.0",
 }
 
 
 def _display_version(internal: int) -> str:
     """Return a human-readable version string from an internal ordinal."""
     return _INTERNAL_TO_DISPLAY.get(internal, str(internal))
+
+
+def _parse_output_schema_version(schema_version: Any) -> tuple[int, int] | None:
+    """Parse output schema version string like '1.2' into (major, minor)."""
+    if not isinstance(schema_version, str):
+        return None
+
+    match = re.match(r"^(\d+)\.(\d+)$", schema_version.strip())
+    if not match:
+        return None
+
+    return int(match.group(1)), int(match.group(2))
+
+
+def _is_output_schema_at_least(data: dict[str, Any], major: int, minor: int) -> bool:
+    """Return True when output schema_version is >= major.minor."""
+    parsed = _parse_output_schema_version(data.get("schema_version"))
+    if parsed is None:
+        return False
+    parsed_major, parsed_minor = parsed
+    return (parsed_major, parsed_minor) >= (major, minor)
+
+
+def _requires_commit_tracking(protocol_version: int, output_payload: dict[str, Any]) -> bool:
+    """Protocol 2.2.0+ OR output schema 1.2+ requires commit tracking fields."""
+    if protocol_version >= 8:
+        return True
+    return _is_output_schema_at_least(output_payload, 1, 2)
 
 
 def parse_protocol_version(request_content: str) -> int:
@@ -610,7 +640,7 @@ def _parse_yaml_front_matter(prompt_path: Path) -> dict[str, Any]:
     return result
 
 
-def validate_v5_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
+def validate_v5_checks(workpack_path: Path, protocol_version: int) -> tuple[list[str], list[str]]:
     """
     Validate 1.4.0-specific rules:
     - ERR_DAG_CYCLE: Circular dependency in depends_on graph
@@ -618,6 +648,9 @@ def validate_v5_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
     - WARN_NO_RETROSPECTIVE: Merged workpack has no R-series prompt
     - WARN_MISSING_REPOS: Prompt front-matter has no repos field
     - WARN_MISSING_EXECUTION: Completed output JSON has no execution block
+    - WARN_MISSING_ARTIFACTS: Completed output missing artifacts block (2.2.0+/1.2+)
+    - WARN_MISSING_COMMIT_SHAS: Completed output has missing/empty artifacts.commit_shas (2.2.0+/1.2+)
+    - WARN_EMPTY_BRANCH_WORK: Completed output has empty branch.work (2.2.0+/1.2+)
 
     Returns (errors, warnings) tuple.
     """
@@ -625,6 +658,7 @@ def validate_v5_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
     # [x] DAG unknown dependency check
     # [x] DAG cycle detection
     # [x] execution warning on outputs
+    # [x] commit tracking warnings for protocol 2.2.0+/schema 1.2+
     errors: list[str] = []
     warnings: list[str] = []
     workpack_name = workpack_path.name
@@ -708,6 +742,50 @@ def validate_v5_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
                     )
             except Exception:
                 pass  # JSON parse errors handled by validate_workpack
+
+    completed_prompts = get_completed_prompts(workpack_path)
+    if outputs_dir.exists():
+        for prompt_stem in completed_prompts:
+            output_path = outputs_dir / f"{prompt_stem}.json"
+            if not output_path.exists():
+                continue
+
+            data, json_error = load_json(output_path)
+            if json_error or not isinstance(data, dict):
+                continue
+
+            if not _requires_commit_tracking(protocol_version, data):
+                continue
+
+            artifacts = data.get("artifacts")
+            if not isinstance(artifacts, dict):
+                warnings.append(
+                    f"[{workpack_name}] WARN_MISSING_ARTIFACTS: Output '{prompt_stem}.json' "
+                    f"is missing 'artifacts'. Protocol 2.2.0+/schema 1.2+ expects commit tracking metadata."
+                )
+                warnings.append(
+                    f"[{workpack_name}] WARN_MISSING_COMMIT_SHAS: Output '{prompt_stem}.json' "
+                    f"is missing 'artifacts.commit_shas'. Record commit SHA(s) for this prompt."
+                )
+            else:
+                commit_shas = artifacts.get("commit_shas")
+                valid_sha_list = (
+                    isinstance(commit_shas, list)
+                    and any(isinstance(sha, str) and sha.strip() for sha in commit_shas)
+                )
+                if not valid_sha_list:
+                    warnings.append(
+                        f"[{workpack_name}] WARN_MISSING_COMMIT_SHAS: Output '{prompt_stem}.json' "
+                        f"has empty or missing 'artifacts.commit_shas'. Record commit SHA(s) for this prompt."
+                    )
+
+            branch = data.get("branch")
+            branch_work = branch.get("work") if isinstance(branch, dict) else None
+            if not isinstance(branch_work, str) or not branch_work.strip():
+                warnings.append(
+                    f"[{workpack_name}] WARN_EMPTY_BRANCH_WORK: Output '{prompt_stem}.json' "
+                    f"has empty 'branch.work'. Set it to the branch where the prompt commits were made."
+                )
 
     return errors, warnings
 
@@ -865,6 +943,83 @@ def _extract_meta_prompt_stems(meta_payload: dict[str, Any]) -> set[str]:
     return stems
 
 
+def _normalize_depends_on(raw_value: Any) -> list[str]:
+    """Normalize depends_on payloads into a sorted unique list of stems."""
+    if not isinstance(raw_value, list):
+        return []
+
+    deps: set[str] = set()
+    for item in raw_value:
+        if isinstance(item, str):
+            normalized = item.strip()
+            if normalized:
+                deps.add(normalized)
+    return sorted(deps)
+
+
+def _extract_front_matter_depends_map(workpack_path: Path) -> dict[str, list[str]]:
+    """Collect depends_on declarations from prompt YAML front-matter."""
+    prompts_dir = workpack_path / "prompts"
+    if not prompts_dir.exists():
+        return {}
+
+    depends_map: dict[str, list[str]] = {}
+    for prompt_file in prompts_dir.glob("*.md"):
+        stem = prompt_file.stem
+        if not PROMPT_STEM_PATTERN.match(stem):
+            continue
+        front_matter = _parse_yaml_front_matter(prompt_file)
+        depends_map[stem] = _normalize_depends_on(front_matter.get("depends_on"))
+    return depends_map
+
+
+def _extract_meta_depends_map(meta_payload: dict[str, Any]) -> dict[str, list[str]]:
+    """Collect depends_on declarations from workpack.meta.json prompts[] entries."""
+    prompts = meta_payload.get("prompts")
+    if not isinstance(prompts, list):
+        return {}
+
+    depends_map: dict[str, list[str]] = {}
+    for prompt in prompts:
+        if not isinstance(prompt, dict):
+            continue
+        stem = prompt.get("stem")
+        if not isinstance(stem, str) or not stem:
+            continue
+        depends_map[stem] = _normalize_depends_on(prompt.get("depends_on"))
+    return depends_map
+
+
+def _format_depends_for_warning(depends_on: list[str]) -> str:
+    """Render depends_on list for drift diagnostics."""
+    if not depends_on:
+        return "[]"
+    return "[" + ", ".join(depends_on) + "]"
+
+
+def _b_series_depends_drift_details(
+    front_matter_depends: dict[str, list[str]],
+    meta_depends: dict[str, list[str]],
+) -> list[str]:
+    """Return detail rows for B-series depends_on mismatches."""
+    details: list[str] = []
+    shared_b_stems = sorted(
+        stem
+        for stem in set(front_matter_depends).intersection(meta_depends)
+        if stem.startswith("B")
+    )
+
+    for stem in shared_b_stems:
+        front_deps = front_matter_depends.get(stem, [])
+        meta_deps = meta_depends.get(stem, [])
+        if front_deps != meta_deps:
+            details.append(
+                f"{stem} (front-matter: {_format_depends_for_warning(front_deps)}; "
+                f"meta: {_format_depends_for_warning(meta_deps)})"
+            )
+    return details
+
+
 def _state_drift_reason(state_payload: dict[str, Any]) -> str | None:
     """Explain why overall_status is inconsistent with prompt_status."""
     overall_status = state_payload.get("overall_status")
@@ -933,7 +1088,7 @@ def validate_v6_checks(workpack_path: Path, schemas: SchemaBundle) -> tuple[list
 
     - ERR_MISSING_META
     - WARN_META_ID_MISMATCH
-    - WARN_META_PROMPTS_DRIFT
+    - WARN_META_PROMPTS_DRIFT (prompt stem or B-series depends_on drift)
     - WARN_STATE_DRIFT
     - Schema checks for workpack.meta.json/workpack.state.json
     """
@@ -989,6 +1144,15 @@ def validate_v6_checks(workpack_path: Path, schemas: SchemaBundle) -> tuple[list
                 warnings.append(
                     f"[{workpack_name}] WARN_META_PROMPTS_DRIFT: workpack.meta.json prompts[] differs from "
                     f"prompts/*.md ({drift_text})."
+                )
+
+            front_matter_depends = _extract_front_matter_depends_map(workpack_path)
+            meta_depends = _extract_meta_depends_map(meta_payload)
+            b_depends_drift = _b_series_depends_drift_details(front_matter_depends, meta_depends)
+            if b_depends_drift:
+                warnings.append(
+                    f"[{workpack_name}] WARN_META_PROMPTS_DRIFT: B-series depends_on mismatch between "
+                    f"prompts/*.md and workpack.meta.json ({'; '.join(b_depends_drift)})."
                 )
 
     if not state_path.exists():
@@ -1124,7 +1288,7 @@ def main() -> None:
             all_warnings.extend(v4_warnings)
 
         if version >= 5:
-            v5_errors, v5_warnings = validate_v5_checks(workpack)
+            v5_errors, v5_warnings = validate_v5_checks(workpack, version)
             all_errors.extend(v5_errors)
             all_warnings.extend(v5_warnings)
 

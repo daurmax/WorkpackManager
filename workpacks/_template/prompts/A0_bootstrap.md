@@ -43,7 +43,7 @@ Write `outputs/A0_bootstrap.json`.
 
 ```json
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "workpack": "<WORKPACK_ID>",
   "prompt": "A0_bootstrap",
   "component": "bootstrap",
@@ -52,6 +52,13 @@ Write `outputs/A0_bootstrap.json`.
     "base": "main",
     "work": "feature/<workpack-slug>",
     "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "<COMMIT_SHA>"
+    ],
+    "branch_verified": false
   },
   "changes": {
     "files_modified": [],
@@ -95,4 +102,5 @@ Write `outputs/A0_bootstrap.json`.
 
 - [ ] Bootstrap checks complete
 - [ ] Branch ready for dependent prompts
+- [ ] Commit(s) recorded in `artifacts.commit_shas` (or `[]` only if no files changed)
 - [ ] `outputs/A0_bootstrap.json` written

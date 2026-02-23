@@ -34,7 +34,7 @@ Write `outputs/R1_retrospective.json`.
 
 ```json
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "workpack": "<WORKPACK_ID>",
   "prompt": "R1_retrospective",
   "component": "retrospective",
@@ -43,6 +43,13 @@ Write `outputs/R1_retrospective.json`.
     "base": "main",
     "work": "feature/<workpack-slug>",
     "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "<COMMIT_SHA_OR_EMPTY_FOR_NO_CHANGE>"
+    ],
+    "branch_verified": false
   },
   "changes": {
     "files_modified": [],
@@ -78,4 +85,5 @@ Write `outputs/R1_retrospective.json`.
 
 - [ ] Retrospective document complete
 - [ ] Action items recorded
+- [ ] Commit SHA handling documented in `artifacts.commit_shas` (`[]` only for no-change prompts)
 - [ ] `outputs/R1_retrospective.json` written

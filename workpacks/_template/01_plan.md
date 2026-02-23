@@ -33,6 +33,16 @@ Phase 3 (conditional): B-series → V2 (V-loop)
 Phase 4 (post-merge):  R1_retrospective
 ```
 
+### B-series DAG (post-verification)
+
+Populate this section only if V1 generates B-series bug-fix prompts.
+
+| B Prompt | depends_on | DAG Depth | Parallel Group | Notes |
+|----------|------------|-----------|----------------|-------|
+| B1_example_fix | [] | 0 | P0 | First independent fix |
+| B2_followup_fix | [B1_example_fix] | 1 | P1 | Runs after B1 |
+| B3_parallel_fix | [] | 0 | P0 | Can run in parallel with B1 |
+
 ## Branch Strategy
 
 | Component | Branch | Base | PR Target |

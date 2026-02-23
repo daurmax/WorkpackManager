@@ -34,7 +34,7 @@ Write `outputs/V_bugfix_verify.json`.
 
 ```json
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "workpack": "<WORKPACK_ID>",
   "prompt": "V_bugfix_verify",
   "component": "verification",
@@ -43,6 +43,13 @@ Write `outputs/V_bugfix_verify.json`.
     "base": "main",
     "work": "feature/<workpack-slug>",
     "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "<COMMIT_SHA_OR_EMPTY_FOR_NO_CHANGE>"
+    ],
+    "branch_verified": false
   },
   "changes": {
     "files_modified": [],
@@ -84,4 +91,5 @@ Write `outputs/V_bugfix_verify.json`.
 
 - [ ] Linked bug fixes verified
 - [ ] V-loop status decided (pass or continue)
+- [ ] Commit SHA handling documented in `artifacts.commit_shas` (`[]` only for no-change verification)
 - [ ] `outputs/V_bugfix_verify.json` written

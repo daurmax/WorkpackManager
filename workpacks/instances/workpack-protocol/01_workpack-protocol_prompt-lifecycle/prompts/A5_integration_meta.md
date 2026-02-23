@@ -1,5 +1,5 @@
 ---
-depends_on: [A3_integration_verification]
+depends_on: [A4_workpack_modernization]
 repos: [WorkpackManager]
 ---
 # Integration and Verification Agent Prompt (V1 Gate)
@@ -12,8 +12,9 @@ repos: [WorkpackManager]
 
 1. `workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/00_request.md`
 2. `workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/01_plan.md`
-3. All output JSONs in `outputs/`
-4. All modified files in `workpacks/` (spec, schemas, templates, linter)
+3. `outputs/A4_workpack_modernization.json`
+4. All output JSONs in `outputs/`
+5. All modified files in `workpacks/` (spec, schemas, templates, linter)
 
 ## Context
 
@@ -53,6 +54,10 @@ python -c "import json; s=json.load(open('workpacks/WORKPACK_OUTPUT_SCHEMA.json'
 10. Verify AC10: Templates updated (plan, style guide).
 11. Verify AC11: CHANGELOG.md has version 2.2.0 entry.
 12. Verify AC12: All tests pass, including new B-series DAG and commit tracking tests.
+13. Verify AC13: `PROTOCOL_SPEC.md` includes legacy-to-modern migration method.
+14. Verify AC14: Bug-report prompt template exists and is valid.
+15. Verify AC15: Task-change prompt template exists and is valid.
+16. Verify AC16: This workpack includes a dedicated modernization prompt wired in plan/meta/state/status.
 
 ### Commit Verification (applying the new protocol to itself)
 
@@ -64,7 +69,7 @@ For each prior prompt's output JSON:
 
 ## Deliverables
 
-- [ ] Verification report in `outputs/A4_integration_meta.json`
+- [ ] Verification report in `outputs/A5_integration_meta.json`
 - [ ] Merge authorized or B-series prompts generated (with B-series DAG if needed)
 - [ ] `99_status.md` updated
 - [ ] `workpack.state.json` updated

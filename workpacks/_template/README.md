@@ -2,6 +2,8 @@
 
 This folder is a ready-to-copy scaffold for creating a new workpack instance in any repository.
 
+If you need prompts to operate on an existing workpack (instead of creating one), use `workpacks/manual_prompts/`.
+
 ## Included Files
 
 - `00_request.md` - request intake and acceptance criteria
@@ -11,6 +13,12 @@ This folder is a ready-to-copy scaffold for creating a new workpack instance in 
 - `workpack.state.json` - mutable runtime state
 - `prompts/` - reusable prompt templates
 - `outputs/.gitkeep` - output artifact folder placeholder
+
+Operational manual prompts live outside this scaffold:
+
+- `../manual_prompts/M_workpack_migration.md`
+- `../manual_prompts/M_bug_report.md`
+- `../manual_prompts/M_task_change.md`
 
 ## How to Use
 

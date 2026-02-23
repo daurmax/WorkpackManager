@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - 2026-02-23
+
+### Added
+
+- **B-series Dependency DAG**: B-series fix prompts can now declare `depends_on` in YAML front-matter and in the `workpack.meta.json` `prompts` array, enabling partial ordering and parallelization of bug fixes. The integration/verification prompt (A5) is expected to produce a B-series DAG (parallel/serial phase map plus directed edges) alongside the B-series prompt list.
+- **Per-Prompt Commit Tracking**: Each A-series and B-series prompt must commit its file changes on the work branch before writing its `output.json`. Commit SHA(s) produced are recorded in `artifacts.commit_shas` in the output JSON.
+- **`artifacts.branch_verified` field in `WORKPACK_OUTPUT_SCHEMA.json`**: Boolean field set by the integration prompt to record the result of commit verification (SHA existence, file match against `change_details`, absence of undeclared changes).
+- **Integration Commit Verification**: A5/V-series integration prompts must verify that each declared commit SHA exists on the work branch, that files modified in each commit match those declared in `change_details`, and that no undeclared file modifications are present.
+- **Legacy-to-Modern Workpack Migration**: `PROTOCOL_SPEC.md` now documents a repeatable, backward-compatible upgrade method for workpacks created against protocol 2.0.0 or 2.1.0 to migrate to 2.2.0+. Migration is procedural and non-destructive.
+- **`M_bug_report.md`**: New maintenance template prompt for capturing defects with structured context sufficient for downstream B-series generation.
+- **`M_task_change.md`**: New maintenance template prompt for safely adding or modifying a workpack task while preserving DAG consistency.
+- **New Linter Checks**:
+  - B-series DAG: validates no cycles and no unknown `depends_on` references among B-series prompts within `workpack.meta.json`.
+  - Commit tracking: warns when a completed output JSON for a 2.2.0+ workpack has an empty `artifacts.commit_shas` array.
+
+### Changed
+
+- **`WORKPACK_OUTPUT_SCHEMA.json`**: `artifacts` object is now **required** for protocol >= 2.2.0; `artifacts.commit_shas` array has `minItems: 1` constraint. Added `artifacts.branch_verified` boolean.
+- **`WORKPACK_META_SCHEMA.json`**: Relaxed `stem` pattern in the `prompts` array to allow dynamically-added B-series entries (e.g. `B1_*`, `B2_*`).
+- **`01_plan.md` template**: Extended with a B-series DAG section to record the dependency graph and parallelization map for bug-fix prompts discovered at the V1 gate.
+- **`PROMPT_STYLE_GUIDE.md`**: Updated with commit tracking conventions (when and how to commit, what to record in `artifacts.commit_shas`) and B-series DAG authoring guidance.
+- **`A5_integration_meta.md` template**: Updated with commit verification steps (SHA existence check, file-match audit against `change_details`, undeclared-change detection).
+- **`PROTOCOL_SPEC.md`**: Updated to document B-series DAG semantics, per-prompt commit tracking requirements, and the legacy workpack migration method.
+
+### Backward Compatibility
+
+- `artifacts.commit_shas` is required only for workpacks declaring `protocol_version >= 2.2.0`; existing 2.0.0 and 2.1.0 workpacks remain valid without this field.
+- B-series `depends_on` is optional; an empty or absent array defaults to no dependencies (prompt is free to run in any order or in parallel).
+- Legacy migration is procedural and non-destructive; no automated rewriting of existing workpacks is performed.
+
+---
+
 ## [2.1.0] - 2026-02-23
 
 ### Added

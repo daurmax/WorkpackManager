@@ -30,6 +30,7 @@ workpacks/
   WORKPACK_OUTPUT_SCHEMA.json
   WORKPACK_GROUP_SCHEMA.json
   _template/
+  manual_prompts/
   instances/
 ```
 
@@ -102,6 +103,13 @@ Copy-Item -Recurse workpacks/_template workpacks/instances/<workpack-id>
 ```
 
 Then fill request/plan/prompts, update metadata/state, and commit.
+
+## Manual Operations On Existing Workpacks
+
+Use `workpacks/manual_prompts/` when you need an operational prompt for an existing workpack (for example migration, bug intake, task add/modify) without creating a new scaffold.
+
+- `workpacks/_template/` -> scaffold for new workpacks.
+- `workpacks/manual_prompts/` -> user-filled operational prompts for existing workpacks.
 
 ---
 
