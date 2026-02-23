@@ -104,12 +104,16 @@ Copy-Item -Recurse workpacks/_template workpacks/instances/<workpack-id>
 
 Then fill request/plan/prompts, update metadata/state, and commit.
 
-## Manual Operations On Existing Workpacks
+## Manual Prompts
 
-Use `workpacks/manual_prompts/` when you need an operational prompt for an existing workpack (for example migration, bug intake, task add/modify) without creating a new scaffold.
+Use `workpacks/manual_prompts/` for structured, ready-to-run prompts that guide workpack operations:
 
-- `workpacks/_template/` -> scaffold for new workpacks.
-- `workpacks/manual_prompts/` -> user-filled operational prompts for existing workpacks.
+- `M_new_workpack.md` — create a new workpack instance from scratch.
+- `M_workpack_migration.md` — migrate a workpack to a target protocol version.
+- `M_bug_report.md` — capture a structured bug report.
+- `M_task_change.md` — add/modify a prompt task with DAG impact analysis.
+
+See `workpacks/manual_prompts/README.md` for usage instructions.
 
 ---
 
@@ -121,4 +125,5 @@ Use `workpacks/manual_prompts/` when you need an operational prompt for an exist
 - `workpacks/WORKPACK_STATE_SCHEMA.json`
 - `workpacks/WORKPACK_OUTPUT_SCHEMA.json`
 - `workpacks/WORKPACK_GROUP_SCHEMA.json`
+- `workpacks/manual_prompts/README.md`
 

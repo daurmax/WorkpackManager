@@ -50,6 +50,8 @@ import textwrap
 from dataclasses import dataclass
 from typing import Any
 
+from validate_workpack_files import validate_workpack_files, get_workpack_version, display_version
+
 
 CATEGORY_VALUES = {
     "feature",
@@ -744,6 +746,34 @@ def main() -> None:
         "Done: "
         f"prompts(created={prompts_created}, overwritten={prompts_overwritten}, skipped={prompts_skipped}), "
         f"meta={meta_status}, state={state_status}"
+    )
+
+    # ------------------------------------------------------------------
+    # Post-scaffold file completeness check
+    # ------------------------------------------------------------------
+    print()
+    print("Running file completeness validation ...")
+    version = get_workpack_version(workpack_path)
+    if version < 1:
+        version = 6  # fallback: assume 2.0.0 for freshly scaffolded workpacks
+    errors, warnings = validate_workpack_files(workpack_path, version)
+
+    if warnings:
+        for w in warnings:
+            print(f"  ! {w}")
+    if errors:
+        for e in errors:
+            print(f"  ✗ {e}")
+        print(
+            f"File completeness check FAILED ({len(errors)} error(s)). "
+            "Fix missing files before committing."
+        )
+        sys.exit(1)
+
+    print(
+        f"  ✓ [{display_version(version)}] {workpack_path.name} — "
+        f"all required files present"
+        + (f" ({len(warnings)} warning(s))" if warnings else "")
     )
 
 

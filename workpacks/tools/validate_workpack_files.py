@@ -265,6 +265,16 @@ def validate_workpack_files(
         except Exception:
             pass  # state parsing errors are handled by the linter
 
+    # Extra: lifecycle completeness — expect R-series (retrospective) prompt
+    if prompts_dir.is_dir():
+        md_files = [f.stem for f in prompts_dir.glob("*.md")]
+        has_r_series = any(stem.startswith("R") and "_" in stem for stem in md_files)
+        if not has_r_series and md_files:
+            warnings.append(
+                f"[{name}] WARN_MISSING_RETROSPECTIVE: no R-series prompt found in prompts/. "
+                "The standard lifecycle expects an R1_retrospective prompt."
+            )
+
     return errors, warnings
 
 

@@ -67,10 +67,12 @@ workpacks/
   WORKPACK_OUTPUT_SCHEMA.json
   WORKPACK_GROUP_SCHEMA.json
   _template/
+  manual_prompts/
   tools/
     workpack_lint.py
     workpack_scaffold.py
     validate_templates.py
+    validate_workpack_files.py
   instances/
 ```
 
@@ -115,6 +117,10 @@ Update the copied templates and conventions before creating real workpacks.
 - Update `last_updated` on every state mutation.
 
 ## Step 3 - Create your first workpack
+
+For a guided step-by-step prompt, use `workpacks/manual_prompts/M_new_workpack.md`. Fill in the placeholders and paste it into your coding agent.
+
+Alternatively, follow the manual steps below.
 
 Example: create a standalone workpack named `repo-onboarding`.
 
@@ -176,21 +182,30 @@ git add workpacks/
 git commit -m "chore(workpacks): add first workpack"
 ```
 
-## Step 4 - Run the linter
+## Step 4 - Run validation tools
 
-Run the protocol linter before opening a PR.
+Run the protocol linter and file completeness validator before opening a PR.
 
 ```bash
 python workpacks/tools/workpack_lint.py
 python workpacks/tools/workpack_lint.py --strict
+python workpacks/tools/validate_workpack_files.py
 ```
 
-What this should catch:
+What `workpack_lint.py` catches:
 
 - Missing required files (`workpack.meta.json`, `workpack.state.json`) in 2.0.0+ workpacks.
 - Metadata mismatches (for example folder name vs `meta.id`).
 - Prompt drift (`prompts/` files not matching `meta.prompts[]`).
 - State drift (`overall_status` inconsistent with per-prompt statuses).
+
+What `validate_workpack_files.py` catches:
+
+- Missing protocol-required files and directories (version-gated).
+- Empty prompts directory.
+- Missing output JSON for completed prompts.
+
+Note: `workpack_scaffold.py` automatically runs file completeness validation after scaffolding.
 
 If linter tooling is not available yet, run fallback checks:
 
@@ -218,6 +233,7 @@ Add a workpack validation stage to CI:
 
 ```bash
 python workpacks/tools/workpack_lint.py --strict
+python workpacks/tools/validate_workpack_files.py --strict
 ```
 
 Optionally add project checks:

@@ -46,6 +46,10 @@ class ValidateWorkpackFilesTests(unittest.TestCase):
                 wp / "prompts" / "A0_bootstrap.md",
                 "---\ndepends_on: []\nrepos: [Repo]\n---\n# Bootstrap\n",
             )
+            _write_text(
+                wp / "prompts" / "R1_retrospective.md",
+                "---\ndepends_on: [A0_bootstrap]\nrepos: [Repo]\n---\n# Retrospective\n",
+            )
         if "outputs" not in skip_dirs:
             (wp / "outputs").mkdir(parents=True, exist_ok=True)
         wp.mkdir(parents=True, exist_ok=True)
@@ -174,6 +178,19 @@ class ValidateWorkpackFilesTests(unittest.TestCase):
             version = vwf.get_workpack_version(wp)
             errors, warnings = vwf.validate_workpack_files(wp, version)
             self.assertTrue(any("WARN_MISSING_OUTPUT" in w for w in warnings))
+
+    def test_missing_retrospective_warns(self):
+        """A workpack with prompts but no R-series should produce a warning."""
+        with tempfile.TemporaryDirectory() as tmp:
+            wp = self._build_complete_workpack(Path(tmp))
+            # Remove the R1_retrospective.md to trigger warning
+            r1 = wp / "prompts" / "R1_retrospective.md"
+            if r1.exists():
+                r1.unlink()
+            version = vwf.get_workpack_version(wp)
+            errors, warnings = vwf.validate_workpack_files(wp, version)
+            self.assertEqual(errors, [])
+            self.assertTrue(any("WARN_MISSING_RETROSPECTIVE" in w for w in warnings))
 
     def test_meta_not_required_for_old_protocol(self):
         """workpack.meta.json should not be required for protocol < 2.0.0."""

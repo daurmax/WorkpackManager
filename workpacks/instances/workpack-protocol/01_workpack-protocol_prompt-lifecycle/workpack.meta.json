@@ -78,6 +78,13 @@
       "depends_on": ["B1_changelog_2_2_0"],
       "repos": ["WorkpackManager"],
       "estimated_effort": "M"
+    },
+    {
+      "stem": "R1_retrospective",
+      "agent_role": "Capture execution outcomes, quality trends, and process improvements after merge",
+      "depends_on": ["A5_integration_meta"],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "S"
     }
   ]
 }
