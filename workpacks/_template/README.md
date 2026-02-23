@@ -1,4 +1,4 @@
-# Workpack Template (Protocol v6)
+# Workpack Template (Protocol 2.0.0)
 
 This folder is a ready-to-copy scaffold for creating a new workpack instance in any repository.
 
@@ -46,7 +46,7 @@ The validator checks:
 - JSON Schema 2020-12 validity for meta/state/output schemas
 - `_template/workpack.meta.json` validation after placeholder substitution
 - `_template/workpack.state.json` validation after placeholder substitution
-- Required v6 prompt front-matter (`depends_on`, `repos`)
+- Required prompt front-matter (`depends_on`, `repos`) (since 1.4.0)
 - Absence of common domain-specific leakage in templates
 
 ## Notes

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Workpack v6 schemas and template scaffold."""
+"""Validate Workpack Protocol schemas and template scaffold."""
 
 from __future__ import annotations
 

@@ -59,7 +59,7 @@ class WorkpackLintTests(unittest.TestCase):
                     "id": name,
                     "title": "Test Workpack",
                     "summary": "A synthetic fixture for linter tests.",
-                    "protocol_version": "6",
+                    "protocol_version": "2.0.0",
                     "workpack_version": "1.0.0",
                     "category": "feature",
                     "created_at": "2026-02-23",
@@ -109,6 +109,14 @@ class WorkpackLintTests(unittest.TestCase):
     def test_parse_protocol_version(self) -> None:
         content = "Workpack Protocol Version: 6\n"
         self.assertEqual(lint.parse_protocol_version(content), 6)
+
+    def test_parse_protocol_version_semver(self) -> None:
+        content = "Workpack Protocol Version: 2.0.0\n"
+        self.assertEqual(lint.parse_protocol_version(content), 6)
+
+    def test_parse_protocol_version_semver_2_1(self) -> None:
+        content = "Workpack Protocol Version: 2.1.0\n"
+        self.assertEqual(lint.parse_protocol_version(content), 7)
 
     def test_discover_workpack_paths_in_group(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "WORKPACK_GROUP_SCHEMA.json",
   "title": "Workpack Group Metadata",
-  "description": "Schema for group.meta.json — defines a group of related workpacks, their execution DAG, and parallelization constraints (Protocol v6).",
+  "description": "Schema for group.meta.json — defines a group of related workpacks, their execution DAG, and parallelization constraints.",
   "type": "object",
   "required": ["id", "title", "summary", "protocol_version", "created_at", "workpacks", "execution_dag"],
   "additionalProperties": false,
@@ -22,8 +22,8 @@
     },
     "protocol_version": {
       "type": "string",
-      "enum": ["6"],
-      "description": "Protocol version. Must be 6 or higher for groups."
+      "enum": ["2.0.0", "2.1.0"],
+      "description": "Protocol version. Must be 2.0.0 or higher for groups."
     },
     "created_at": {
       "type": "string",

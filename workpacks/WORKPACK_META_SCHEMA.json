@@ -69,7 +69,7 @@
     "protocol_version": {
       "type": "string",
       "description": "Workpack protocol version.",
-      "enum": ["6"]
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
     "workpack_version": {
       "type": "string",

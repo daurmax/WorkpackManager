@@ -2,7 +2,7 @@
 
 Workpacks provide a structured, git-tracked workflow for multi-step engineering tasks handled by humans and/or agents.
 
-Protocol v6 separates static metadata from runtime state so tooling can index and orchestrate work without relying only on markdown parsing.
+Protocol 2.0.0 separates static metadata from runtime state so tooling can index and orchestrate work without relying only on markdown parsing.
 
 For the full normative contract, read `workpacks/PROTOCOL_SPEC.md`.
 
@@ -33,7 +33,7 @@ workpacks/
   instances/
 ```
 
-Workpack instance (v6):
+Workpack instance (2.0.0+):
 
 ```text
 workpacks/instances/<workpack-id>/
@@ -46,7 +46,7 @@ workpacks/instances/<workpack-id>/
   outputs/
 ```
 
-Grouped execution (optional, v6.1):
+Grouped execution (optional, 2.1.0+):
 
 ```text
 workpacks/instances/<group-id>/
@@ -79,11 +79,11 @@ Prompt dependencies are declared in YAML front-matter and mirrored in `workpack.
 
 ## Backward Compatibility
 
-Protocol v6 is additive over v5:
+Protocol 2.0.0 is additive over 1.4.0:
 
-- Legacy v5 workpacks can coexist with v6 workpacks.
+- Legacy 1.x workpacks can coexist with 2.x workpacks.
 - If `workpack.meta.json` is absent, tooling may operate in compatibility mode.
-- New workpacks should use v6 files by default.
+- New workpacks should use 2.0.0 files by default.
 
 ---
 
@@ -107,7 +107,7 @@ Then fill request/plan/prompts, update metadata/state, and commit.
 
 ## See Also
 
-- `workpacks/PROTOCOL_SPEC.md` (authoritative v6 specification)
+- `workpacks/PROTOCOL_SPEC.md` (authoritative specification)
 - `workpacks/CHANGELOG.md` (versioned protocol history)
 - `workpacks/WORKPACK_META_SCHEMA.json`
 - `workpacks/WORKPACK_STATE_SCHEMA.json`

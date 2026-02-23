@@ -1,6 +1,6 @@
-# Workpack Protocol v6 Specification
+# Workpack Protocol Specification
 
-This document is the normative specification for Workpack Protocol v6 in this repository.
+This document is the normative specification for the Workpack Protocol in this repository.
 It defines file structure, field semantics, lifecycle rules, tooling contracts, and backward compatibility expectations for workpack consumers (CLI, CI, editor extensions, and agents).
 
 ---
@@ -17,19 +17,21 @@ A workpack is a durable, version-controlled unit of work that captures:
 - Runtime status (`99_status.md`, `workpack.state.json`)
 - Structured handoffs (`outputs/*.json`)
 
-Protocol v6 formalizes machine-readable metadata and runtime state so tooling can consume workpacks without parsing markdown as the only source of truth.
+Protocol 2.0.0 formalizes machine-readable metadata and runtime state so tooling can consume workpacks without parsing markdown as the only source of truth.
 
 ### 1.2 Version History Summary
 
-- v5 introduced `workpacks/instances/`, DAG front-matter (`depends_on`, `repos`), execution metrics in outputs, R-series retrospective prompts, and cross-workpack references.
-- v6.0 introduced `workpack.meta.json` (static metadata) and `workpack.state.json` (mutable runtime state), including prompt indexing, assignments, and execution log.
-- v6.1 added workpack groups (`group.meta.json`, `GROUP.md`) and updated naming conventions.
+- 1.4.0 introduced `workpacks/instances/`, DAG front-matter (`depends_on`, `repos`), execution metrics in outputs, R-series retrospective prompts, and cross-workpack references.
+- 2.0.0 introduced `workpack.meta.json` (static metadata) and `workpack.state.json` (mutable runtime state), including prompt indexing, assignments, and execution log.
+- 2.1.0 added workpack groups (`group.meta.json`, `GROUP.md`) and updated naming conventions.
+
+See `CHANGELOG.md` for the complete version history from 1.0.0 onwards.
 
 ### 1.3 Design Philosophy
 
 - Separate static contract from mutable execution data.
 - Keep markdown readable for humans, JSON parseable for tools.
-- Preserve backward compatibility with v5 workpacks (additive evolution).
+- Preserve backward compatibility with 1.x workpacks (additive evolution).
 - Prefer explicit DAG declarations over inferred sequencing.
 - Maintain auditability via append-only state events and per-prompt outputs.
 
@@ -50,20 +52,20 @@ The `workpacks/` directory should include:
 - `_template/`
 - `instances/`
 
-### 2.2 Per-Workpack Instance Layout (v6)
+### 2.2 Per-Workpack Instance Layout (2.0.0+)
 
 ```text
 workpacks/instances/<workpack-id>/
   00_request.md                 # required
   01_plan.md                    # required
   prompts/                      # required
-  outputs/                      # required by protocol v2+
+  outputs/                      # required by protocol 1.1.0+
   99_status.md                  # recommended human status surface
-  workpack.meta.json            # required for native v6
-  workpack.state.json           # required for native v6 runtime tracking
+  workpack.meta.json            # required for native 2.0.0+
+  workpack.state.json           # required for native 2.0.0+ runtime tracking
 ```
 
-### 2.3 Grouped Layout (v6.1)
+### 2.3 Grouped Layout (2.1.0+)
 
 ```text
 workpacks/instances/<group-id>/
@@ -118,7 +120,7 @@ Schema: `workpacks/WORKPACK_META_SCHEMA.json`
 | `id` | string | Workpack identifier; must match folder name and pattern `^[a-z0-9][a-z0-9_-]+$`. |
 | `title` | string | Display title for humans/tools. |
 | `summary` | string | Concise 1–3 sentence description of scope and outcome. |
-| `protocol_version` | string | Protocol version implemented by this workpack (example: `"6"`). |
+| `protocol_version` | string | Protocol version implemented by this workpack (example: `"2.0.0"`). |
 | `workpack_version` | string | Semantic version of the workpack content itself (plan/prompt evolution). |
 | `category` | enum | One of: `feature`, `refactor`, `bugfix`, `hotfix`, `debug`, `docs`, `perf`, `security`. |
 | `created_at` | date | Creation date (`YYYY-MM-DD`). |
@@ -167,7 +169,7 @@ Tools should treat markdown and JSON as two synchronized views of the same graph
   "id": "02_platform_refactor",
   "title": "Platform Refactor",
   "summary": "Refactor the platform module layout and update tooling hooks.",
-  "protocol_version": "6",
+  "protocol_version": "2.0.0",
   "workpack_version": "1.0.0",
   "category": "refactor",
   "created_at": "2026-02-23",
@@ -341,23 +343,23 @@ Log entries provide a durable audit trail and should never be rewritten to hide 
 
 ## 7. Backward Compatibility
 
-### 7.1 v5 Workpacks in a v6 Repository
+### 7.1 1.x Workpacks in a 2.0.0 Repository
 
-Protocol v6 is additive. v5 workpacks remain valid when they follow v5 structure and conventions.
+Protocol 2.0.0 is additive. 1.x workpacks remain valid when they follow 1.x structure and conventions.
 
 ### 7.2 When `workpack.meta.json` Is Absent
 
-Treat the workpack as legacy (v5-style) unless repository policy explicitly requires v6 metadata.
+Treat the workpack as legacy (1.x-style) unless repository policy explicitly requires 2.0.0 metadata.
 
 Compatibility behavior:
 
 - Do not assume `prompts[]` index exists.
 - Derive prompt graph from markdown/front-matter as fallback.
-- Avoid hard failure solely due to absent v6 files in legacy mode.
+- Avoid hard failure solely due to absent 2.0.0 files in legacy mode.
 
 ### 7.3 Mixed Fleets
 
-Repositories may contain both v5 and v6 workpacks during migration.
+Repositories may contain both 1.x and 2.x workpacks during migration.
 Tooling should:
 
 - detect mode per workpack,
@@ -468,5 +470,5 @@ Recommended additions:
 - Prefer JSON schemas as enforcement boundary; markdown parsing is a fallback for compatibility.
 - Keep metadata stable to minimize noisy diffs.
 - Treat `workpack.state.json` as operational data and preserve log history.
-- During migration from v5, introduce `workpack.meta.json` first, then add runtime orchestration via `workpack.state.json`.
+- During migration from 1.x, introduce `workpack.meta.json` first, then add runtime orchestration via `workpack.state.json`.
 

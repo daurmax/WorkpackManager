@@ -2,7 +2,7 @@
 
 ## Overview
 
-This group contains 5 workpacks that together deliver the WorkpackManager VS Code extension and the reusable Workpack Protocol v6 framework.
+This group contains 5 workpacks that together deliver the WorkpackManager VS Code extension and the reusable Workpack Protocol 2.0.0 framework.
 
 ## Execution DAG
 
@@ -29,10 +29,10 @@ integration       ux
 
 | Phase | Workpacks | Mode | Description |
 |-------|-----------|------|-------------|
-| 1 | `01_…protocol-v6` | Serial | Foundation: Protocol v6 spec, JSON schemas, templates, linter/scaffold tooling. |
+| 1 | `01_…protocol-v6` | Serial | Foundation: Protocol 2.0.0 spec, JSON schemas, templates, linter/scaffold tooling. |
 | 2 | `02_…core-architecture` | Serial | Core extension: TypeScript data models, parser/indexer, state reconciliation, dependency graph. |
 | 3 | `03_…agent-integration`, `03_…extension-ux` | **Parallel** | Two independent feature tracks. Agent layer (provider abstraction, Copilot/Codex providers, orchestrator) and UX layer (tree view, webview, commands, status visualization). |
-| 4 | `04_…validation-quality` | Serial | Quality backbone: test framework, protocol linter, drift detection, v5→v6 migration, CI pipeline. Integrates all prior workpacks. |
+| 4 | `04_…validation-quality` | Serial | Quality backbone: test framework, protocol linter, drift detection, 1.4.0→2.0.0 migration, CI pipeline. Integrates all prior workpacks. |
 
 ### Rules
 
@@ -44,7 +44,7 @@ integration       ux
 
 | From | To | Rationale |
 |------|----|-----------|
-| `01_…protocol-v6` | `02_…core-architecture` | Core needs v6 schemas and spec |
+| `01_…protocol-v6` | `02_…core-architecture` | Core needs 2.0.0 schemas and spec |
 | `02_…core-architecture` | `03_…agent-integration` | Agent layer needs data models and parser |
 | `02_…core-architecture` | `03_…extension-ux` | UX layer needs data models and parser |
 | `03_…agent-integration` | `04_…validation-quality` | Quality layer validates agent integration |

@@ -45,7 +45,7 @@ No B-series prompts yet.
 |--------|--------|-------|
 | R1_retrospective | ⏳ Pending | Post-merge |
 
-## Outputs (Protocol v6)
+## Outputs (Protocol 2.0.0)
 
 | Prompt | Output JSON Path | Status |
 |--------|------------------|--------|

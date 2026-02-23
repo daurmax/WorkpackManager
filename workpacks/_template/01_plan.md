@@ -13,13 +13,13 @@
 
 Effort scale: XS <30m, S 30m-2h, M 2h-4h, L 4h-8h, XL >8h.
 
-## DAG Dependencies (v6)
+## DAG Dependencies
 
 | Prompt | depends_on | repos |
 |--------|-----------|-------|
 | A0_bootstrap | [] | [] |
 
-## Cross-Workpack References (v6)
+## Cross-Workpack References
 
 requires_workpack: []
 
@@ -50,7 +50,7 @@ Phase 4 (post-merge):  R1_retrospective
 - No secrets in prompts or outputs.
 - Limit writes to repository workspace only.
 
-## Handoff Outputs Plan (Protocol v6)
+## Handoff Outputs Plan
 
 - Each completed prompt writes `outputs/<PROMPT>.json`.
 - Schema: `workpacks/WORKPACK_OUTPUT_SCHEMA.json`.

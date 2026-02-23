@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-workpack_scaffold.py - Workpack Scaffolder (Protocol v6)
+workpack_scaffold.py - Workpack Scaffolder (Protocol 2.0.0)
 
 Scaffolds prompt files from `01_plan.md` and generates:
 - workpack.meta.json
@@ -574,7 +574,7 @@ def build_meta_payload(
         meta.pop("group", None)
     meta["title"] = title
     meta["summary"] = summary
-    meta["protocol_version"] = "6"
+    meta["protocol_version"] = "2.0.0"
     meta["workpack_version"] = meta.get("workpack_version", "1.0.0")
     meta["category"] = identity.category
     meta["created_at"] = identity.created_at
@@ -660,7 +660,7 @@ def scaffold_prompts(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Scaffold prompts + v6 metadata/state from 01_plan.md.",
+        description="Scaffold prompts + metadata/state from 01_plan.md.",
     )
     parser.add_argument(
         "workpack",

@@ -1,4 +1,4 @@
-# Prompt Style Guide - Workpack Protocol v6
+# Prompt Style Guide - Workpack Protocol 2.0.0
 
 ## Core Rules
 

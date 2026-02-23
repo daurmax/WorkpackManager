@@ -1,4 +1,4 @@
-# Workpack Adoption Guide (Protocol v6)
+# Workpack Adoption Guide
 
 This guide explains how to introduce the workpack system into any existing Git repository, regardless of language or framework.
 
@@ -173,7 +173,7 @@ repos: [YourRepo]
 ```bash
 git checkout -b feature/repo-onboarding
 git add workpacks/
-git commit -m "chore(workpacks): add first protocol v6 workpack"
+git commit -m "chore(workpacks): add first workpack"
 ```
 
 ## Step 4 - Run the linter
@@ -187,7 +187,7 @@ python workpacks/tools/workpack_lint.py --strict
 
 What this should catch:
 
-- Missing required v6 files (`workpack.meta.json`, `workpack.state.json`) in native v6 workpacks.
+- Missing required files (`workpack.meta.json`, `workpack.state.json`) in 2.0.0+ workpacks.
 - Metadata mismatches (for example folder name vs `meta.id`).
 - Prompt drift (`prompts/` files not matching `meta.prompts[]`).
 - State drift (`overall_status` inconsistent with per-prompt statuses).
@@ -255,7 +255,7 @@ Optionally add project checks:
 
 | Area | Keep Standard (Required) | Customize (Convention) |
 |------|---------------------------|-------------------------|
-| Core layout | `workpacks/instances/<workpack>/` with request, plan, prompts, outputs; v6 workpacks include meta/state JSON | Folder naming strategy across teams (standalone vs grouped) |
+| Core layout | `workpacks/instances/<workpack>/` with request, plan, prompts, outputs; 2.0.0+ workpacks include meta/state JSON | Folder naming strategy across teams (standalone vs grouped) |
 | Metadata/state | `workpack.meta.json` and `workpack.state.json` schema compliance; `meta.id == state.workpack_id` | Optional metadata fields (`tags`, `owners`, `repos`) |
 | Prompt contracts | YAML front-matter with `depends_on` and `repos`; output JSON schema compliance | Prompt decomposition, naming slugs, agent role wording |
 | Lifecycle | Status transitions and append-only execution log semantics | Exact team gates and reviewer roles |
@@ -265,7 +265,7 @@ Optionally add project checks:
 ## FAQ
 
 **Do we need to migrate all existing work at once?**  
-No. Protocol v6 is additive. You can adopt it for new workpacks first and migrate older workpacks gradually.
+No. Protocol 2.0.0 is additive. You can adopt it for new workpacks first and migrate older workpacks gradually.
 
 **Can we use workpacks without grouped execution?**  
 Yes. Group metadata is optional. Standalone workpacks are valid and simpler for initial adoption.
@@ -286,4 +286,4 @@ Use the same files. Humans can author prompts and outputs directly; the protocol
 Keep `_template/` generic. Put team- or domain-specific details only in concrete instance files under `instances/`.
 
 **How do we know this is portable to non-framework-specific repos?**  
-The protocol and templates are explicitly framework-neutral, and the v5 baseline was already ported across repositories before v6 formalization (see `workpacks/CHANGELOG.md`).
+The protocol and templates are explicitly framework-neutral and have been ported across multiple repositories (see `workpacks/CHANGELOG.md`).

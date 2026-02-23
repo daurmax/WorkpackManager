@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
-workpack_lint.py - Workpack Protocol v2/v3/v4/v5/v6 Linter
+workpack_lint.py - Workpack Protocol Linter
 
 Validates workpacks in a repository workpacks/ directory.
-- v2: completed prompt -> output artifact checks.
-- v3: code-block detection in prompts (warning).
-- v4: code-blocks become errors + verification/severity checks.
-- v5: DAG checks, dependency checks, execution warnings.
-- v6: workpack.meta.json/workpack.state.json checks + schema validation.
+Supports all protocol versions from 1.0.0 onwards (and legacy integer versions).
+
+Version capability map:
+- 1.1.0+: completed prompt -> output artifact checks.
+- 1.2.0+: code-block detection in prompts (warning).
+- 1.3.0+: code-blocks become errors + verification/severity checks.
+- 1.4.0+: DAG checks, dependency checks, execution warnings.
+- 2.0.0+: workpack.meta.json/workpack.state.json checks + schema validation.
 
 Exit codes:
   0 - pass
@@ -115,7 +118,7 @@ class SchemaBundle:
     state: dict[str, Any] | None
 
 
-# Languages that trigger code-block warnings in v3 prompts
+# Languages that trigger code-block warnings in 1.2.0+ prompts
 CODE_BLOCK_LANGUAGES = {
     # C# / .NET
     "csharp", "cs", "c#",
@@ -155,15 +158,64 @@ def get_workpacks_dir() -> Path:
     raise FileNotFoundError("Could not find workpacks directory")
 
 
-def parse_protocol_version(request_content: str) -> int:
-    """Parse protocol major version from request markdown."""
-    explicit = re.search(r"Workpack\s+Protocol\s+Version:\s*([0-9]+(?:\.[0-9]+)?)", request_content, re.IGNORECASE)
-    if explicit:
-        raw = explicit.group(1)
+def _semver_to_internal(raw: str) -> int:
+    """Map a version string (legacy integer or semver) to an internal ordinal.
+
+    Mapping:
+        Legacy 1-6  ->  1-6 (direct)
+        1.0.0       ->  1
+        1.1.0       ->  2
+        1.2.0       ->  3
+        1.3.0       ->  4
+        1.4.0       ->  5
+        2.0.0       ->  6
+        2.1.0       ->  7
+        future 2.N  ->  6+N
+        future 3.0  ->  8+  (heuristic)
+    """
+    parts = raw.strip().split(".")
+    if len(parts) == 1:
+        # Legacy integer version ("1" through "6")
         try:
-            return int(raw.split(".")[0])
+            return int(parts[0])
         except ValueError:
             return 0
+    try:
+        major = int(parts[0])
+        minor = int(parts[1])
+    except (ValueError, IndexError):
+        return 0
+    if major == 1:
+        return 1 + minor  # 1.0->1, 1.1->2, 1.2->3, 1.3->4, 1.4->5
+    elif major == 2:
+        return 6 + minor   # 2.0->6, 2.1->7
+    else:
+        return major * 3 + minor  # rough heuristic for future majors
+
+
+_INTERNAL_TO_DISPLAY = {
+    1: "1.0.0", 2: "1.1.0", 3: "1.2.0", 4: "1.3.0", 5: "1.4.0",
+    6: "2.0.0", 7: "2.1.0",
+}
+
+
+def _display_version(internal: int) -> str:
+    """Return a human-readable version string from an internal ordinal."""
+    return _INTERNAL_TO_DISPLAY.get(internal, str(internal))
+
+
+def parse_protocol_version(request_content: str) -> int:
+    """Parse protocol version from request markdown and return internal ordinal.
+
+    Handles both semver ("2.0.0") and legacy integer ("6") formats.
+    """
+    # Try semver first: "Workpack Protocol Version: 2.0.0" or "2.1.0" or legacy "6"
+    explicit = re.search(
+        r"Workpack\s+Protocol\s+Version:\s*([0-9]+(?:\.[0-9]+(?:\.[0-9]+)?)?)",
+        request_content, re.IGNORECASE,
+    )
+    if explicit:
+        return _semver_to_internal(explicit.group(1))
 
     legacy = re.search(r"Protocol\s+v([0-9]+)", request_content, re.IGNORECASE)
     if legacy:
@@ -376,17 +428,17 @@ def detect_code_blocks_in_prompt(prompt_path: Path) -> list[tuple[int, str, bool
 
 def validate_v3_prompts(workpack_path: Path, version: int = 3) -> tuple[list[str], list[str]]:
     """
-    Validate v3/v4 prompts for code-block violations.
+    Validate 1.2.0+/1.3.0+ prompts for code-block violations.
     
-    In v3: code blocks are warnings.
-    In v4: code blocks are errors.
+    In 1.2.0: code blocks are warnings.
+    In 1.3.0+: code blocks are errors.
     
     Returns (errors, warnings) tuple.
     """
     # TODO checklist:
     # [x] detect flagged code fence languages
-    # [x] v3 warning behavior
-    # [x] v4+ error behavior
+    # [x] 1.2.0 warning behavior
+    # [x] 1.3.0+ error behavior
     errors: list[str] = []
     warnings: list[str] = []
     workpack_name = workpack_path.name
@@ -409,15 +461,15 @@ def validate_v3_prompts(workpack_path: Path, version: int = 3) -> tuple[list[str
             msg = (
                 f"[{workpack_name}] Prompt '{prompt_file.stem}' line {line_num}: "
                 f"Code block ```{language}``` found. "
-                f"Protocol v{version} discourages code in prompts. "
+                f"Protocol {_display_version(version)} discourages code in prompts. "
                 f"Use semantic references instead, or add '{LINT_IGNORE_MARKER}' above to suppress."
             )
             
             if version >= 4:
-                # In v4, code blocks are errors
+                # In 1.3.0+, code blocks are errors
                 errors.append(msg)
             else:
-                # In v3, code blocks are warnings
+                # In 1.2.0, code blocks are warnings
                 warnings.append(msg)
     
     return errors, warnings
@@ -425,7 +477,7 @@ def validate_v3_prompts(workpack_path: Path, version: int = 3) -> tuple[list[str
 
 def validate_v4_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
     """
-    Validate v4-specific rules:
+    Validate 1.3.0-specific rules:
     - ERR_NO_VERIFICATION: No A5_* or V#_* prompt exists
     - WARN_BUGFIX_NO_VERIFY: B-series present but no V#_* prompt
     - WARN_B_SERIES_BUDGET: >5 B-series prompts
@@ -468,7 +520,7 @@ def validate_v4_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
     if not a5_exists and not v_series:
         errors.append(
             f"[{workpack_name}] ERR_NO_VERIFICATION: No A5_* or V#_* verification prompt found. "
-            f"Protocol v4 requires at least one verification gate."
+            f"Protocol 1.3.0 requires at least one verification gate."
         )
     
     # WARN_BUGFIX_NO_VERIFY: B-series present but no V-series prompt
@@ -498,7 +550,7 @@ def validate_v4_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
             if not re.search(r"^##\s+Severity", content, re.MULTILINE):
                 errors.append(
                     f"[{workpack_name}] ERR_SEVERITY_MISSING: B-series prompt '{b_file.stem}' "
-                    f"is missing a '## Severity' section. Required in Protocol v4."
+                    f"is missing a '## Severity' section. Required in Protocol 1.3.0+."
                 )
         except Exception:
             pass
@@ -509,11 +561,11 @@ def validate_v4_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
             continue
         try:
             content = prompt_file.read_text(encoding="utf-8")
-            # Check for explicit v3 references that should be v4+
+            # Check for explicit old version references that should be updated
             if re.search(r"Protocol v3", content, re.IGNORECASE):
                 warnings.append(
                     f"[{workpack_name}] WARN_VERSION_MISMATCH: Prompt '{prompt_file.stem}' "
-                    f"references 'Protocol v3' but workpack is v4+. Update references."
+                    f"references 'Protocol v3' but workpack is 1.3.0+. Update references."
                 )
         except Exception:
             pass
@@ -560,7 +612,7 @@ def _parse_yaml_front_matter(prompt_path: Path) -> dict[str, Any]:
 
 def validate_v5_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
     """
-    Validate v5-specific rules:
+    Validate 1.4.0-specific rules:
     - ERR_DAG_CYCLE: Circular dependency in depends_on graph
     - WARN_DAG_UNKNOWN_DEP: depends_on references a prompt that doesn't exist
     - WARN_NO_RETROSPECTIVE: Merged workpack has no R-series prompt
@@ -652,7 +704,7 @@ def validate_v5_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
                 if "execution" not in data:
                     warnings.append(
                         f"[{workpack_name}] WARN_MISSING_EXECUTION: Output '{out_file.stem}.json' "
-                        f"has no 'execution' block. v5 recommends tracking cost metrics."
+                        f"has no 'execution' block. Protocol 1.4.0+ recommends tracking cost metrics."
                     )
             except Exception:
                 pass  # JSON parse errors handled by validate_workpack
@@ -662,7 +714,7 @@ def validate_v5_checks(workpack_path: Path) -> tuple[list[str], list[str]]:
 
 def validate_workpack(workpack_path: Path, schema_path: Path) -> list[str]:
     """
-    Validate a v2 workpack.
+    Validate a v2+ (1.1.0+) workpack.
     
     Returns a list of error messages (empty if valid).
     """
@@ -676,7 +728,7 @@ def validate_workpack(workpack_path: Path, schema_path: Path) -> list[str]:
     # Check outputs/ directory exists
     outputs_dir = workpack_path / "outputs"
     if not outputs_dir.exists():
-        errors.append(f"[{workpack_name}] Missing outputs/ directory (required for Protocol v2)")
+        errors.append(f"[{workpack_name}] Missing outputs/ directory (required for Protocol 1.1.0+)")
     
     # Check prompts/ directory exists
     prompts_dir = workpack_path / "prompts"
@@ -877,7 +929,7 @@ def _state_drift_reason(state_payload: dict[str, Any]) -> str | None:
 
 def validate_v6_checks(workpack_path: Path, schemas: SchemaBundle) -> tuple[list[str], list[str]]:
     """
-    Validate v6-specific rules.
+    Validate 2.0.0-specific rules.
 
     - ERR_MISSING_META
     - WARN_META_ID_MISMATCH
@@ -902,7 +954,7 @@ def validate_v6_checks(workpack_path: Path, schemas: SchemaBundle) -> tuple[list
 
     if not meta_path.exists():
         errors.append(
-            f"[{workpack_name}] ERR_MISSING_META: missing workpack.meta.json (required for Protocol v6)."
+            f"[{workpack_name}] ERR_MISSING_META: missing workpack.meta.json (required for Protocol 2.0.0+)."
         )
     else:
         raw_meta, meta_error = load_json(meta_path)
@@ -976,7 +1028,7 @@ def validate_v6_checks(workpack_path: Path, schemas: SchemaBundle) -> tuple[list
 def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Workpack Protocol v2/v3/v4/v5/v6 Linter",
+        description="Workpack Protocol Linter",
         epilog="Validates workpacks for protocol compliance.",
     )
     parser.add_argument(
@@ -991,7 +1043,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    print("Workpack Protocol Linter (v2/v3/v4/v5/v6)")
+    print("Workpack Protocol Linter")
     print("=" * 40)
 
     try:
@@ -1053,11 +1105,11 @@ def main() -> None:
         version = get_workpack_version(workpack)
         if version < 2:
             skipped_count += 1
-            print(f"  - Skipping (not v2+): {workpack}")
+            print(f"  - Skipping (not 1.1.0+): {workpack}")
             continue
 
         version_counts[version] = version_counts.get(version, 0) + 1
-        print(f"  * Validating v{version} workpack: {workpack}")
+        print(f"  * Validating {_display_version(version)} workpack: {workpack}")
 
         all_errors.extend(validate_workpack(workpack, output_schema_path))
 
@@ -1083,7 +1135,7 @@ def main() -> None:
 
     print()
     rendered_counts = ", ".join(
-        f"v{version}:{count}" for version, count in sorted(version_counts.items(), key=lambda item: item[0], reverse=True)
+        f"{_display_version(version)}:{count}" for version, count in sorted(version_counts.items(), key=lambda item: item[0], reverse=True)
     )
     if not rendered_counts:
         rendered_counts = "none"
