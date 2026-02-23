@@ -1,0 +1,9 @@
+{
+  "workpack_id": "malformed-state",
+  "overall_status": "in_progress",
+  "last_updated": "2026-02-23T00:00:00Z",
+  "prompt_status": "bad-shape",
+  "agent_assignments": {},
+  "blocked_by": [],
+  "execution_log": []
+}

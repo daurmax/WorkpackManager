@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.1",
+  "workpack": "02_workpack-manager_core-architecture",
+  "prompt": "B1_parser_schema_alignment",
+  "component": "extension-core-parser-schema-alignment",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/extension-core-architecture",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [
+      "package.json",
+      "package-lock.json",
+      "src/models/workpack-meta.ts",
+      "src/models/workpack-instance.ts",
+      "src/parser/workpack-parser.ts",
+      "src/test/graph/dependency-resolver.test.ts",
+      "src/test/state/reconciliation.test.ts",
+      "src/test/parser/workpack-parser.test.ts",
+      "src/test/parser/fixtures/workspace-a/workpacks/instances/sample-group/01_sample-group_parser-v6/workpack.meta.json",
+      "src/test/parser/fixtures/manual-workpack/workpack.meta.json",
+      "src/test/parser/fixtures/malformed-state/workpack.meta.json",
+      "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/99_status.md",
+      "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/workpack.state.json"
+    ],
+    "files_created": [
+      "src/test/parser/fixtures/schema-invalid-meta/workpack.meta.json",
+      "src/test/parser/fixtures/schema-invalid-state/workpack.state.json",
+      "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/outputs/B1_parser_schema_alignment.json"
+    ],
+    "contracts_changed": [
+      "WorkpackMeta.protocolVersion now models schema-aligned semver values",
+      "parseWorkpackMeta validates workpack.meta.json against WORKPACK_META_SCHEMA.json at runtime",
+      "parseWorkpackState validates workpack.state.json against WORKPACK_STATE_SCHEMA.json at runtime",
+      "parseWorkpackInstance prefers schema-valid metadata protocol value and falls back only when metadata is absent/unparseable",
+      "parseWorkpackMarkdownFallback preserves legacy v5 discovery while mapping legacy v6 marker to semver metadata default"
+    ],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npx tsc --noEmit",
+        "result": "pass",
+        "notes": "TypeScript strict compilation passes after protocol typing and parser/schema validation updates."
+      },
+      {
+        "cmd": "npm test -- --grep \"parser|schema\"",
+        "result": "pass",
+        "notes": "Parser/discovery suites pass with semver protocol metadata, schema-invalid payload rejection warnings, and legacy markdown fallback coverage."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "ESLint gate passes with the B1 parser changes."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added parser tests/fixtures for schema-invalid meta/state payload rejection with warning capture and updated semver protocol expectations."
+  },
+  "handoff": {
+    "summary": "Aligned parser behavior with WP00 schemas by accepting semver protocol metadata (`2.0.0`) as meta-first, adding runtime Draft 2020-12 schema validation for meta/state via AJV, and preserving legacy markdown fallback behavior for v5-only scenarios.",
+    "next_steps": [
+      "Run V2_bugfix_verify to re-evaluate merge authorization now that B1 and B2 blockers are resolved.",
+      "Optionally add focused parser tests for mixed folders containing both valid meta and legacy markdown to lock in meta precedence."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "severity": null,
+  "iteration": 1,
+  "b_series_resolved": [
+    "B1_parser_schema_alignment",
+    "B2_lint_gate"
+  ],
+  "b_series_remaining": [],
+  "b_series_budget_warning": false,
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "package.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "package-lock.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/workpack-meta.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/workpack-instance.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/parser/workpack-parser.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/graph/dependency-resolver.test.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/state/reconciliation.test.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/parser/workpack-parser.test.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/parser/fixtures/workspace-a/workpacks/instances/sample-group/01_sample-group_parser-v6/workpack.meta.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/parser/fixtures/manual-workpack/workpack.meta.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/parser/fixtures/malformed-state/workpack.meta.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/parser/fixtures/schema-invalid-meta/workpack.meta.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/test/parser/fixtures/schema-invalid-state/workpack.state.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/02_workpack-manager_core-architecture/outputs/B1_parser_schema_alignment.json",
+      "action": "created"
+    }
+  ],
+  "notes": "AJV Draft 2020-12 validators are loaded with in-flight caching to avoid parallel schema compile races during multi-workpack discovery."
+}
