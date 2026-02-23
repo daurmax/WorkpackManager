@@ -96,7 +96,7 @@ Every prompt produces an output JSON file in `outputs/`:
 ## Cross-References
 
 - Reference other prompts: `A1_slug_name`.
-- Reference other workpacks: `<group-id>_<slug>_<NN>` (grouped) or `<slug>` (standalone).
+- Reference other workpacks: `<NN>_<group-id>_<slug>` (grouped) or `<slug>` (standalone).
 - Reference groups: `<group-id>`.
 - Reference schema files: `WORKPACK_META_SCHEMA.json`.
 

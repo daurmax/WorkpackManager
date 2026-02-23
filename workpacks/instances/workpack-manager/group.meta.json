@@ -8,45 +8,45 @@
   "tags": ["vscode-extension", "workpack-protocol", "agent-integration", "developer-tools"],
   "repos": ["WorkpackManager"],
   "workpacks": [
-    { "id": "workpack-manager_protocol-v6_01", "execution_order": 1, "title": "Protocol v6 Framework" },
-    { "id": "workpack-manager_core-architecture_02", "execution_order": 2, "title": "Extension Core Architecture" },
-    { "id": "workpack-manager_agent-integration_03", "execution_order": 3, "title": "Agent Integration Layer" },
-    { "id": "workpack-manager_extension-ux_03", "execution_order": 3, "title": "Extension UX Layer" },
-    { "id": "workpack-manager_validation-quality_04", "execution_order": 4, "title": "Validation & Quality" }
+    { "id": "01_workpack-manager_protocol-v6", "execution_order": 1, "title": "Protocol v6 Framework" },
+    { "id": "02_workpack-manager_core-architecture", "execution_order": 2, "title": "Extension Core Architecture" },
+    { "id": "03_workpack-manager_agent-integration", "execution_order": 3, "title": "Agent Integration Layer" },
+    { "id": "03_workpack-manager_extension-ux", "execution_order": 3, "title": "Extension UX Layer" },
+    { "id": "04_workpack-manager_validation-quality", "execution_order": 4, "title": "Validation & Quality" }
   ],
   "execution_dag": {
     "phases": [
       {
         "order": 1,
-        "workpacks": ["workpack-manager_protocol-v6_01"],
+        "workpacks": ["01_workpack-manager_protocol-v6"],
         "mode": "serial",
         "description": "Foundation: define Protocol v6, schemas, templates, and tooling."
       },
       {
         "order": 2,
-        "workpacks": ["workpack-manager_core-architecture_02"],
+        "workpacks": ["02_workpack-manager_core-architecture"],
         "mode": "serial",
         "description": "Core: data models, parser/indexer, state reconciliation, dependency graph."
       },
       {
         "order": 3,
-        "workpacks": ["workpack-manager_agent-integration_03", "workpack-manager_extension-ux_03"],
+        "workpacks": ["03_workpack-manager_agent-integration", "03_workpack-manager_extension-ux"],
         "mode": "parallel",
         "description": "Parallel feature tracks: agent provider layer and VS Code UX layer. Independent of each other, both depend on core."
       },
       {
         "order": 4,
-        "workpacks": ["workpack-manager_validation-quality_04"],
+        "workpacks": ["04_workpack-manager_validation-quality"],
         "mode": "serial",
         "description": "Quality backbone: test framework, linter, drift detection, migration tool, CI. Depends on all prior workpacks."
       }
     ],
     "edges": [
-      ["workpack-manager_protocol-v6_01", "workpack-manager_core-architecture_02"],
-      ["workpack-manager_core-architecture_02", "workpack-manager_agent-integration_03"],
-      ["workpack-manager_core-architecture_02", "workpack-manager_extension-ux_03"],
-      ["workpack-manager_agent-integration_03", "workpack-manager_validation-quality_04"],
-      ["workpack-manager_extension-ux_03", "workpack-manager_validation-quality_04"]
+      ["01_workpack-manager_protocol-v6", "02_workpack-manager_core-architecture"],
+      ["02_workpack-manager_core-architecture", "03_workpack-manager_agent-integration"],
+      ["02_workpack-manager_core-architecture", "03_workpack-manager_extension-ux"],
+      ["03_workpack-manager_agent-integration", "04_workpack-manager_validation-quality"],
+      ["03_workpack-manager_extension-ux", "04_workpack-manager_validation-quality"]
     ]
   }
 }

@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Workpack Naming Convention**: Date prefix removed from workpack folder names.
   - **Standalone workpacks**: `<slug>` (kebab-case slug only).
-  - **Grouped workpacks**: `<group-id>_<slug>_<NN>` where `NN` is the two-digit execution phase number. Workpacks with the same `NN` may run in parallel.
+  - **Grouped workpacks**: `<NN>_<group-id>_<slug>` where `NN` is the two-digit execution phase number. Workpacks with the same `NN` may run in parallel.
 - **`id` pattern in WORKPACK_META_SCHEMA.json**: Updated from `YYYY-MM-DD_category_slug` to `^[a-z0-9][a-z0-9_-]+$`.
 - **`created_at` field**: Remains in `workpack.meta.json` as metadata but is no longer encoded in the folder name.
 - **Linter rule WP001**: Updated to validate new naming convention.

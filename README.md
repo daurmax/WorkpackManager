@@ -44,7 +44,7 @@ Workpacks can be organized into **groups** inside `instances/`. A group is a dir
 ### Naming Convention
 
 - **Standalone workpacks**: `<slug>` (e.g., `my-feature`)
-- **Grouped workpacks**: `<group-id>_<slug>_<NN>` (e.g., `workpack-manager_core-architecture_02`), where `NN` is the execution phase number. Workpacks sharing the same `NN` can run in parallel.
+- **Grouped workpacks**: `<NN>_<group-id>_<slug>` (e.g., `02_workpack-manager_core-architecture`), where `NN` is the two-digit execution phase number. Workpacks sharing the same `NN` can run in parallel.
 
 See `workpacks/WORKPACK_META_SCHEMA.json`, `workpacks/WORKPACK_STATE_SCHEMA.json`, and `workpacks/WORKPACK_GROUP_SCHEMA.json` for the schemas.
 

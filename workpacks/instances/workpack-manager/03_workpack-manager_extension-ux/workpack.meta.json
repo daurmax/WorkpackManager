@@ -1,0 +1,25 @@
+{
+  "id": "03_workpack-manager_extension-ux",
+  "group": "workpack-manager",
+  "title": "VS Code Extension UX Layer",
+  "summary": "Build tree view, detail webview, commands, context menus, and status visualization for workpack management.",
+  "protocol_version": "6",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "2026-02-23",
+  "requires_workpack": ["02_workpack-manager_core-architecture"],
+  "tags": ["extension", "ux", "tree-view", "webview", "commands"],
+  "owners": [],
+  "repos": ["WorkpackManager"],
+  "delivery_mode": "pr",
+  "target_branch": "main",
+  "prompts": [
+    { "stem": "A0_bootstrap", "agent_role": "Branch setup and prerequisite check", "depends_on": [], "repos": ["WorkpackManager"], "estimated_effort": "XS" },
+    { "stem": "A1_tree_view", "agent_role": "Tree view data provider with status icons", "depends_on": ["A0_bootstrap"], "repos": ["WorkpackManager"], "estimated_effort": "L" },
+    { "stem": "A2_detail_panel", "agent_role": "Detail webview panel for workpack inspection", "depends_on": ["A0_bootstrap"], "repos": ["WorkpackManager"], "estimated_effort": "M" },
+    { "stem": "A3_commands_actions", "agent_role": "Commands, context menus, quick picks", "depends_on": ["A0_bootstrap"], "repos": ["WorkpackManager"], "estimated_effort": "M" },
+    { "stem": "A4_status_visualization", "agent_role": "Status icons, filtering, sorting, badges", "depends_on": ["A1_tree_view", "A2_detail_panel"], "repos": ["WorkpackManager"], "estimated_effort": "M" },
+    { "stem": "A5_integration_meta", "agent_role": "V1 verification gate", "depends_on": ["A1_tree_view", "A2_detail_panel", "A3_commands_actions", "A4_status_visualization"], "repos": ["WorkpackManager"], "estimated_effort": "M" },
+    { "stem": "R1_retrospective", "agent_role": "Post-merge retrospective", "depends_on": ["A5_integration_meta"], "repos": ["WorkpackManager"], "estimated_effort": "S" }
+  ]
+}

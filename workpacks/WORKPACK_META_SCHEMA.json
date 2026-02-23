@@ -16,7 +16,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique workpack identifier. Must match the folder name. Standalone: '<slug>'. Grouped: '<group-id>_<slug>_<NN>' where NN is the execution order.",
+      "description": "Unique workpack identifier. Must match the folder name. Standalone: '<slug>'. Grouped: '<NN>_<group-id>_<slug>' where NN is the two-digit execution phase number.",
       "pattern": "^[a-z0-9][a-z0-9_-]+$"
     },
     "group": {
