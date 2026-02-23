@@ -1,6 +1,6 @@
 ---
-depends_on: [<ALL_REQUIRED_A_SERIES_PROMPTS>]
-repos: [<REPO_NAME>]
+depends_on: [A3_init_command, A4_extension_scaffold]
+repos: [WorkpackManager]
 ---
 # Integration and Verification Agent Prompt (V1 Gate)
 
@@ -67,13 +67,13 @@ git show --stat <SHA>
 
 ## Handoff Output (JSON)
 
-Write `outputs/A5_integration_meta.json`.
+Write `outputs/V1_integration_meta.json`.
 
 ```json
 {
   "schema_version": "1.2",
   "workpack": "<WORKPACK_ID>",
-  "prompt": "A5_integration_meta",
+  "prompt": "V1_integration_meta",
   "component": "verification",
   "delivery_mode": "pr",
   "branch": {
@@ -122,5 +122,5 @@ Write `outputs/A5_integration_meta.json`.
 
 - [ ] Verification report completed
 - [ ] Commit SHA(s) verified and `artifacts.branch_verified` set when applicable
-- [ ] `outputs/A5_integration_meta.json` written
+- [ ] `outputs/V1_integration_meta.json` written
 - [ ] Merge decision documented

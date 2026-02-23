@@ -519,7 +519,7 @@ Recommended additions:
 
 ### 10.5 B-series Dependency DAG (Post-Verification)
 
-When a verification/integration gate (for example `A5_*` or `V1_*`) identifies bugs and emits B-series prompts:
+When a verification/integration gate (`V1_*`) identifies bugs and emits B-series prompts:
 
 - Each B-series prompt MAY declare `depends_on` in YAML front-matter (example: `depends_on: [B1_shared_refactor]`).
 - `workpack.meta.json.prompts[]` MAY include dynamically-added B-series entries with matching `depends_on`.
@@ -537,9 +537,9 @@ For protocol version 2.2.0+:
 - `branch.work` in output payloads MUST match the actual branch where those commits exist.
 - Pure verification/integration prompts that do not modify source files MAY set `artifacts.commit_shas` to `[]` only when no files were changed.
 
-### 10.7 Integration Prompt Verification Responsibilities (A5 / V-series)
+### 10.7 Integration Prompt Verification Responsibilities (V-series)
 
-Integration prompts (`A5_*` and `V*_...`) MUST verify upstream output integrity before authorizing merge readiness.
+Integration prompts (`V*_...`) MUST verify upstream output integrity before authorizing merge readiness.
 
 #### 10.7.1 Commit Verification
 

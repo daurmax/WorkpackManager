@@ -7,14 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.1] - 2026-02-23
+
+### ⚠️ Breaking Changes
+
+- **`A5_*` verification gate removed**: The `A5_integration_meta` prompt pattern is no longer accepted as a verification gate. All workpacks MUST use `V#_*` prompts (e.g. `V1_integration_meta`) for verification gates. The linter now emits `ERR_NO_VERIFICATION` if no `V#_*` prompt is found, regardless of `A5_*` presence.
+
+### Changed
+
+- **`PROTOCOL_SPEC.md`**: Removed all `A5_*` references from verification gate documentation. Section 10.5 and 10.7 now reference only V-series prompts.
+- **`workpack_lint.py`**: `ERR_NO_VERIFICATION` now requires `V#_*` prompt exclusively; `A5_*` no longer satisfies the verification gate check.
+- **`workpack_scaffold.py`**: Removed `A5` from `TEMPLATE_MAP`; integration meta fallback now resolves to `V1_integration_meta.md`.
+- **`validate_templates.py`**: Template file list updated from `A5_integration_meta.md` to `V1_integration_meta.md`.
+- **`V1_integration_meta.md` template**: All internal references updated to use `V1_integration_meta` stem.
+- **`ADOPTION_GUIDE.md`**: Updated prompt listing and merge gate reference to `V1_integration_meta`.
+- **Template files**: `01_plan.md`, `PROMPT_STYLE_GUIDE.md`, `R_retrospective.md` updated to reference `V1_integration_meta`.
+
+### Migration
+
+Workpacks using `A5_integration_meta` must rename the prompt file to `V1_integration_meta` and update all references in `workpack.meta.json`, `workpack.state.json`, `01_plan.md`, `99_status.md`, and prompt front-matter `depends_on` arrays.
+
+---
+
 ## [2.2.0] - 2026-02-23
 
 ### Added
 
-- **B-series Dependency DAG**: B-series fix prompts can now declare `depends_on` in YAML front-matter and in the `workpack.meta.json` `prompts` array, enabling partial ordering and parallelization of bug fixes. The integration/verification prompt (A5) is expected to produce a B-series DAG (parallel/serial phase map plus directed edges) alongside the B-series prompt list.
+- **B-series Dependency DAG**: B-series fix prompts can now declare `depends_on` in YAML front-matter and in the `workpack.meta.json` `prompts` array, enabling partial ordering and parallelization of bug fixes. The integration/verification prompt (V1) is expected to produce a B-series DAG (parallel/serial phase map plus directed edges) alongside the B-series prompt list.
 - **Per-Prompt Commit Tracking**: Each A-series and B-series prompt must commit its file changes on the work branch before writing its `output.json`. Commit SHA(s) produced are recorded in `artifacts.commit_shas` in the output JSON.
 - **`artifacts.branch_verified` field in `WORKPACK_OUTPUT_SCHEMA.json`**: Boolean field set by the integration prompt to record the result of commit verification (SHA existence, file match against `change_details`, absence of undeclared changes).
-- **Integration Commit Verification**: A5/V-series integration prompts must verify that each declared commit SHA exists on the work branch, that files modified in each commit match those declared in `change_details`, and that no undeclared file modifications are present.
+- **Integration Commit Verification**: V-series integration prompts must verify that each declared commit SHA exists on the work branch, that files modified in each commit match those declared in `change_details`, and that no undeclared file modifications are present.
 - **Legacy-to-Modern Workpack Migration**: `PROTOCOL_SPEC.md` now documents a repeatable, backward-compatible upgrade method for workpacks created against protocol 2.0.0 or 2.1.0 to migrate to 2.2.0+. Migration is procedural and non-destructive.
 - **`M_bug_report.md`**: New maintenance template prompt for capturing defects with structured context sufficient for downstream B-series generation.
 - **`M_task_change.md`**: New maintenance template prompt for safely adding or modifying a workpack task while preserving DAG consistency.
@@ -28,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`WORKPACK_META_SCHEMA.json`**: Relaxed `stem` pattern in the `prompts` array to allow dynamically-added B-series entries (e.g. `B1_*`, `B2_*`).
 - **`01_plan.md` template**: Extended with a B-series DAG section to record the dependency graph and parallelization map for bug-fix prompts discovered at the V1 gate.
 - **`PROMPT_STYLE_GUIDE.md`**: Updated with commit tracking conventions (when and how to commit, what to record in `artifacts.commit_shas`) and B-series DAG authoring guidance.
-- **`A5_integration_meta.md` template**: Updated with commit verification steps (SHA existence check, file-match audit against `change_details`, undeclared-change detection).
+- **`V1_integration_meta.md` template** (renamed from `A5_integration_meta.md`): Updated with commit verification steps (SHA existence check, file-match audit against `change_details`, undeclared-change detection). The integration gate prompt is now a V-series prompt (`V1_integration_meta`) instead of an A-series prompt, reflecting its verification role.
 - **`PROTOCOL_SPEC.md`**: Updated to document B-series DAG semantics, per-prompt commit tracking requirements, and the legacy workpack migration method.
 
 ### Backward Compatibility
@@ -163,7 +185,7 @@ This is a **hard-break** release. Existing 1.2.0 workpacks are considered legacy
 ### Added
 
 - **V-Series (Verification Prompts)**: New prompt series dedicated to verification gates.
-  - Every workpack **MUST** include at least one verification prompt (`A5_integration_meta.md` or `V#_verify.md`). The linter emits `ERR_NO_VERIFICATION` if none is found.
+  - Every workpack **MUST** include at least one verification prompt (`V#_*.md`). The linter emits `ERR_NO_VERIFICATION` if none is found.
   - `V_bugfix_verify.md` template: lightweight, iterative post-bugfix verification gate (V-loop).
 - **V-Loop Paradigm**: After B-series fixes are applied, a single `V2_bugfix_verify.md` prompt is executed iteratively until all bugs are confirmed resolved. Output JSON tracks `"iteration"` count and `"b_series_resolved"` / `"b_series_remaining"` arrays.
 - **B-Series Severity Field**: `## Severity` section is now **mandatory** in all B-series prompts. Values: `blocker`, `major`, `minor`. Output JSON gains `"severity"` field.
@@ -174,7 +196,7 @@ This is a **hard-break** release. Existing 1.2.0 workpacks are considered legacy
 - **Linter Virtual Environment**: `workpack_lint.py` now auto-creates and re-runs inside a Python virtual environment (`tools/.venv/`) when invoked outside one, ensuring isolation and reproducibility.
 - **CHANGELOG Enforcement**: Generation and migration prompts now instruct agents to update `workpacks/CHANGELOG.md` when introducing protocol version changes.
 - **New Linter Checks**:
-  - `ERR_NO_VERIFICATION`: No `A5_*` or `V#_*` prompt present → ERROR
+  - `ERR_NO_VERIFICATION`: No `V#_*` prompt present → ERROR
   - `WARN_BUGFIX_NO_VERIFY`: B-series prompts present but no `V#_*` prompt → WARNING
   - `WARN_B_SERIES_BUDGET`: >5 B-series prompts → WARNING
   - `WARN_B_SERIES_RESCOPE`: >8 B-series prompts → WARNING (suggests re-scoping)
@@ -183,7 +205,7 @@ This is a **hard-break** release. Existing 1.2.0 workpacks are considered legacy
 
 ### Changed
 
-- **A5 as Fixed Role**: `A5_integration_meta.md` is now a **fixed role name** regardless of how many A-series prompts exist.
+- **V1 as Fixed Role**: `V1_integration_meta.md` is now a **fixed role name** for the integration verification gate.
 - **01_plan.md Template**: Now includes V-loop phase in parallelization map and B-series severity table.
 - **99_status.md Template**: Now includes V-Series tracking section alongside A-Series and B-Series.
 - **B_template.md**: Added mandatory `## Severity` section and severity guidance.
@@ -194,7 +216,7 @@ This is a **hard-break** release. Existing 1.2.0 workpacks are considered legacy
 ### Lifecycle
 
 ```
-A0 → A1–A4 (parallel) → A5/V1 (verify) → [B-series] → V2 (V-loop) → MERGE
+A0 → A1–A4 (parallel) → V1 (verify) → [B-series] → V2 (V-loop) → MERGE
 ```
 
 ### Migration

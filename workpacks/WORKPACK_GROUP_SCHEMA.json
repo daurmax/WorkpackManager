@@ -22,7 +22,7 @@
     },
     "protocol_version": {
       "type": "string",
-      "enum": ["2.0.0", "2.1.0"],
+      "enum": ["2.0.0", "2.1.0", "2.2.0", "2.2.1"],
       "description": "Protocol version. Must be 2.0.0 or higher for groups."
     },
     "created_at": {

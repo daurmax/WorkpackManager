@@ -1,0 +1,99 @@
+{
+  "id": "04_workpack-protocol_npm-distribution",
+  "title": "Npm Distribution",
+  "summary": "Set up a monorepo structure for WorkpackManager and create the `@workpack/protocol` npm package. The package bundles JSON schemas, templates, agent documentation, and provides a CLI `init` command. Also scaffold the `packages/extension/` directory for future VS Code extension development. requires_workpack: [03_workpack-protocol_agent-documentation, 03_workpack-protocol_human-documentation]",
+  "protocol_version": "2.0.0",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "2026-02-23",
+  "requires_workpack": [
+    "03_workpack-protocol_agent-documentation",
+    "03_workpack-protocol_human-documentation"
+  ],
+  "tags": [],
+  "owners": [],
+  "repos": [
+    "WorkpackManager"
+  ],
+  "delivery_mode": "pr",
+  "target_branch": "main",
+  "prompts": [
+    {
+      "stem": "A0_bootstrap",
+      "agent_role": "Branch setup and current structure audit",
+      "depends_on": [],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "XS"
+    },
+    {
+      "stem": "A1_monorepo_structure",
+      "agent_role": "Set up monorepo workspace configuration",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A2_protocol_package",
+      "agent_role": "Create protocol npm package with assets and exports",
+      "depends_on": [
+        "A1_monorepo_structure"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A3_init_command",
+      "agent_role": "Implement init CLI command for project bootstrapping",
+      "depends_on": [
+        "A2_protocol_package"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A4_extension_scaffold",
+      "agent_role": "Scaffold extension package directory structure",
+      "depends_on": [
+        "A1_monorepo_structure"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "V1_integration_meta",
+      "agent_role": "V1 gate and merge readiness review",
+      "depends_on": [
+        "A3_init_command",
+        "A4_extension_scaffold"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "R1_retrospective",
+      "agent_role": "Post-merge retrospective",
+      "depends_on": [
+        "V1_integration_meta"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    }
+  ],
+  "group": "workpack-protocol"
+}

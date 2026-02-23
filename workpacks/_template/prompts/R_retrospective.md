@@ -1,5 +1,5 @@
 ---
-depends_on: [A5_integration_meta]
+depends_on: [V1_integration_meta]
 repos: [<REPO_NAME>]
 ---
 # Retrospective Agent Prompt

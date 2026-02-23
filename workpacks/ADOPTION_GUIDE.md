@@ -163,7 +163,7 @@ Start with:
 
 - `A0_bootstrap.md`
 - One or more implementation prompts (`A1_...`, `A2_...`)
-- `A5_integration_meta.md`
+- `V1_integration_meta.md`
 
 Keep each prompt's YAML front-matter accurate:
 
@@ -224,7 +224,7 @@ And manually verify:
 
 1. One active workpack branch at a time per workstream.
 2. Every completed prompt writes `outputs/<PROMPT>.json`.
-3. `A5_integration_meta` acts as merge gate.
+3. `V1_integration_meta` acts as merge gate.
 4. Merge only when acceptance criteria have evidence in outputs and verification commands pass.
 
 ### CI pipeline integration

@@ -107,7 +107,6 @@ FRONT_MATTER_RE = re.compile(r"^(---\r?\n)(?P<body>.*?)(\r?\n---\r?\n)", re.DOTA
 
 TEMPLATE_MAP = {
     "A0": "A0_bootstrap.md",
-    "A5": "A5_integration_meta.md",
     "B": "B_template.md",
     "V": "V_bugfix_verify.md",
     "R": "R_retrospective.md",
@@ -164,7 +163,7 @@ def _resolve_template(stem: str) -> Path | None:
                 return candidate
 
     if stem.endswith("_integration_meta"):
-        candidate = prompt_dir / "A5_integration_meta.md"
+        candidate = prompt_dir / "V1_integration_meta.md"
         if candidate.exists():
             return candidate
     return None
@@ -576,7 +575,7 @@ def build_meta_payload(
         meta.pop("group", None)
     meta["title"] = title
     meta["summary"] = summary
-    meta["protocol_version"] = "2.0.0"
+    meta["protocol_version"] = "2.2.1"
     meta["workpack_version"] = meta.get("workpack_version", "1.0.0")
     meta["category"] = identity.category
     meta["created_at"] = identity.created_at

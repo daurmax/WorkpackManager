@@ -1,0 +1,49 @@
+{
+  "workpack_id": "02_workpack-protocol_verification-hardening",
+  "overall_status": "not_started",
+  "last_updated": "2026-02-23T22:29:08Z",
+  "prompt_status": {
+    "A0_bootstrap": {
+      "status": "pending"
+    },
+    "A1_state_transition_checks": {
+      "status": "pending"
+    },
+    "A2_markdown_json_sync": {
+      "status": "pending"
+    },
+    "A3_output_artifact_checks": {
+      "status": "pending"
+    },
+    "A4_commit_verification_tool": {
+      "status": "pending"
+    },
+    "A5_prompt_style_lint": {
+      "status": "pending"
+    },
+    "A6_git_hooks_ci_templates": {
+      "status": "pending"
+    },
+    "A7_unified_verify_command": {
+      "status": "pending"
+    },
+    "V1_integration_meta": {
+      "status": "pending"
+    },
+    "R1_retrospective": {
+      "status": "pending"
+    }
+  },
+  "agent_assignments": {},
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "2026-02-23T22:29:08Z",
+      "event": "created",
+      "prompt_stem": null,
+      "agent": null,
+      "notes": "Workpack scaffold created"
+    }
+  ],
+  "notes": null
+}

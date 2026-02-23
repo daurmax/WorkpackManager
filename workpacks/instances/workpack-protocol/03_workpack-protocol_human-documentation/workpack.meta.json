@@ -1,0 +1,100 @@
+{
+  "id": "03_workpack-protocol_human-documentation",
+  "title": "Human Documentation",
+  "summary": "Create a comprehensive human-readable documentation suite under `docs/`: conceptual overview with diagrams, 5-minute quickstart, integration guide (supersedes ADOPTION_GUIDE.md), and troubleshooting catalog. All documents cross-reference each other and reference the new verification commands and configuration format from Phase 2 workpacks. requires_workpack: [02_workpack-protocol_verification-hardening, 02_workpack-protocol_project-config]",
+  "protocol_version": "2.0.0",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "2026-02-23",
+  "requires_workpack": [
+    "02_workpack-protocol_verification-hardening",
+    "02_workpack-protocol_project-config"
+  ],
+  "tags": [],
+  "owners": [],
+  "repos": [
+    "WorkpackManager"
+  ],
+  "delivery_mode": "pr",
+  "target_branch": "main",
+  "prompts": [
+    {
+      "stem": "A0_bootstrap",
+      "agent_role": "Branch setup and documentation audit",
+      "depends_on": [],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "XS"
+    },
+    {
+      "stem": "A1_concepts_guide",
+      "agent_role": "Write docs/CONCEPTS.md with diagrams",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A2_quickstart_guide",
+      "agent_role": "Write docs/QUICKSTART.md step-by-step guide",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "A3_integration_guide",
+      "agent_role": "Write docs/INTEGRATION.md evolving ADOPTION_GUIDE",
+      "depends_on": [
+        "A1_concepts_guide"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A4_troubleshooting_guide",
+      "agent_role": "Write docs/TROUBLESHOOTING.md problem catalog",
+      "depends_on": [
+        "A1_concepts_guide"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "V1_integration_meta",
+      "agent_role": "V1 gate and merge readiness review",
+      "depends_on": [
+        "A2_quickstart_guide",
+        "A3_integration_guide",
+        "A4_troubleshooting_guide"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "R1_retrospective",
+      "agent_role": "Post-merge retrospective",
+      "depends_on": [
+        "V1_integration_meta"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    }
+  ],
+  "group": "workpack-protocol"
+}
