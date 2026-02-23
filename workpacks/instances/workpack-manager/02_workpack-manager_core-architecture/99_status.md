@@ -2,7 +2,7 @@
 
 ## Overall Status
 
-🔴 Not Started (blocked by `01_workpack-manager_protocol-v6`)
+🟡 In Progress
 
 Last Updated: 2026-02-23
 
@@ -22,7 +22,7 @@ Last Updated: 2026-02-23
 
 | Prompt | Status | Output JSON | Notes |
 |--------|--------|-------------|-------|
-| A0_bootstrap | ⏳ Pending | ❌ | |
+| A0_bootstrap | ✅ Complete | ✅ | Extension scaffold created on `feature/extension-core-architecture`; `npx tsc --noEmit` passes. |
 | A1_data_models | ⏳ Pending | ❌ | |
 | A2_parser_indexer | ⏳ Pending | ❌ | |
 | A3_state_reconciliation | ⏳ Pending | ❌ | |
@@ -49,7 +49,7 @@ No B-series prompts yet.
 
 | Prompt | Output JSON Path | Status |
 |--------|------------------|--------|
-| A0_bootstrap | `outputs/A0_bootstrap.json` | Not Created |
+| A0_bootstrap | `outputs/A0_bootstrap.json` | Created |
 | A1_data_models | `outputs/A1_data_models.json` | Not Created |
 | A2_parser_indexer | `outputs/A2_parser_indexer.json` | Not Created |
 | A3_state_reconciliation | `outputs/A3_state_reconciliation.json` | Not Created |

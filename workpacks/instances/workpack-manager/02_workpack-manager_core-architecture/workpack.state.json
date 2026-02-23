@@ -1,9 +1,15 @@
 {
   "workpack_id": "02_workpack-manager_core-architecture",
-  "overall_status": "not_started",
-  "last_updated": "2026-02-23T00:00:00Z",
+  "overall_status": "in_progress",
+  "last_updated": "2026-02-23T17:45:19Z",
   "prompt_status": {
-    "A0_bootstrap": { "status": "pending" },
+    "A0_bootstrap": {
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-23T17:45:19Z",
+      "completed_at": "2026-02-23T17:45:19Z",
+      "output_validated": true
+    },
     "A1_data_models": { "status": "pending" },
     "A2_parser_indexer": { "status": "pending" },
     "A3_state_reconciliation": { "status": "pending" },
@@ -12,7 +18,7 @@
     "R1_retrospective": { "status": "pending" }
   },
   "agent_assignments": {},
-  "blocked_by": ["01_workpack-manager_protocol-v6"],
+  "blocked_by": [],
   "execution_log": [
     {
       "timestamp": "2026-02-23T00:00:00Z",
@@ -20,7 +26,21 @@
       "prompt_stem": null,
       "agent": null,
       "notes": "Workpack scaffolded. Blocked by workpack-protocol-v6."
+    },
+    {
+      "timestamp": "2026-02-23T17:45:19Z",
+      "event": "unblocked",
+      "prompt_stem": null,
+      "agent": "codex",
+      "notes": "Unblocked after 01_workpack-manager_protocol-v6 completion."
+    },
+    {
+      "timestamp": "2026-02-23T17:45:19Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A0_bootstrap",
+      "agent": "codex",
+      "notes": "Bootstrapped VS Code extension scaffold with activation events and source architecture directories."
     }
   ],
-  "notes": "Blocked until WP00 (workpack-protocol-v6) is complete."
+  "notes": "A0 bootstrap completed on feature/extension-core-architecture."
 }
