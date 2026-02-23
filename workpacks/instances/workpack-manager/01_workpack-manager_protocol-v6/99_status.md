@@ -2,7 +2,7 @@
 
 ## Overall Status
 
-🔴 Not Started
+🟡 In Progress
 
 Last Updated: 2026-02-23
 
@@ -22,7 +22,7 @@ Last Updated: 2026-02-23
 
 | Prompt | Status | Output JSON | Notes |
 |--------|--------|-------------|-------|
-| A0_bootstrap | ⏳ Pending | ❌ | |
+| A0_bootstrap | ✅ Complete | ✅ | Feature branch created and workspace scaffold verified |
 | A1_protocol_spec | ⏳ Pending | ❌ | |
 | A2_schemas_and_templates | ⏳ Pending | ❌ | |
 | A3_tooling_linter | ⏳ Pending | ❌ | |
@@ -50,7 +50,7 @@ No B-series prompts yet.
 
 | Prompt | Output JSON Path | Status |
 |--------|------------------|--------|
-| A0_bootstrap | `outputs/A0_bootstrap.json` | Not Created |
+| A0_bootstrap | `outputs/A0_bootstrap.json` | Created |
 | A1_protocol_spec | `outputs/A1_protocol_spec.json` | Not Created |
 | A2_schemas_and_templates | `outputs/A2_schemas_and_templates.json` | Not Created |
 | A3_tooling_linter | `outputs/A3_tooling_linter.json` | Not Created |

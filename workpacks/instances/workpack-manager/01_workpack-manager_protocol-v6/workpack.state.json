@@ -1,9 +1,15 @@
 {
   "workpack_id": "01_workpack-manager_protocol-v6",
-  "overall_status": "not_started",
-  "last_updated": "2026-02-23T00:00:00Z",
+  "overall_status": "in_progress",
+  "last_updated": "2026-02-23T16:03:24Z",
   "prompt_status": {
-    "A0_bootstrap": { "status": "pending" },
+    "A0_bootstrap": {
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-23T16:03:24Z",
+      "completed_at": "2026-02-23T16:03:24Z",
+      "output_validated": false
+    },
     "A1_protocol_spec": { "status": "pending" },
     "A2_schemas_and_templates": { "status": "pending" },
     "A3_tooling_linter": { "status": "pending" },
@@ -21,6 +27,13 @@
       "prompt_stem": null,
       "agent": null,
       "notes": "Workpack scaffolded"
+    },
+    {
+      "timestamp": "2026-02-23T16:03:24Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A0_bootstrap",
+      "agent": "codex",
+      "notes": "Created feature/workpack-protocol-v6 from main and verified workspace readiness."
     }
   ],
   "notes": null
