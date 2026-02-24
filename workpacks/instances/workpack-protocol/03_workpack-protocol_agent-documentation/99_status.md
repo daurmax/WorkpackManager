@@ -30,7 +30,7 @@ No B-series prompts yet.
 
 ### Verification (V-series)
 
-- [x] V1_integration_meta completed (FAIL — not merge-ready, see outputs/V1_integration_meta.json)
+- [x] V1_integration_meta completed (PASS — merge-ready, iteration 2, see outputs/V1_integration_meta.json)
 - [ ] V2_bugfix_verify created if B-series appears
 
 ### Retrospective (R-series)
@@ -45,5 +45,5 @@ No B-series prompts yet.
 | A1_agent_rules | `outputs/A1_agent_rules.json` | Created |
 | A2_agent_state_machine | `outputs/A2_agent_state_machine.json` | Created |
 | A3_agent_context_tool | `outputs/A3_agent_context_tool.json` | Created |
-| V1_integration_meta | `outputs/V1_integration_meta.json` | Created (FAIL) |
+| V1_integration_meta | `outputs/V1_integration_meta.json` | Updated (PASS, iter 2) |
 | R1_retrospective | `outputs/R1_retrospective.json` | Not Created |
