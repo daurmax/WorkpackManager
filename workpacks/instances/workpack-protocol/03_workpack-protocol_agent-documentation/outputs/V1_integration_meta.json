@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-protocol_agent-documentation",
+  "prompt": "V1_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/agent-documentation",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/outputs/V1_integration_meta.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "189/189 passed in 1.40s"
+      },
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "All schema and template checks passed."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "fail",
+        "notes": "7 errors, all pre-existing in other workpacks (ERR_NO_VERIFICATION x6, ERR_STATE_SCHEMA_INVALID x1). No errors for agent-documentation workpack."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/test_agent_context.py -v",
+        "result": "pass",
+        "notes": "5/5 passed"
+      },
+      {
+        "cmd": "python workpacks/tools/agent_context.py --workpack workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation",
+        "result": "pass",
+        "notes": "Valid JSON with all required fields: workpack_id, overall_status, available_prompts, blocked_prompts, completed_prompts, blockers, next_actions"
+      },
+      {
+        "cmd": "wc -l workpacks/AGENT_RULES.md",
+        "result": "pass",
+        "notes": "86 lines, under 200-line conciseness constraint (AC3)"
+      },
+      {
+        "cmd": "git status --short",
+        "result": "fail",
+        "notes": "AGENT_RULES.md, AGENT_STATE_MACHINE.md, agent_context.py, test_agent_context.py, A2/A3 output JSONs are untracked or unstaged — never committed."
+      },
+      {
+        "cmd": "git show --stat 186a81b (A0 SHA)",
+        "result": "pass",
+        "notes": "SHA exists, changed file matches A0 change_details."
+      },
+      {
+        "cmd": "git show --stat 90c4f91 (A2 claimed SHA)",
+        "result": "fail",
+        "notes": "SHA exists but is an A0_bootstrap commit (updated A0_bootstrap.json). Does NOT contain any A2 files (AGENT_STATE_MACHINE.md, etc.). Misattributed."
+      },
+      {
+        "cmd": "git log -- workpacks/AGENT_STATE_MACHINE.md workpacks/tools/agent_context.py workpacks/AGENT_RULES.md",
+        "result": "fail",
+        "notes": "No commits found touching any deliverable file. All deliverables are uncommitted."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No regressions introduced. All 189 tests pass. Deliverable files are functionally correct but not committed."
+  },
+  "handoff": {
+    "summary": "V1 integration gate: FAIL — NOT MERGE-READY. All 11 acceptance criteria are met at the content/functional level, but critical commit tracking violations prevent branch verification. A2 and A3 deliverables were never committed. A1_agent_rules was never formally executed (DAG violation). Must resolve blocking issues before re-running V1.",
+    "next_steps": [
+      "Execute A1_agent_rules formally: set status to in_progress, verify existing AGENT_RULES.md content satisfies AC1-AC3, write outputs/A1_agent_rules.json, mark complete.",
+      "Commit all uncommitted deliverables: AGENT_RULES.md, AGENT_STATE_MACHINE.md, agent_context.py, test_agent_context.py with proper commit messages.",
+      "Fix A2_agent_state_machine.json: replace misattributed commit SHA 90c4f91 with actual commit SHA after committing A2 files.",
+      "Fix A3_agent_context_tool.json: replace placeholder <COMMIT_SHA> with actual commit SHA after committing A3 files.",
+      "Re-run V1_integration_meta to verify all fixes."
+    ],
+    "known_issues": [
+      "BLOCKER: A2 output claims SHA 90c4f91 but that commit only touched A0_bootstrap.json — misattributed SHA.",
+      "BLOCKER: A3 output contains placeholder <COMMIT_SHA> instead of real SHA — never backfilled.",
+      "BLOCKER: All deliverable files (AGENT_RULES.md, AGENT_STATE_MACHINE.md, agent_context.py, test_agent_context.py) are uncommitted (untracked in git).",
+      "BLOCKER: A1_agent_rules has status=pending and no output JSON, yet A3 (which depends_on A1) was executed — DAG execution order violation.",
+      "INFO: A1_agent_rules was never formally executed but AGENT_RULES.md file exists with complete content, suggesting it was created outside the prompt lifecycle.",
+      "INFO: Linter reports 7 pre-existing errors in other workpacks; none in agent-documentation."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/outputs/V1_integration_meta.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Integration gate decision: FAIL. Acceptance criteria assessment: AC1-AC11 all PASS at content level. Branch verification: FAIL due to uncommitted files, misattributed/placeholder commit SHAs, and A1 DAG violation. The deliverable artifacts themselves are high quality — the failures are procedural (commit tracking, prompt lifecycle). Recommended remediation: (1) formally execute A1, (2) commit all files, (3) update output JSONs with real SHAs, (4) re-run V1."
+}

@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-protocol_agent-documentation",
+  "prompt": "A3_agent_context_tool",
+  "component": "agent-tooling",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/agent-documentation",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "a1fc07f375fcb15639a5eb5472546a09e75813d7"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/workpack.state.json",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/99_status.md"
+    ],
+    "files_created": [
+      "workpacks/tools/agent_context.py",
+      "workpacks/tools/tests/test_agent_context.py",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/outputs/A3_agent_context_tool.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/test_agent_context.py -v",
+        "result": "pass",
+        "notes": "5 passed."
+      },
+      {
+        "cmd": "python workpacks/tools/agent_context.py --workpack workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation | python -m json.tool",
+        "result": "pass",
+        "notes": "Valid JSON output."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added unit tests covering DAG classification, topological ordering, complete-state behavior, cycle detection, and invalid input handling."
+  },
+  "handoff": {
+    "summary": "Implemented agent_context.py with DAG-aware prompt classification and created unit tests for main behaviors and failure paths.",
+    "next_steps": [
+      "Proceed to V1_integration_meta."
+    ],
+    "known_issues": [
+      "A1_agent_rules remains pending in workpack.state.json from prior workpack history, which keeps dependency history non-linear."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/agent_context.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/tests/test_agent_context.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/outputs/A3_agent_context_tool.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/99_status.md",
+      "action": "modified"
+    }
+  ],
+  "notes": "CLI supports --workpack and optional --output. Exit code is 1 for missing files, malformed JSON, unknown dependencies, unsupported statuses, and DAG cycles."
+}
