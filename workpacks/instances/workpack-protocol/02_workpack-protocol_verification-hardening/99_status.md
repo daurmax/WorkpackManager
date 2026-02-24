@@ -35,7 +35,7 @@ No B-series prompts yet.
 
 ### Verification (V-series)
 
-- [x] V1_integration_meta completed (FAIL — not merge-ready)
+- [x] V1_integration_meta completed (PASS — merge-ready, iteration 2)
 - [ ] V2_bugfix_verify created if B-series appears
 
 ### Retrospective (R-series)
@@ -54,5 +54,5 @@ No B-series prompts yet.
 | A5_prompt_style_lint | `outputs/A5_prompt_style_lint.json` | Created |
 | A6_git_hooks_ci_templates | `outputs/A6_git_hooks_ci_templates.json` | Created |
 | A7_unified_verify_command | `outputs/A7_unified_verify_command.json` | Created |
-| V1_integration_meta | `outputs/V1_integration_meta.json` | Created (FAIL) |
+| V1_integration_meta | `outputs/V1_integration_meta.json` | Updated (PASS, iteration 2) |
 | R1_retrospective | `outputs/R1_retrospective.json` | Not Created |
