@@ -11,7 +11,11 @@
       "output_validated": true
     },
     "A1_state_transition_checks": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "claude-opus-4",
+      "started_at": "2026-02-25T00:30:00Z",
+      "completed_at": "2026-02-25T00:35:00Z",
+      "output_validated": true
     },
     "A2_markdown_json_sync": {
       "status": "complete",
@@ -21,7 +25,11 @@
       "output_validated": true
     },
     "A3_output_artifact_checks": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "claude-opus-4",
+      "started_at": "2026-02-25T00:35:00Z",
+      "completed_at": "2026-02-25T00:40:00Z",
+      "output_validated": true
     },
     "A4_commit_verification_tool": {
       "status": "complete",
@@ -69,6 +77,8 @@
     "A5_prompt_style_lint": "codex",
     "A6_git_hooks_ci_templates": "codex",
     "A7_unified_verify_command": "codex",
+    "A1_state_transition_checks": "claude-opus-4",
+    "A3_output_artifact_checks": "claude-opus-4",
     "V1_integration_meta": "claude-opus-4"
   },
   "blocked_by": [],
@@ -183,8 +193,34 @@
       "event": "prompt_completed",
       "prompt_stem": "V1_integration_meta",
       "agent": "claude-opus-4",
-      "notes": "V1 integration gate completed — FAIL, not merge-ready"
-    }
+      "notes": "V1 integration gate completed — FAIL, not merge-ready"    },
+    {
+      "timestamp": "2026-02-25T00:30:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A1_state_transition_checks",
+      "agent": "claude-opus-4",
+      "notes": "A1 backfill during V1 remediation"
+    },
+    {
+      "timestamp": "2026-02-25T00:35:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A1_state_transition_checks",
+      "agent": "claude-opus-4",
+      "notes": "A1 output backfilled — tool existed, tests pass"
+    },
+    {
+      "timestamp": "2026-02-25T00:35:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A3_output_artifact_checks",
+      "agent": "claude-opus-4",
+      "notes": "A3 backfill during V1 remediation"
+    },
+    {
+      "timestamp": "2026-02-25T00:40:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A3_output_artifact_checks",
+      "agent": "claude-opus-4",
+      "notes": "A3 output backfilled — tool existed, tests pass"    }
   ],
   "notes": null
 }

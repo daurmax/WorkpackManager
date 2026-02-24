@@ -21,9 +21,9 @@ Last Updated: 2026-02-24
 ### Implementation Progress (A-series)
 
 - [x] A0_bootstrap completed
-- [ ] A1_state_transition_checks completed
+- [x] A1_state_transition_checks completed (backfilled)
 - [x] A2_markdown_json_sync completed
-- [ ] A3_output_artifact_checks completed
+- [x] A3_output_artifact_checks completed (backfilled)
 - [x] A4_commit_verification_tool completed
 - [x] A5_prompt_style_lint completed
 - [x] A6_git_hooks_ci_templates completed
@@ -47,9 +47,9 @@ No B-series prompts yet.
 | Prompt | Output JSON Path | Status |
 |--------|------------------|--------|
 | A0_bootstrap | `outputs/A0_bootstrap.json` | Created |
-| A1_state_transition_checks | `outputs/A1_state_transition_checks.json` | Not Created |
+| A1_state_transition_checks | `outputs/A1_state_transition_checks.json` | Created (backfilled) |
 | A2_markdown_json_sync | `outputs/A2_markdown_json_sync.json` | Created |
-| A3_output_artifact_checks | `outputs/A3_output_artifact_checks.json` | Not Created |
+| A3_output_artifact_checks | `outputs/A3_output_artifact_checks.json` | Created (backfilled) |
 | A4_commit_verification_tool | `outputs/A4_commit_verification_tool.json` | Created |
 | A5_prompt_style_lint | `outputs/A5_prompt_style_lint.json` | Created |
 | A6_git_hooks_ci_templates | `outputs/A6_git_hooks_ci_templates.json` | Created |
