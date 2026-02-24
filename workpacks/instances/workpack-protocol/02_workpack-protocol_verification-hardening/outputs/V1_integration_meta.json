@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_verification-hardening",
+  "prompt": "V1_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/verification-hardening",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "no-commit"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/V1_integration_meta.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "184 passed in 1.58s."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening",
+        "result": "pass",
+        "notes": "Target workpack passes lint validation."
+      },
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "All schema and template checks passed."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_state_transitions.py",
+        "result": "pass",
+        "notes": "0 errors, 28 warnings (legacy-compat). State transition validation working."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_md_json_sync.py --plan-md <target>/01_plan.md --meta-json <target>/workpack.meta.json --status-md <target>/99_status.md --state-json <target>/workpack.state.json",
+        "result": "pass",
+        "notes": "No markdown-json synchronization drift detected for target workpack."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_output_artifacts.py",
+        "result": "fail",
+        "notes": "Target workpack: 2 warnings (A0/A2 empty commit_shas violate schema 1.2 minItems). Repo-wide: 43 errors (pre-existing)."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_prompt_style.py workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/prompts",
+        "result": "fail",
+        "notes": "1 error: R1_retrospective.md missing required sections (READ FIRST, Implementation Requirements, Verification). R-series prompts intentionally use a different structure."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_verify.py --workpack 02_workpack-protocol_verification-hardening --json",
+        "result": "fail",
+        "notes": "1 error, 2 warnings. Error: R1_retrospective prompt style. Warnings: empty commit_shas in A0/A2."
+      },
+      {
+        "cmd": "git status --short",
+        "result": "fail",
+        "notes": "21 untracked/modified files. All tool code, tests, output JSONs, hooks, CI workflow are uncommitted."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No new regressions; all 184 existing tests pass."
+  },
+  "handoff": {
+    "summary": "V1 integration gate executed. DECISION: FAIL — not merge-ready. All 16 acceptance criteria have implementation evidence (tools exist, tests pass), but 3 blocking process-level issues prevent merge: (1) prompts A1_state_transition_checks and A3_output_artifact_checks remain pending with no output JSONs, (2) DAG dependency violation — A6/A7 marked complete while prerequisites A1/A3 are pending, (3) all deliverables are uncommitted to git.",
+    "next_steps": [
+      "Complete A1_state_transition_checks: write output JSON, update state to complete",
+      "Complete A3_output_artifact_checks: write output JSON, update state to complete",
+      "Commit all work to feature/verification-hardening with proper commit messages",
+      "Fix output JSON commit_shas: replace placeholders and empty arrays with real commit SHAs",
+      "Re-run V1 integration gate after remediation"
+    ],
+    "known_issues": [
+      "A1_state_transition_checks: prompt status pending, no output JSON, but verify_state_transitions.py tool exists and passes tests",
+      "A3_output_artifact_checks: prompt status pending, no output JSON, but verify_output_artifacts.py tool exists and passes tests",
+      "DAG violation: A6/A7 completed while prerequisite A1/A3 are pending",
+      "All work uncommitted: 21 untracked/modified files in working tree",
+      "Output JSONs A0/A2 have empty commit_shas violating schema 1.2 minItems:1",
+      "Output JSONs A5/A6 have placeholder '<COMMIT_SHA>' instead of real SHAs",
+      "Output JSONs A4/A7 reference SHA 4d24eafd from project-config workpack, not verification-hardening",
+      "R1_retrospective.md flagged by prompt style linter for missing sections (expected for R-series)",
+      "workpack.meta.json declares protocol_version 2.0.0 but workpack uses 2.2.0 features"
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/V1_integration_meta.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Integration gate FAIL. All 16 acceptance criteria have functional evidence (tools created, 184 tests passing, >90% branch coverage per module), but merge is blocked by: incomplete A1/A3 prompts, DAG violations, and zero git commits for this workpack's deliverables. Remediation required before re-running gate."
+}

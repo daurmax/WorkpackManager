@@ -1,0 +1,115 @@
+name: Workpack Verify
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify:
+    name: Run Workpack Verification Suite
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install verification dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Keep dependencies minimal for verification modules.
+          python -m pip install jsonschema
+
+      - name: Run verification suite (A1-A5)
+        shell: bash
+        env:
+          WORK_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          summary_file="${GITHUB_STEP_SUMMARY}"
+          echo "## Workpack Verification Summary" >> "${summary_file}"
+          echo "" >> "${summary_file}"
+          echo "| Check | Result |" >> "${summary_file}"
+          echo "| --- | --- |" >> "${summary_file}"
+
+          failed=0
+
+          run_check() {
+            local check_name="$1"
+            shift
+
+            local log_file
+            log_file="$(mktemp)"
+
+            if "$@" >"${log_file}" 2>&1; then
+              result="PASS"
+            else
+              result="FAIL"
+              failed=1
+            fi
+
+            echo "| \`${check_name}\` | ${result} |" >> "${summary_file}"
+            {
+              echo ""
+              echo "<details><summary>${check_name} output</summary>"
+              echo ""
+              echo '```text'
+              tail -n 200 "${log_file}"
+              echo '```'
+              echo "</details>"
+              echo ""
+            } >> "${summary_file}"
+
+            cat "${log_file}"
+            rm -f "${log_file}"
+          }
+
+          # Full-suite checks mapped to A1-A5 verification modules.
+          run_check "state transitions" \
+            python workpacks/tools/verify_state_transitions.py workpacks/instances
+
+          mapfile -t workpack_requests < <(find workpacks/instances -type f -name "00_request.md" | sort)
+          if [[ ${#workpack_requests[@]} -eq 0 ]]; then
+            echo "| \`markdown-json sync discovery\` | FAIL |" >> "${summary_file}"
+            failed=1
+          else
+            for request_path in "${workpack_requests[@]}"; do
+              workpack_dir="$(dirname "${request_path}")"
+              run_check "markdown-json sync (${workpack_dir})" \
+                python workpacks/tools/verify_md_json_sync.py \
+                  --plan-md "${workpack_dir}/01_plan.md" \
+                  --meta-json "${workpack_dir}/workpack.meta.json" \
+                  --status-md "${workpack_dir}/99_status.md" \
+                  --state-json "${workpack_dir}/workpack.state.json" \
+                  --json
+            done
+          fi
+
+          run_check "output artifacts" \
+            python workpacks/tools/verify_output_artifacts.py --json
+
+          # Uses PR head branch for pull requests and ref name for pushes.
+          run_check "commit verification (${WORK_BRANCH})" \
+            python workpacks/tools/verify_commits.py --work-branch "${WORK_BRANCH}" --json
+
+          run_check "prompt style" \
+            python workpacks/tools/verify_prompt_style.py --json
+
+          if [[ "${failed}" -ne 0 ]]; then
+            echo "One or more verification checks failed." >&2
+            exit 1
+          fi
+
+          echo "All verification checks passed."

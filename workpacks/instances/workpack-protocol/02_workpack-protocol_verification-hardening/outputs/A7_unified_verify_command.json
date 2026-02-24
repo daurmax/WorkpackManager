@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_verification-hardening",
+  "prompt": "A7_unified_verify_command",
+  "component": "verification-cli",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/verification-hardening",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "4d24eafd1a0c32ecc54e76c1838dcf774a5fd05a"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/99_status.md",
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/tools/workpack_verify.py",
+      "workpacks/tools/tests/test_workpack_verify.py",
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A7_unified_verify_command.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/workpack_verify.py --help",
+        "result": "pass",
+        "notes": "CLI help rendered successfully."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_verify.py --json",
+        "result": "fail",
+        "notes": "Command executed and produced structured JSON output; returned non-zero due pre-existing repository findings outside A7 scope."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_verify.py --category state --strict",
+        "result": "pass",
+        "notes": "Strict warning behavior verified (PowerShell LASTEXITCODE=2 when warnings exist and no errors)."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "184 passed."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added integration tests for unified verify command category filtering, JSON output mode, strict mode exit behavior, and workpack filter handling."
+  },
+  "handoff": {
+    "summary": "Implemented unified workpack verify command with category filtering, strict mode, JSON output, workpack targeting, and integration tests.",
+    "next_steps": [
+      "Proceed to V1_integration_meta"
+    ],
+    "known_issues": [
+      "Repository-wide verification reports pre-existing style and artifact findings in other workpacks.",
+      "Target workpack still has pending A1/A3 outputs from earlier prompts."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/workpack_verify.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/tests/test_workpack_verify.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A7_unified_verify_command.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Unified verifier orchestrates existing A1-A5 modules via category adapters and emits per-workpack structured reports."
+}

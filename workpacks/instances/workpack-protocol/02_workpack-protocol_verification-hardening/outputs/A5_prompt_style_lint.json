@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_verification-hardening",
+  "prompt": "A5_prompt_style_lint",
+  "component": "verification-tooling",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/verification-hardening",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "<COMMIT_SHA>"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/tools/verify_output_artifacts.py",
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/99_status.md",
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/tools/verify_prompt_style.py",
+      "workpacks/tools/tests/test_verify_prompt_style.py",
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A5_prompt_style_lint.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "165 passed."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "fail",
+        "notes": "Reported pre-existing ERR_NO_VERIFICATION/state-schema issues in other workpacks."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_prompt_style.py",
+        "result": "fail",
+        "notes": "Repository-wide scan reported existing prompt-style violations (72 errors, 6 warnings)."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/test_verify_prompt_style.py --cov=verify_prompt_style --cov-branch --cov-report=term-missing",
+        "result": "pass",
+        "notes": "verify_prompt_style.py branch coverage: 92%."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added prompt style linter tests covering required sections, YAML front-matter validation, and CLI behavior."
+  },
+  "handoff": {
+    "summary": "Implemented prompt style linting for required sections and YAML front-matter, with standalone CLI and high-coverage tests.",
+    "next_steps": [
+      "Proceed to A6/A7 after parallel tasks complete"
+    ],
+    "known_issues": [
+      "Repository-wide prompt style scan currently fails on existing historical prompts outside A5 scope.",
+      "workpack_lint.py reports pre-existing errors in other workpacks."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/verify_prompt_style.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/tests/test_verify_prompt_style.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/verify_output_artifacts.py",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A5_prompt_style_lint.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Prompt templates are handled with tolerance by downgrading missing-section findings to warnings for non-numbered/template stems."
+}
