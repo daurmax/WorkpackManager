@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_verification-hardening",
+  "prompt": "A1_state_transition_checks",
+  "component": "verification-tooling",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/verification-hardening",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "2cc2a50394dd1ceebabccd6816e630d1bbb6fe8c"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/tools/verify_state_transitions.py",
+      "workpacks/tools/tests/test_verify_state_transitions.py",
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A1_state_transition_checks.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/test_verify_state_transitions.py -v",
+        "result": "pass",
+        "notes": "All state transition tests passing."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_state_transitions.py",
+        "result": "pass",
+        "notes": "0 errors, 28 warnings (legacy-compat). Detects illegal workpack-level and prompt-level transitions."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "184 passed."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added unit tests for illegal workpack state transitions (AC1), illegal prompt state transitions (AC2), non-monotonic timestamps and missing required events (AC3)."
+  },
+  "handoff": {
+    "summary": "Implemented state transition validator covering workpack-level transitions (not_started->in_progress->complete), prompt-level transitions (pending->in_progress->complete), execution log monotonicity, and required event checks. Backfilled output during V1 remediation.",
+    "next_steps": [
+      "Wire into unified verify command via A7"
+    ],
+    "known_issues": [
+      "Legacy workpacks produce warnings for missing in_progress transitions (backward-compat tolerance)."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/verify_state_transitions.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/tests/test_verify_state_transitions.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A1_state_transition_checks.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Output backfilled during V1 remediation. Tool was implemented and tests pass but prompt output was not originally recorded. Covers AC1 (workpack state transitions), AC2 (prompt state transitions), AC3 (execution log validation)."
+}
