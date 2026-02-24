@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-protocol_agent-documentation",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/agent-documentation",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "186a81b47951f0842ac9bb6ecdb8c32a308bcc0d"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/outputs/A0_bootstrap.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "fail",
+        "notes": "Command succeeded; linter reported pre-existing repository-level errors outside this workpack and one unrelated state-schema issue in another workpack."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "184 passed."
+      },
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "All schema and template checks passed."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No feature implementation in bootstrap."
+  },
+  "handoff": {
+    "summary": "Bootstrap completed and workspace is ready.",
+    "next_steps": [
+      "Start dependent A-series prompts"
+    ],
+    "known_issues": [
+      "Global workpack linter currently fails on pre-existing repository issues outside this prompt scope."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_agent-documentation/outputs/A0_bootstrap.json",
+      "action": "created"
+    }
+  ],
+  "notes": "requires_workpack check: 02_workpack-protocol_verification-hardening and 02_workpack-protocol_project-config both have V1_integration_meta marked complete in workpack.state.json. Branch feature/agent-documentation created from master. outputs/ directory already exists and is writable."
+}
