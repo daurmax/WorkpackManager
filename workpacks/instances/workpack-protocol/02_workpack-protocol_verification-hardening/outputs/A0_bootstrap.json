@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_verification-hardening",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/verification-hardening",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "2cc2a50394dd1ceebabccd6816e630d1bbb6fe8c"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A0_bootstrap.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "pass",
+        "notes": "Command succeeded; reported pre-existing repository-level lint errors outside this workpack."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "43 passed."
+      },
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "All schema and template checks passed."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No feature implementation in bootstrap."
+  },
+  "handoff": {
+    "summary": "Bootstrap completed and workspace is ready.",
+    "next_steps": [
+      "Start dependent A-series prompts"
+    ],
+    "known_issues": [
+      "Pre-existing lint errors in other workpacks were reported by global linter scan."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A0_bootstrap.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Dependency check: requires_workpack '01_workpack-protocol_prompt-lifecycle' is complete (confirmed via 99_status.md and workpack.state.json). Branch created/switched to feature/verification-hardening. Outputs directory exists and is writable."
+}
