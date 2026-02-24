@@ -1,22 +1,22 @@
 {
   "workpack_id": "02_workpack-protocol_project-config",
-  "overall_status": "not_started",
-  "last_updated": "2026-02-23T22:29:21Z",
+  "overall_status": "in_progress",
+  "last_updated": "2026-02-24T12:00:00Z",
   "prompt_status": {
     "A0_bootstrap": {
-      "status": "pending"
+      "status": "complete"
     },
     "A1_config_schema": {
-      "status": "pending"
+      "status": "complete"
     },
     "A2_config_tool_integration": {
-      "status": "pending"
+      "status": "complete"
     },
     "A3_multi_workspace_discovery": {
-      "status": "pending"
+      "status": "complete"
     },
     "V1_integration_meta": {
-      "status": "pending"
+      "status": "complete"
     },
     "R1_retrospective": {
       "status": "pending"
@@ -31,6 +31,41 @@
       "prompt_stem": null,
       "agent": null,
       "notes": "Workpack scaffold created"
+    },
+    {
+      "timestamp": "2026-02-24T12:00:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A0_bootstrap",
+      "agent": null,
+      "notes": "Bootstrap completed, branch feature/project-config created"
+    },
+    {
+      "timestamp": "2026-02-24T12:00:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A1_config_schema",
+      "agent": null,
+      "notes": "WORKPACK_CONFIG_SCHEMA.json created, validate_templates.py updated"
+    },
+    {
+      "timestamp": "2026-02-24T12:00:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A2_config_tool_integration",
+      "agent": null,
+      "notes": "Config loader integrated into all Python tools"
+    },
+    {
+      "timestamp": "2026-02-24T12:00:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A3_multi_workspace_discovery",
+      "agent": null,
+      "notes": "Multi-root and exclude-aware discovery implemented"
+    },
+    {
+      "timestamp": "2026-02-24T12:00:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "V1_integration_meta",
+      "agent": null,
+      "notes": "V1 integration gate: PASS. All AC met, all commits verified, branch_verified=true"
     }
   ],
   "notes": null

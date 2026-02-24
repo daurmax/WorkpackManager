@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_project-config",
+  "prompt": "V1_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/project-config",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "e4d85106036f659b77c696d78bef3eda11bd50e3",
+      "beeceb985ba6748b2abcbb454984e50803a6b9d6",
+      "c1f7376f18dea1b3907311d4bad0247096c9b307",
+      "eba4bfe4bed86c84df015e310506302df5119c04"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/workpack.state.json",
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/99_status.md"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/outputs/V1_integration_meta.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "All schema and template checks passed."
+      },
+      {
+        "cmd": "python workpacks/tools/validate_workpack_files.py",
+        "result": "pass",
+        "notes": "11 workpacks discovered, all contain required files."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "pass",
+        "notes": "6 ERR_NO_VERIFICATION in other workpacks (pre-existing, not introduced by this workpack). 02_workpack-protocol_project-config itself is clean."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "43 tests passed."
+      },
+      {
+        "cmd": "jsonschema validation of A0-A3 outputs against WORKPACK_OUTPUT_SCHEMA.json",
+        "result": "pass",
+        "notes": "All 4 A-series output JSONs pass Draft 2020-12 schema validation."
+      },
+      {
+        "cmd": "git log --oneline feature/project-config | grep <SHA> (x4 SHAs)",
+        "result": "pass",
+        "notes": "All 4 commit SHAs found on feature/project-config branch."
+      },
+      {
+        "cmd": "git show --stat <SHA> cross-reference with change_details (x4 SHAs)",
+        "result": "pass",
+        "notes": "All changed files in each commit match the corresponding output change_details entries. No undeclared or missing files."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No product code changes in V1 gate; verification-only artifact and state file updates."
+  },
+  "handoff": {
+    "summary": "V1 integration gate: PASS. All 15 acceptance criteria met. All 4 A-series commit SHAs verified on feature/project-config. File cross-references match. No B-series prompts. Branch is merge-ready.",
+    "next_steps": [
+      "Create PR from feature/project-config to main",
+      "Merge PR",
+      "Execute R1_retrospective post-merge"
+    ],
+    "known_issues": [
+      "6 pre-existing ERR_NO_VERIFICATION lint errors in other workpacks (workpack-manager/01-04, workpack-protocol/01) — not introduced by this workpack.",
+      "1 WARN_BUGFIX_NO_VERIFY in workpack-protocol/01 — pre-existing."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/outputs/V1_integration_meta.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/99_status.md",
+      "action": "modified"
+    }
+  ],
+  "notes": "Acceptance Criteria Coverage:\n| AC1 | PASS | WORKPACK_CONFIG_SCHEMA.json exists, valid JSON Schema (validate_templates.py) |\n| AC2 | PASS | workpackDir string field with default \"workpacks\" (schema lines 10-14) |\n| AC3 | PASS | verifyCommands object with build/test/lint (schema lines 15-33) |\n| AC4 | PASS | protocolVersion string with semver pattern (schema lines 34-42) |\n| AC5 | PASS | strictMode boolean, default false (schema lines 43-47) |\n| AC6 | PASS | discovery.roots string array (schema lines 53-61) |\n| AC7 | PASS | discovery.exclude string array (schema lines 62-70) |\n| AC8 | PASS | workpack_lint.py reads config via workpack_config.py load_config |\n| AC9 | PASS | workpack_lint.py respects strictMode + protocolVersion (tests: test_main_enforces_protocol_version_policy_from_config, test_main_uses_strict_mode_from_config_when_flag_omitted) |\n| AC10 | PASS | workpack_scaffold.py uses workpackDir from config (A2 output confirms) |\n| AC11 | PASS | validate_workpack_files.py uses config (tests: test_main_uses_configured_workpack_dir, test_main_uses_strict_mode_from_config_when_flag_omitted) |\n| AC12 | PASS | Multi-root discovery scans discovery.roots (tests: test_main_uses_discovery_roots_and_excludes) |\n| AC13 | PASS | Exclude patterns filter paths (tests: test_discover_workpack_paths_applies_exclude_patterns, test_discover_workpack_paths_excludes_matching_request_path) |\n| AC14 | PASS | Config found/default messages printed (tests: test_main_reports_config_fallback_when_missing, console output verified) |\n| AC15 | PASS | 43 unit tests pass covering config loading, fallback, and discovery |\n\nCommit Verification Summary:\n- A0 SHA e4d8510: 1 file (A0_bootstrap.json) — MATCH\n- A1 SHA beeceb9: 4 files (CONFIG_SCHEMA, validate_templates, test_validate_templates, A1 output) — MATCH\n- A2 SHA c1f7376: 7 files (workpack_config, lint, scaffold, file validator, 2 test files, A2 output) — MATCH\n- A3 SHA eba4bfe: 6 files (workpack_config, lint, file validator, 2 test files, A3 output) — MATCH\n\nB-series check: N/A (no B-series prompts in this workpack)\n\nMerge Decision: PASS — branch is merge-ready"
+}

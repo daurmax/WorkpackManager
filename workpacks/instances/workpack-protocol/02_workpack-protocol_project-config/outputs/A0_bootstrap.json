@@ -11,7 +11,9 @@
   },
   "artifacts": {
     "pr_url": "",
-    "commit_shas": [],
+    "commit_shas": [
+      "e4d85106036f659b77c696d78bef3eda11bd50e3"
+    ],
     "branch_verified": false
   },
   "changes": {
@@ -59,9 +61,9 @@
   },
   "change_details": [
     {
+      "repo": "WorkpackManager",
       "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/outputs/A0_bootstrap.json",
-      "summary": "Recorded bootstrap branch/dependency/verification state and handoff metadata.",
-      "lines": "full file"
+      "action": "created"
     }
   ],
   "notes": "requires_workpack dependency 01_workpack-protocol_prompt-lifecycle is complete per workpack.state.json (overall_status=complete)."

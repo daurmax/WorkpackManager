@@ -391,8 +391,9 @@ def main() -> int:
         all_warnings.extend(warnings)
 
         status = "OK" if not errors else "FAIL"
+        marker = "OK" if not errors else "X"
         warn_suffix = f" ({len(warnings)} warning(s))" if warnings else ""
-        print(f"  {'✓' if not errors else '✗'} [{display_version(version)}] {wp.name} — {status}{warn_suffix}")
+        print(f"  {marker} [{display_version(version)}] {wp.name} - {status}{warn_suffix}")
 
     print()
 
@@ -408,7 +409,7 @@ def main() -> int:
         print("ERRORS:")
         print("-" * 40)
         for e in all_errors:
-            print(f"  ✗ {e}")
+            print(f"  X {e}")
         print(f"Total errors: {len(all_errors)}")
         return 1
 

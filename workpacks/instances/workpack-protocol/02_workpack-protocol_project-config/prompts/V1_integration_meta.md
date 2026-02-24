@@ -8,10 +8,10 @@ repos: [WorkpackManager]
 
 ## READ FIRST
 
-1. `workpacks/instances/<group>/<workpack>/00_request.md`
-2. `workpacks/instances/<group>/<workpack>/01_plan.md`
-3. `workpacks/instances/<group>/<workpack>/workpack.meta.json`
-4. `workpacks/instances/<group>/<workpack>/workpack.state.json`
+1. `workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/00_request.md`
+2. `workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/01_plan.md`
+3. `workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/workpack.meta.json`
+4. `workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/workpack.state.json`
 5. `workpacks/WORKPACK_OUTPUT_SCHEMA.json`
 6. All completed prompt outputs in `outputs/`
 
@@ -35,9 +35,10 @@ Run the integration gate for this workpack: validate output payloads, verify acc
 ## Verification
 
 ```bash
-# Replace with project commands
-<project_validation_command_1>
-<project_validation_command_2>
+python workpacks/tools/validate_templates.py
+python workpacks/tools/validate_workpack_files.py
+python workpacks/tools/workpack_lint.py
+python -m pytest workpacks/tools/tests/ -v
 
 # Commit verification examples
 git log --oneline <WORK_BRANCH> | grep <SHA>
@@ -72,13 +73,13 @@ Write `outputs/V1_integration_meta.json`.
 ```json
 {
   "schema_version": "1.2",
-  "workpack": "<WORKPACK_ID>",
+  "workpack": "02_workpack-protocol_project-config",
   "prompt": "V1_integration_meta",
   "component": "verification",
   "delivery_mode": "pr",
   "branch": {
     "base": "main",
-    "work": "feature/<workpack-slug>",
+    "work": "feature/project-config",
     "merge_target": "main"
   },
   "artifacts": {
@@ -105,7 +106,7 @@ Write `outputs/V1_integration_meta.json`.
     "known_issues": []
   },
   "repos": [
-    "<REPO_NAME>"
+    "WorkpackManager"
   ],
   "execution": {
     "model": "<MODEL_ID>",

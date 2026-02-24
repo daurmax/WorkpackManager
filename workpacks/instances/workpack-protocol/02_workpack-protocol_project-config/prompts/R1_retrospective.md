@@ -35,13 +35,13 @@ Write `outputs/R1_retrospective.json`.
 ```json
 {
   "schema_version": "1.2",
-  "workpack": "<WORKPACK_ID>",
+  "workpack": "02_workpack-protocol_project-config",
   "prompt": "R1_retrospective",
   "component": "retrospective",
   "delivery_mode": "pr",
   "branch": {
     "base": "main",
-    "work": "feature/<workpack-slug>",
+    "work": "feature/project-config",
     "merge_target": "main"
   },
   "artifacts": {
@@ -68,7 +68,7 @@ Write `outputs/R1_retrospective.json`.
     "known_issues": []
   },
   "repos": [
-    "<REPO_NAME>"
+    "WorkpackManager"
   ],
   "execution": {
     "model": "<MODEL_ID>",

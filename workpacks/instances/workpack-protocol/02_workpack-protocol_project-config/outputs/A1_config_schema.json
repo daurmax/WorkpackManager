@@ -12,7 +12,7 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "e4d85106036f659b77c696d78bef3eda11bd50e3"
+      "beeceb985ba6748b2abcbb454984e50803a6b9d6"
     ],
     "branch_verified": false
   },
@@ -23,7 +23,7 @@
     "files_created": [
       "workpacks/WORKPACK_CONFIG_SCHEMA.json",
       "workpacks/tools/tests/test_validate_templates.py",
-      "outputs/A1_config_schema.json"
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/outputs/A1_config_schema.json"
     ],
     "contracts_changed": [
       "workpacks/WORKPACK_CONFIG_SCHEMA.json"
@@ -86,7 +86,7 @@
     },
     {
       "repo": "WorkpackManager",
-      "file": "outputs/A1_config_schema.json",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/outputs/A1_config_schema.json",
       "action": "created"
     }
   ],
