@@ -3,7 +3,10 @@ import os
 import sys
 import tempfile
 import unittest
+from contextlib import contextmanager, redirect_stdout
+from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 
 os.environ["WORKPACK_LINT_SKIP_VENV_BOOTSTRAP"] = "1"
@@ -25,6 +28,61 @@ def _write_text(path: Path, content: str) -> None:
 
 
 class WorkpackLintTests(unittest.TestCase):
+    @contextmanager
+    def _chdir(self, path: Path):
+        previous = Path.cwd()
+        os.chdir(path)
+        try:
+            yield
+        finally:
+            os.chdir(previous)
+
+    def _build_cli_fixture(self, repo_root: Path, workpack_dir_name: str = "workpacks") -> Path:
+        workpacks_dir = repo_root / workpack_dir_name
+        wp = workpacks_dir / "instances" / "example-group" / "01_cli_fixture"
+        (wp / "prompts").mkdir(parents=True, exist_ok=True)
+        (wp / "outputs").mkdir(parents=True, exist_ok=True)
+
+        _write_text(wp / "00_request.md", "# Request\n\nWorkpack Protocol Version: 2.0.0\n")
+        _write_text(
+            wp / "prompts" / "A1_task.md",
+            "---\ndepends_on: []\nrepos: [WorkpackManager]\n---\n# Prompt\n",
+        )
+        _write_text(
+            wp / "prompts" / "V1_verify.md",
+            "---\ndepends_on: [A1_task]\nrepos: [WorkpackManager]\n---\n# Verify\n",
+        )
+        _write_json(wp / "workpack.meta.json", {"id": "01_cli_fixture", "prompts": []})
+
+        schema_stub = {"$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object"}
+        _write_json(workpacks_dir / "WORKPACK_META_SCHEMA.json", schema_stub)
+        _write_json(workpacks_dir / "WORKPACK_STATE_SCHEMA.json", schema_stub)
+        _write_json(workpacks_dir / "WORKPACK_OUTPUT_SCHEMA.json", schema_stub)
+        _write_json(
+            workpacks_dir / "WORKPACK_CONFIG_SCHEMA.json",
+            {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                    "workpackDir": {"type": "string"},
+                    "strictMode": {"type": "boolean"},
+                    "protocolVersion": {"type": "string"},
+                },
+                "additionalProperties": True,
+            },
+        )
+        return workpacks_dir
+
+    def _run_lint_main(self, cwd: Path, args: list[str]) -> tuple[int, str]:
+        output = StringIO()
+        with self._chdir(cwd), patch.object(sys, "argv", ["workpack_lint.py", *args]), redirect_stdout(output):
+            with self.assertRaises(SystemExit) as raised:
+                lint.main()
+        exit_code = raised.exception.code
+        if not isinstance(exit_code, int):
+            exit_code = 0
+        return exit_code, output.getvalue()
+
     def _build_workpack(
         self,
         root: Path,
@@ -186,6 +244,21 @@ class WorkpackLintTests(unittest.TestCase):
             wp = self._build_workpack(group, "01_example", 6, ["A1_task"])
             discovered = lint.discover_workpack_paths([root / "instances"])
             self.assertIn(wp.resolve(), discovered)
+
+    def test_discover_workpack_paths_excludes_matching_request_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            keep = self._build_workpack(root / "workspace_a", "01_keep", 6, ["A1_task"])
+            excluded = self._build_workpack(root / "workspace_b" / "excluded", "01_skip", 6, ["A1_task"])
+
+            discovered = lint.discover_workpack_paths(
+                [root / "workspace_a", root / "workspace_b"],
+                exclude_patterns=["excluded", "**/01_skip"],
+                workspace_root=root,
+            )
+
+            self.assertIn(keep.resolve(), discovered)
+            self.assertNotIn(excluded.resolve(), discovered)
 
     def test_v6_missing_meta_is_error(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -357,6 +430,93 @@ class WorkpackLintTests(unittest.TestCase):
                     for warning in warnings
                 )
             )
+
+    def test_main_reports_config_fallback_when_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            workpacks_dir = self._build_cli_fixture(repo_root)
+
+            with (
+                patch.object(lint, "SCRIPT_WORKPACKS_DIR", workpacks_dir),
+                patch.object(lint, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_lint_main(repo_root, [])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("Config not found: workpack.config.json; using defaults", output)
+            self.assertIn(f"Detected workpacks dir: {workpacks_dir.resolve()}", output)
+
+    def test_main_uses_strict_mode_from_config_when_flag_omitted(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            workpacks_dir = self._build_cli_fixture(repo_root)
+            _write_json(
+                repo_root / "workpack.config.json",
+                {"workpackDir": "workpacks", "strictMode": True},
+            )
+
+            with (
+                patch.object(lint, "SCRIPT_WORKPACKS_DIR", workpacks_dir),
+                patch.object(lint, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_lint_main(repo_root, [])
+
+            self.assertEqual(exit_code, 2)
+            self.assertIn("Config found:", output)
+            self.assertIn("strictMode=true", output)
+            self.assertIn("Mode: strictMode=true from workpack.config.json", output)
+
+    def test_main_enforces_protocol_version_policy_from_config(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            workpacks_dir = self._build_cli_fixture(repo_root)
+            _write_json(
+                repo_root / "workpack.config.json",
+                {"workpackDir": "workpacks", "protocolVersion": "2.2.0"},
+            )
+
+            with (
+                patch.object(lint, "SCRIPT_WORKPACKS_DIR", workpacks_dir),
+                patch.object(lint, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_lint_main(repo_root, [])
+
+            self.assertEqual(exit_code, 1)
+            self.assertIn("ERR_PROTOCOL_VERSION_POLICY", output)
+            self.assertIn("Protocol policy: minimum 2.2.0", output)
+
+    def test_main_uses_discovery_roots_and_excludes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            workpacks_dir = self._build_cli_fixture(repo_root)
+            extra_root = repo_root / "other-root"
+            self._build_workpack(extra_root / "extra-group", "01_extra", 2, ["A1_task"])
+            self._build_workpack(extra_root / "excluded-group", "01_filtered", 2, ["A1_task"])
+
+            _write_json(
+                repo_root / "workpack.config.json",
+                {
+                    "workpackDir": "workpacks",
+                    "discovery": {
+                        "roots": ["other-root", "missing-root"],
+                        "exclude": ["excluded-group", "**/01_filtered/**"],
+                    },
+                },
+            )
+
+            with (
+                patch.object(lint, "SCRIPT_WORKPACKS_DIR", workpacks_dir),
+                patch.object(lint, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_lint_main(repo_root, [])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("WARNING: Configured discovery root 'missing-root' does not exist", output)
+            self.assertIn("Scan targets:", output)
+            self.assertIn(str(extra_root.resolve()), output)
+            self.assertIn("Discovery excludes: excluded-group, **/01_filtered/**", output)
+            self.assertIn("Discovered workpacks: 2", output)
+            self.assertNotIn("01_filtered —", output)
 
 
 if __name__ == "__main__":

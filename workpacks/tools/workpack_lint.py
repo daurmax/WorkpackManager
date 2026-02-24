@@ -74,6 +74,15 @@ import re
 import subprocess
 from dataclasses import dataclass
 from typing import Any
+from workpack_config import (
+    LoadedWorkpackConfig,
+    WorkpackConfigError,
+    build_discovery_scan_targets,
+    discover_workpack_paths_in_targets,
+    load_tool_config,
+    normalize_discovery_excludes,
+    render_config_message,
+)
 
 
 _JSONSCHEMA: Any | None = None
@@ -138,13 +147,18 @@ CODE_BLOCK_LANGUAGES = {
 LINT_IGNORE_MARKER = "<!-- lint-ignore-code-block -->"
 PROMPT_STEM_PATTERN = re.compile(r"^[ABVR]\d+")
 REQUEST_FILE_NAME = "00_request.md"
+SCRIPT_WORKPACKS_DIR = Path(__file__).resolve().parents[1]
+WORKSPACE_ROOT = SCRIPT_WORKPACKS_DIR.parent
 
 
-def get_workpacks_dir() -> Path:
-    """Get the workpacks directory relative to this script or CWD."""
-    script_workpacks = Path(__file__).resolve().parents[1]
+def get_workpacks_dir(config: LoadedWorkpackConfig | None = None) -> Path:
+    """Get the resolved workpacks directory from config or legacy defaults."""
+    if config is not None:
+        return config.workpacks_dir
+
+    script_workpacks = SCRIPT_WORKPACKS_DIR
     if script_workpacks.name == "workpacks" and script_workpacks.exists():
-        return script_workpacks
+        return script_workpacks.resolve()
 
     cwd = Path.cwd()
     cwd_workpacks = cwd / "workpacks"
@@ -269,39 +283,18 @@ def get_workpack_version(workpack_path: Path) -> int:
         return 0
 
 
-def discover_workpack_paths(scan_targets: list[Path]) -> list[Path]:
+def discover_workpack_paths(
+    scan_targets: list[Path],
+    exclude_patterns: list[str] | None = None,
+    workspace_root: Path | None = None,
+) -> list[Path]:
     """Discover workpack directories by locating 00_request.md files."""
-    found: dict[str, Path] = {}
-
-
-    def should_skip(path: Path) -> bool:
-        for part in path.parts:
-            if part.startswith("_") or part.startswith("."):
-                return True
-        return False
-
-    def register(path: Path) -> None:
-        resolved = path.resolve()
-        if should_skip(resolved):
-            return
-        found[str(resolved).lower()] = resolved
-
-    for target in scan_targets:
-        if not target.exists():
-            continue
-
-        if target.is_file():
-            if target.name == REQUEST_FILE_NAME:
-                register(target.parent)
-            continue
-
-        if (target / REQUEST_FILE_NAME).exists():
-            register(target)
-
-        for request_file in target.rglob(REQUEST_FILE_NAME):
-            register(request_file.parent)
-
-    return sorted(found.values(), key=lambda path: str(path).lower())
+    return discover_workpack_paths_in_targets(
+        scan_targets,
+        request_file_name=REQUEST_FILE_NAME,
+        exclude_patterns=exclude_patterns,
+        workspace_root=workspace_root,
+    )
 
 
 def load_json(path: Path) -> tuple[Any | None, str | None]:
@@ -1192,11 +1185,20 @@ def main() -> None:
         description="Workpack Protocol Linter",
         epilog="Validates workpacks for protocol compliance.",
     )
-    parser.add_argument(
+    strict_group = parser.add_mutually_exclusive_group()
+    strict_group.add_argument(
         "--strict",
+        dest="strict",
         action="store_true",
         help="Treat warnings as errors (exit code 2 if warnings found).",
     )
+    strict_group.add_argument(
+        "--no-strict",
+        dest="strict",
+        action="store_false",
+        help="Disable strict warnings mode even when strictMode=true in config.",
+    )
+    parser.set_defaults(strict=None)
     parser.add_argument(
         "paths",
         nargs="*",
@@ -1208,14 +1210,30 @@ def main() -> None:
     print("=" * 40)
 
     try:
-        workpacks_dir = get_workpacks_dir()
-    except FileNotFoundError as exc:
+        tool_config = load_tool_config(
+            start_dir=Path.cwd(),
+            workspace_root=WORKSPACE_ROOT,
+            script_workpacks_dir=SCRIPT_WORKPACKS_DIR,
+            schema_path=SCRIPT_WORKPACKS_DIR / "WORKPACK_CONFIG_SCHEMA.json",
+        )
+        workpacks_dir = get_workpacks_dir(tool_config)
+    except (FileNotFoundError, WorkpackConfigError) as exc:
         print(f"ERROR: {exc}")
         sys.exit(1)
 
+    print(render_config_message(tool_config))
     print(f"Detected workpacks dir: {workpacks_dir}")
-    if args.strict:
+
+    strict_mode = bool(args.strict) if args.strict is not None else tool_config.strict_mode
+    if args.strict is True:
         print("Mode: --strict (warnings treated as errors)")
+    elif args.strict is False:
+        print("Mode: --no-strict (warnings do not fail the run)")
+    elif strict_mode:
+        print("Mode: strictMode=true from workpack.config.json (warnings treated as errors)")
+
+    if tool_config.protocol_version is not None:
+        print(f"Protocol policy: minimum {tool_config.protocol_version}")
 
     output_schema_path = workpacks_dir / "WORKPACK_OUTPUT_SCHEMA.json"
     meta_schema_path = workpacks_dir / "WORKPACK_META_SCHEMA.json"
@@ -1233,28 +1251,44 @@ def main() -> None:
 
     schema_bundle = SchemaBundle(output=None, meta=meta_schema, state=state_schema)
 
-    if args.paths:
-        scan_targets = [Path(raw_path).resolve() for raw_path in args.paths]
-    else:
-        instances_dir = workpacks_dir / "instances"
-        if instances_dir.exists():
-            scan_targets = [instances_dir, workpacks_dir]
-        else:
-            scan_targets = [workpacks_dir]
+    explicit_targets = [Path(raw_path).resolve() for raw_path in args.paths] if args.paths else None
+    scan_targets, scan_target_warnings = build_discovery_scan_targets(
+        tool_config,
+        explicit_paths=explicit_targets,
+        workspace_root=WORKSPACE_ROOT,
+        current_dir=Path.cwd(),
+    )
+    for warning in scan_target_warnings:
+        print(f"WARNING: {warning}")
 
-    missing_targets = [target for target in scan_targets if not target.exists()]
-    if missing_targets:
-        print("ERROR: One or more scan targets do not exist:")
-        for target in missing_targets:
-            print(f"  - {target}")
+    if args.paths:
+        missing_targets = [target for target in scan_targets if not target.exists()]
+        if missing_targets:
+            print("ERROR: One or more scan targets do not exist:")
+            for target in missing_targets:
+                print(f"  - {target}")
+            sys.exit(1)
+
+    if not scan_targets:
+        print("ERROR: No valid scan targets resolved.")
         sys.exit(1)
 
-    workpack_paths = discover_workpack_paths(scan_targets)
+    discovery_excludes = normalize_discovery_excludes(tool_config.discovery_exclude)
+    workpack_paths = discover_workpack_paths_in_targets(
+        scan_targets,
+        request_file_name=REQUEST_FILE_NAME,
+        exclude_patterns=discovery_excludes,
+        workspace_root=WORKSPACE_ROOT,
+    )
     if not workpack_paths:
         print("ERROR: No workpack directories found.")
         sys.exit(1)
 
     print(f"Scan targets: {', '.join(str(target) for target in scan_targets)}")
+    print(
+        "Discovery excludes: "
+        + (", ".join(discovery_excludes) if discovery_excludes else "none")
+    )
     print(f"Discovered workpacks: {len(workpack_paths)}")
 
     all_errors: list[str] = []
@@ -1264,6 +1298,21 @@ def main() -> None:
 
     for workpack in workpack_paths:
         version = get_workpack_version(workpack)
+
+        if tool_config.protocol_version_internal is not None:
+            if version <= 0:
+                all_errors.append(
+                    f"[{workpack.name}] ERR_PROTOCOL_VERSION_POLICY: could not parse Workpack Protocol Version "
+                    f"(configured minimum is {tool_config.protocol_version})."
+                )
+                continue
+            if version < tool_config.protocol_version_internal:
+                all_errors.append(
+                    f"[{workpack.name}] ERR_PROTOCOL_VERSION_POLICY: protocol {_display_version(version)} is below "
+                    f"configured minimum {tool_config.protocol_version}."
+                )
+                continue
+
         if version < 2:
             skipped_count += 1
             print(f"  - Skipping (not 1.1.0+): {workpack}")
@@ -1319,9 +1368,12 @@ def main() -> None:
         print(f"Total errors: {len(all_errors)}")
         sys.exit(1)
 
-    if all_warnings and args.strict:
+    if all_warnings and strict_mode:
         print()
-        print("Warnings found and --strict mode is enabled")
+        if args.strict is None:
+            print("Warnings found and strictMode=true from workpack.config.json")
+        else:
+            print("Warnings found and --strict mode is enabled")
         sys.exit(2)
 
     print()

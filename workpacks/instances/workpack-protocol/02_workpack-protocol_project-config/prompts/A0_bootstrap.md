@@ -8,9 +8,9 @@ repos: [WorkpackManager]
 
 ## READ FIRST
 
-1. `workpacks/instances/<group>/<workpack>/00_request.md`
-2. `workpacks/instances/<group>/<workpack>/01_plan.md`
-3. `workpacks/instances/<group>/<workpack>/workpack.meta.json`
+1. `workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/00_request.md`
+2. `workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/01_plan.md`
+3. `workpacks/instances/workpack-protocol/02_workpack-protocol_project-config/workpack.meta.json`
 4. `workpacks/_template/prompts/PROMPT_STYLE_GUIDE.md`
 
 ## Objective
@@ -32,9 +32,8 @@ Prepare the branch, verify required dependencies, and ensure scaffold/runtime fi
 ## Verification
 
 ```bash
-# Replace with project commands
-<build_or_sanity_command>
-<lint_or_static_check_command>
+python workpacks/tools/workpack_lint.py
+python -m pytest workpacks/tools/tests/ -v
 ```
 
 ## Handoff Output (JSON)
@@ -44,13 +43,13 @@ Write `outputs/A0_bootstrap.json`.
 ```json
 {
   "schema_version": "1.2",
-  "workpack": "<WORKPACK_ID>",
+  "workpack": "02_workpack-protocol_project-config",
   "prompt": "A0_bootstrap",
   "component": "bootstrap",
   "delivery_mode": "pr",
   "branch": {
     "base": "main",
-    "work": "feature/<workpack-slug>",
+    "work": "feature/project-config",
     "merge_target": "main"
   },
   "artifacts": {
@@ -69,7 +68,12 @@ Write `outputs/A0_bootstrap.json`.
   "verification": {
     "commands": [
       {
-        "cmd": "<build_or_sanity_command>",
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "pass",
+        "notes": ""
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
         "result": "pass",
         "notes": ""
       }
@@ -85,7 +89,7 @@ Write `outputs/A0_bootstrap.json`.
     "known_issues": []
   },
   "repos": [
-    "<REPO_NAME>"
+    "WorkpackManager"
   ],
   "execution": {
     "model": "<MODEL_ID>",

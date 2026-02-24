@@ -3,9 +3,13 @@ import os
 import sys
 import tempfile
 import unittest
+from contextlib import contextmanager, redirect_stdout
+from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 
+os.environ["WORKPACK_VALIDATE_FILES_SKIP_VENV_BOOTSTRAP"] = "1"
 TOOLS_DIR = Path(__file__).resolve().parents[1]
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
@@ -25,6 +29,35 @@ def _write_text(path: Path, content: str) -> None:
 
 class ValidateWorkpackFilesTests(unittest.TestCase):
     """Tests for the workpack file completeness validator."""
+
+    @contextmanager
+    def _chdir(self, path: Path):
+        previous = Path.cwd()
+        os.chdir(path)
+        try:
+            yield
+        finally:
+            os.chdir(previous)
+
+    def _run_main(self, cwd: Path, args: list[str]) -> tuple[int, str]:
+        output = StringIO()
+        with self._chdir(cwd), patch.object(sys, "argv", ["validate_workpack_files.py", *args]), redirect_stdout(output):
+            return vwf.main(), output.getvalue()
+
+    def _write_config_schema(self, workpacks_dir: Path) -> None:
+        _write_json(
+            workpacks_dir / "WORKPACK_CONFIG_SCHEMA.json",
+            {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                    "workpackDir": {"type": "string"},
+                    "strictMode": {"type": "boolean"},
+                    "protocolVersion": {"type": "string"},
+                },
+                "additionalProperties": True,
+            },
+        )
 
     def _build_complete_workpack(
         self,
@@ -205,6 +238,116 @@ class ValidateWorkpackFilesTests(unittest.TestCase):
             # No errors about meta/state for older protocol
             self.assertFalse(any("workpack.meta.json" in e for e in errors))
             self.assertFalse(any("workpack.state.json" in e for e in errors))
+
+    def test_discover_workpack_paths_applies_exclude_patterns(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            keep = self._build_complete_workpack(root / "workspace_a", name="01_keep")
+            excluded = self._build_complete_workpack(root / "workspace_b" / "excluded", name="01_skip")
+
+            discovered = vwf.discover_workpack_paths(
+                [root / "workspace_a", root / "workspace_b"],
+                exclude_patterns=["excluded", "**/01_skip"],
+                workspace_root=root,
+            )
+
+            self.assertIn(keep.resolve(), discovered)
+            self.assertNotIn(excluded.resolve(), discovered)
+
+    def test_main_uses_configured_workpack_dir(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            default_workpacks_dir = repo_root / "workpacks"
+            configured_workpacks_dir = repo_root / "custompacks"
+            self._write_config_schema(default_workpacks_dir)
+            _write_json(repo_root / "workpack.config.json", {"workpackDir": "custompacks"})
+            self._build_complete_workpack(configured_workpacks_dir, name="01_cfg_target")
+
+            with (
+                patch.object(vwf, "SCRIPT_WORKPACKS_DIR", default_workpacks_dir),
+                patch.object(vwf, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_main(repo_root, [])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("Config found:", output)
+            self.assertIn("workpackDir='custompacks'", output)
+            self.assertIn(f"Detected workpacks dir: {configured_workpacks_dir.resolve()}", output)
+
+    def test_main_reports_default_fallback_when_config_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            workpacks_dir = repo_root / "workpacks"
+            self._build_complete_workpack(workpacks_dir, name="01_default_target")
+
+            with (
+                patch.object(vwf, "SCRIPT_WORKPACKS_DIR", workpacks_dir),
+                patch.object(vwf, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_main(repo_root, [])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("Config not found: workpack.config.json; using defaults", output)
+            self.assertIn(f"Detected workpacks dir: {workpacks_dir.resolve()}", output)
+
+    def test_main_uses_strict_mode_from_config_when_flag_omitted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            workpacks_dir = repo_root / "workpacks"
+            self._write_config_schema(workpacks_dir)
+            _write_json(
+                repo_root / "workpack.config.json",
+                {"workpackDir": "workpacks", "strictMode": True},
+            )
+            self._build_complete_workpack(workpacks_dir, name="01_strict_cfg", skip_files=["99_status.md"])
+
+            with (
+                patch.object(vwf, "SCRIPT_WORKPACKS_DIR", workpacks_dir),
+                patch.object(vwf, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_main(repo_root, [])
+
+            self.assertEqual(exit_code, 2)
+            self.assertIn("Mode: strictMode=true from workpack.config.json", output)
+            self.assertIn("Warnings found and strictMode=true from workpack.config.json.", output)
+
+    def test_main_uses_discovery_roots_and_excludes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            workpacks_dir = repo_root / "workpacks"
+            self._write_config_schema(workpacks_dir)
+            self._build_complete_workpack(workpacks_dir / "instances" / "default-group", name="01_default")
+
+            extra_root = repo_root / "extra-root"
+            self._build_complete_workpack(extra_root / "extra-group", name="01_extra")
+            self._build_complete_workpack(extra_root / "excluded-group", name="01_filtered")
+
+            _write_json(
+                repo_root / "workpack.config.json",
+                {
+                    "workpackDir": "workpacks",
+                    "discovery": {
+                        "roots": ["extra-root", "missing-root"],
+                        "exclude": ["excluded-group", "**/01_filtered/**"],
+                    },
+                },
+            )
+
+            with (
+                patch.object(vwf, "SCRIPT_WORKPACKS_DIR", workpacks_dir),
+                patch.object(vwf, "WORKSPACE_ROOT", repo_root),
+            ):
+                exit_code, output = self._run_main(repo_root, [])
+
+            self.assertEqual(exit_code, 0)
+            self.assertIn("WARNING: Configured discovery root 'missing-root' does not exist", output)
+            self.assertIn("Scan targets:", output)
+            self.assertIn(str(extra_root.resolve()), output)
+            self.assertIn("Discovery excludes: excluded-group, **/01_filtered/**", output)
+            self.assertIn("Discovered workpacks: 2", output)
+            self.assertIn("01_default", output)
+            self.assertIn("01_extra", output)
+            self.assertNotIn("] 01_filtered —", output)
 
 
 if __name__ == "__main__":
