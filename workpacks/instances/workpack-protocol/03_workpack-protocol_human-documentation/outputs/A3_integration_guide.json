@@ -12,14 +12,12 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "<COMMIT_SHA>"
+      "9d8f218"
     ],
     "branch_verified": false
   },
   "changes": {
-    "files_modified": [
-      "workpacks/ADOPTION_GUIDE.md"
-    ],
+    "files_modified": [],
     "files_created": [
       "docs/INTEGRATION.md",
       "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A3_integration_guide.json"

@@ -12,7 +12,7 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "3b142aa"
+      "0b1bc5b"
     ],
     "branch_verified": false
   },
@@ -64,6 +64,12 @@
     "tokens_out": 0,
     "duration_ms": 0
   },
-  "change_details": [],
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A0_bootstrap.json",
+      "action": "modified"
+    }
+  ],
   "notes": "Switched from master to feature/human-documentation during bootstrap."
 }

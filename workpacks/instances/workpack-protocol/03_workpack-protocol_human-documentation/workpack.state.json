@@ -1,31 +1,62 @@
 {
   "workpack_id": "03_workpack-protocol_human-documentation",
-  "overall_status": "not_started",
-  "last_updated": "2026-02-23T22:29:26Z",
+  "overall_status": "in_progress",
+  "last_updated": "2026-02-25T17:25:00Z",
   "prompt_status": {
     "A0_bootstrap": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "completed_at": "2026-02-24T00:10:00Z",
+      "output_validated": true
     },
     "A1_concepts_guide": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-25T14:38:00Z",
+      "completed_at": "2026-02-25T14:43:14Z",
+      "output_validated": true
     },
     "A2_quickstart_guide": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-25T14:44:00Z",
+      "completed_at": "2026-02-25T14:52:00Z",
+      "output_validated": true
     },
     "A3_integration_guide": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-25T15:19:00Z",
+      "completed_at": "2026-02-25T15:26:30Z",
+      "output_validated": true
     },
     "A4_troubleshooting_guide": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-25T15:27:00Z",
+      "completed_at": "2026-02-25T15:36:00Z",
+      "output_validated": true
     },
     "V1_integration_meta": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-25T17:00:00Z",
+      "completed_at": "2026-02-25T17:25:00Z",
+      "output_validated": true
     },
     "R1_retrospective": {
       "status": "pending"
     }
   },
-  "agent_assignments": {},
+  "agent_assignments": {
+    "A0_bootstrap": "codex",
+    "A1_concepts_guide": "codex",
+    "A2_quickstart_guide": "codex",
+    "A3_integration_guide": "codex",
+    "A4_troubleshooting_guide": "codex",
+    "V1_integration_meta": "codex",
+    "R1_retrospective": "codex"
+  },
   "blocked_by": [],
   "execution_log": [
     {
@@ -34,7 +65,112 @@
       "prompt_stem": null,
       "agent": null,
       "notes": "Workpack scaffold created"
+    },
+    {
+      "timestamp": "2026-02-24T00:00:00Z",
+      "event": "blocked",
+      "prompt_stem": null,
+      "agent": "codex",
+      "notes": "Bootstrap initially blocked by unresolved requires_workpack dependencies."
+    },
+    {
+      "timestamp": "2026-02-24T00:05:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A0_bootstrap",
+      "agent": "codex",
+      "notes": "A0 bootstrap started with documented dependency exception."
+    },
+    {
+      "timestamp": "2026-02-24T00:10:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A0_bootstrap",
+      "agent": "codex",
+      "notes": "A0 bootstrap completed: baseline branch and output artifact prepared."
+    },
+    {
+      "timestamp": "2026-02-25T14:35:00Z",
+      "event": "unblocked",
+      "prompt_stem": null,
+      "agent": "codex",
+      "notes": "Dependencies satisfied; resumed execution."
+    },
+    {
+      "timestamp": "2026-02-25T14:36:00Z",
+      "event": "started",
+      "prompt_stem": null,
+      "agent": "codex",
+      "notes": "A-series execution in progress."
+    },
+    {
+      "timestamp": "2026-02-25T14:38:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A1_concepts_guide",
+      "agent": "codex",
+      "notes": "A1 concepts guide started."
+    },
+    {
+      "timestamp": "2026-02-25T14:43:14Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A1_concepts_guide",
+      "agent": "codex",
+      "notes": "A1 concepts guide completed: docs/CONCEPTS.md created with required diagrams and cross-references."
+    },
+    {
+      "timestamp": "2026-02-25T14:44:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A2_quickstart_guide",
+      "agent": "codex",
+      "notes": "A2 quickstart guide started."
+    },
+    {
+      "timestamp": "2026-02-25T14:52:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A2_quickstart_guide",
+      "agent": "codex",
+      "notes": "A2 quickstart guide completed: docs/QUICKSTART.md created."
+    },
+    {
+      "timestamp": "2026-02-25T15:19:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A3_integration_guide",
+      "agent": "codex",
+      "notes": "A3 integration guide started."
+    },
+    {
+      "timestamp": "2026-02-25T15:26:30Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A3_integration_guide",
+      "agent": "codex",
+      "notes": "A3 integration guide completed: docs/INTEGRATION.md created and legacy workpacks/ADOPTION_GUIDE.md removed."
+    },
+    {
+      "timestamp": "2026-02-25T15:27:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A4_troubleshooting_guide",
+      "agent": "codex",
+      "notes": "A4 troubleshooting guide started."
+    },
+    {
+      "timestamp": "2026-02-25T15:36:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A4_troubleshooting_guide",
+      "agent": "codex",
+      "notes": "A4 troubleshooting guide completed: docs/TROUBLESHOOTING.md created."
+    },
+    {
+      "timestamp": "2026-02-25T17:00:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "V1_integration_meta",
+      "agent": "codex",
+      "notes": "V1 integration gate started."
+    },
+    {
+      "timestamp": "2026-02-25T17:25:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "V1_integration_meta",
+      "agent": "codex",
+      "notes": "V1 integration gate completed after artifact/state/commit alignment."
     }
   ],
-  "notes": null
+  "notes": "Legacy workpacks/ADOPTION_GUIDE.md removed and references migrated to docs/INTEGRATION.md."
 }
