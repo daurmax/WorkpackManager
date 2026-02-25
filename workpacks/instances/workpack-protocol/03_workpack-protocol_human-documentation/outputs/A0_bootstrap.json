@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-protocol_human-documentation",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/human-documentation",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "0b1bc5b"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A0_bootstrap.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "All schema/template checks passed."
+      },
+      {
+        "cmd": "workpacks/tools/.venv/Scripts/python.exe workpacks/tools/validate_workpack_files.py",
+        "result": "pass",
+        "notes": "All workpacks contain required files."
+      },
+      {
+        "cmd": "workpacks/tools/.venv/Scripts/python.exe -m pytest workpacks/tools/tests -q",
+        "result": "pass",
+        "notes": "189 passed."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No feature-code changes in bootstrap."
+  },
+  "handoff": {
+    "summary": "Bootstrap completed: branch prepared, baseline checks passing, outputs writable.",
+    "next_steps": [
+      "Start dependent A-series prompts (A1_concepts_guide and A2_quickstart_guide) once dependency status is accepted.",
+      "Resolve/close 02_workpack-protocol_project-config remaining retrospective step if strict requires_workpack completion is enforced."
+    ],
+    "known_issues": [
+      "requires_workpack 02_workpack-protocol_project-config has overall_status=in_progress (R1_retrospective pending)."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "GPT-5.3-Codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A0_bootstrap.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "Switched from master to feature/human-documentation during bootstrap."
+}

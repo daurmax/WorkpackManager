@@ -6,9 +6,24 @@ repos: [WorkpackManager]
 
 > Capture execution outcomes, quality trends, and process improvements after merge.
 
+## READ FIRST
+
+1. `workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/00_request.md`
+2. `workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/01_plan.md`
+3. `workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/workpack.meta.json`
+4. `workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/workpack.state.json`
+5. `workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/V1_integration_meta.json`
+
 ## Objective
 
 Document what worked, what failed, and what should change for future workpacks.
+
+## Implementation Requirements
+
+- Summarize delivery against the request scope and acceptance criteria outcomes.
+- Capture first-pass successes and areas that needed correction.
+- Record process/tooling issues and concrete preventive actions.
+- Include measurable data for prompt counts, rework, and elapsed time.
 
 ## Required Sections
 
@@ -27,6 +42,14 @@ Document what worked, what failed, and what should change for future workpacks.
 | First-pass completions | |
 | B-series count | |
 | Total elapsed time | |
+
+## Verification
+
+```bash
+# Optional consistency checks before finalizing retrospective
+python workpacks/tools/workpack_lint.py workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation
+python workpacks/tools/validate_workpack_files.py workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation
+```
 
 ## Handoff Output (JSON)
 

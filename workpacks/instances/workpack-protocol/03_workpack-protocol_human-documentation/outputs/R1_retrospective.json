@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-protocol_human-documentation",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/human-documentation",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "6602f22"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/99_status.md",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/R1_retrospective.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation",
+        "result": "pass",
+        "notes": "Target workpack passes protocol lint checks."
+      },
+      {
+        "cmd": "python workpacks/tools/validate_workpack_files.py workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation",
+        "result": "pass",
+        "notes": "All required workpack files and prompt outputs are present."
+      },
+      {
+        "cmd": "python -c \"import json, jsonschema; s=json.load(open('workpacks/WORKPACK_OUTPUT_SCHEMA.json')); d=json.load(open('workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/R1_retrospective.json')); jsonschema.validate(d,s); print('schema_ok')\"",
+        "result": "pass",
+        "notes": "R1 retrospective output validates against WORKPACK_OUTPUT_SCHEMA.json."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Retrospective/state/status updates only; no product runtime changes."
+  },
+  "handoff": {
+    "summary": "Retrospective completed with scope outcomes, rework/friction assessment, estimation review, and owned action items.",
+    "next_steps": [
+      "Open PR from feature/human-documentation to main if it is still pending.",
+      "Track AI-1 through AI-5 in the next protocol/tooling planning cycle."
+    ],
+    "known_issues": [
+      "Execution telemetry fields remain zeroed in output artifacts, limiting token/cost analysis.",
+      "verify_commits/workpack_verify may emit non-blocking warnings when git show --stat truncates long paths."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "GPT-5-Codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/R1_retrospective.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/workpack.state.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "1. Scope and delivery summary\n- Delivered full request scope: docs/CONCEPTS.md, docs/QUICKSTART.md, docs/INTEGRATION.md, docs/TROUBLESHOOTING.md, plus legacy workpacks/ADOPTION_GUIDE.md removal and reference migration.\n- V1 integration evidence confirms AC1-AC12 pass, including diagram coverage, troubleshooting entry structure/count, cross-links, and no broken docs links.\n\nMetrics\n| Metric | Value |\n|--------|-------|\n| Total prompts | 7 planned / 7 completed (A0-A4, V1, R1) |\n| First-pass completions | 7 |\n| B-series count | 0 |\n| Total elapsed time | 1d 17h 20m wall-clock (2026-02-24T00:05:00Z -> 2026-02-25T17:25:00Z); 59m 44s active execution (A0-A4, V1) |\n\n2. What went well\n- A-series prompts delivered all documentation artifacts without B-series corrective prompts.\n- Dependency/DAG ordering was respected, and the V1 gate passed with complete acceptance evidence.\n- Cross-document linking and legacy-guide removal were verified together with tooling checks.\n\n3. What caused friction\n- Initial bootstrap was temporarily blocked by unresolved requires_workpack dependencies and required a documented exception.\n- Integration verification required explicit artifact/state/commit alignment before final pass.\n- Commit verifier path truncation warnings and zeroed execution telemetry reduced verification/estimation signal quality.\n\n4. Defects and rework analysis\n- Defects requiring B-series: none (B-series count = 0).\n- Rework class: process alignment only (artifact/state/commit reconciliation in V1), not content defects in documentation deliverables.\n- Estimated rework overhead: approximately one V1 verification cycle (~25 minutes) to close alignment gaps.\n\n5. Estimation accuracy (planned vs actual)\n| Prompt | Planned | Actual | Assessment |\n|--------|---------|--------|------------|\n| A0_bootstrap | XS | 5m | Accurate |\n| A1_concepts_guide | M | 5m 14s | Over-estimated |\n| A2_quickstart_guide | S | 8m | Under run within planned band |\n| A3_integration_guide | M | 7m 30s | Over-estimated |\n| A4_troubleshooting_guide | S | 9m | Under run within planned band |\n| V1_integration_meta | S | 25m | Accurate |\n- Overall: documentation authoring prompts were frequently over-estimated (M-sized work completed in under 10 minutes each), while verification/alignment consumed proportionally more time.\n\n6. Action items with owners\n- AI-1: Capture non-zero execution telemetry (tokens/duration) during output generation. Owner: agent tooling maintainers.\n- AI-2: Reduce false warnings in commit verification when long paths are truncated by git show --stat. Owner: tooling maintainers.\n- AI-3: Require started_at for every prompt status entry to improve elapsed-time analytics. Owner: protocol maintainers.\n- AI-4: Add a pre-flight dependency readiness check in bootstrap workflows to reduce initial blocking churn. Owner: prompt/template maintainers.\n- AI-5: Recalibrate documentation prompt estimates (default M -> S) for future planning cycles. Owner: workpack planners.\n\nCommit SHA handling\n- This prompt updates tracked artifacts, so artifacts.commit_shas is intentionally non-empty. It references the latest verified branch commit (6602f22); R1 file changes are currently uncommitted in the working tree."
+}

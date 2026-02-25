@@ -15,13 +15,13 @@ Deliverables:
 
 1. **docs/CONCEPTS.md** — explains the workpack mental model: metadata/state split, DAG-based prompt orchestration, prompt lifecycle, commit tracking, and integration gates. Uses diagrams and examples.
 2. **docs/QUICKSTART.md** — a 5-minute guide to creating and executing a first workpack. Minimal prerequisites, step-by-step flow with copy-paste commands.
-3. **docs/INTEGRATION.md** — comprehensive integration guide for teams adopting the protocol in existing repos. Evolves the current `ADOPTION_GUIDE.md` into a richer, scenario-based document.
+3. **docs/INTEGRATION.md** — comprehensive integration guide for teams adopting the protocol in existing repos. Consolidates legacy adoption guidance into a richer, scenario-based document.
 4. **docs/TROUBLESHOOTING.md** — common problems, symptoms, and solutions. Organized by category (schema errors, DAG issues, state drift, tooling failures).
 
 Constraints and notes:
 
 - Depends on verification-hardening and project-config for referencing the new verification commands and config format.
-- Current `ADOPTION_GUIDE.md` is superseded by `docs/INTEGRATION.md` (but not deleted — mark as deprecated).
+- Remove legacy `workpacks/ADOPTION_GUIDE.md` and update references to `docs/INTEGRATION.md`.
 - Primary repo: `WorkpackManager`.
 
 Preferred Delivery Mode: `PR`
@@ -38,7 +38,7 @@ Target Base Branch: `main`
 - [ ] AC7: `docs/TROUBLESHOOTING.md` exists with at least 10 documented problems.
 - [ ] AC8: Each troubleshooting entry has: problem description, symptoms, likely cause, resolution steps.
 - [ ] AC9: All docs cross-reference each other via relative links.
-- [ ] AC10: `ADOPTION_GUIDE.md` has a deprecation header pointing to `docs/INTEGRATION.md`.
+- [ ] AC10: Legacy `workpacks/ADOPTION_GUIDE.md` is removed and no active docs reference it.
 - [ ] AC11: No broken links across documentation.
 - [ ] AC12: Language level: accessible to developers without prior workpack knowledge.
 
@@ -57,7 +57,7 @@ Target Base Branch: `main`
 | AC5-AC6 | INTEGRATION.md | Content review + config references |
 | AC7-AC8 | TROUBLESHOOTING.md | Item count + structure check |
 | AC9-AC11 | Cross-references | Link checker script |
-| AC10 | Deprecation header | grep for deprecation notice |
+| AC10 | Legacy guide removal | file absence + reference scan |
 | AC12 | Accessibility | Review by non-expert |
 
 ## Delivery Mode
@@ -73,7 +73,7 @@ Target Base Branch: `main`
 - `docs/QUICKSTART.md` — first workpack in 5 minutes
 - `docs/INTEGRATION.md` — team adoption scenarios
 - `docs/TROUBLESHOOTING.md` — problem/solution catalog
-- Deprecation notice on `ADOPTION_GUIDE.md`
+- Removal of legacy `workpacks/ADOPTION_GUIDE.md` and reference cleanup
 - Cross-document linking
 
 ### Out of Scope
