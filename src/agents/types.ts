@@ -24,6 +24,7 @@ export interface PromptDispatchContext {
   promptStem: string;
   repos: string[];
   dependencyOutputs?: Record<string, unknown>;
+  abortSignal?: AbortSignal;
 }
 
 /**
