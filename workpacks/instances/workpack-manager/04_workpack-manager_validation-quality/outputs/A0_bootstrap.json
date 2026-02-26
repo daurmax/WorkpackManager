@@ -1,0 +1,16 @@
+{
+  "prompt_id": "A0_bootstrap",
+  "workpack": "04_workpack-manager_validation-quality",
+  "status": "complete",
+  "branch": "feature/extension-validation-quality",
+  "tsc_noEmit": true,
+  "files_created": [
+    "src/validation/index.ts",
+    "src/validation/linter.ts",
+    "src/validation/lint-rules.ts",
+    "src/validation/diagnostics.ts",
+    "src/validation/drift-detector.ts",
+    "src/validation/migration.ts"
+  ],
+  "timestamp": "2026-02-26T00:00:00Z"
+}
