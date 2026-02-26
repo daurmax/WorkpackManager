@@ -26,6 +26,12 @@
       ]
     },
     "views": {
+      "explorer": [
+        {
+          "id": "workpackManager",
+          "name": "Workpack Manager"
+        }
+      ],
       "workpackManager": [
         {
           "id": "workpackExplorer",
@@ -37,8 +43,28 @@
       {
         "command": "workpackManager.refresh",
         "title": "Workpack Manager: Refresh Workpacks"
+      },
+      {
+        "command": "workpackManager.openWorkpack",
+        "title": "Workpack Manager: Open Workpack"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "workpackManager.refresh",
+          "when": "view == workpackExplorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "workpackManager.openWorkpack",
+          "when": "view == workpackExplorer",
+          "group": "inline"
+        }
+      ]
+    },
     "configuration": {
       "title": "Workpack Manager",
       "properties": {
