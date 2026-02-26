@@ -69,6 +69,54 @@
           "default": []
         }
       }
+    },
+    "executionEnvironment": {
+      "type": "object",
+      "description": "Declarative hints for agent execution sandboxing and resource constraints.",
+      "additionalProperties": false,
+      "properties": {
+        "sandbox": {
+          "type": "string",
+          "description": "Sandbox mode for agent execution.",
+          "enum": ["none", "container", "vm", "nsjail"],
+          "default": "none"
+        },
+        "networkAccess": {
+          "type": "boolean",
+          "description": "Whether agents may access the network during execution.",
+          "default": true
+        },
+        "maxConcurrentAgents": {
+          "type": "integer",
+          "description": "Maximum number of agents that may run prompts concurrently.",
+          "minimum": 1,
+          "default": 1
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Maximum wall-clock time (in seconds) for a single prompt execution. 0 means no limit.",
+          "minimum": 0,
+          "default": 0
+        },
+        "allowedCommands": {
+          "type": "array",
+          "description": "Allowlist of shell commands agents may execute. Empty means unrestricted.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "deniedPaths": {
+          "type": "array",
+          "description": "Glob patterns for filesystem paths agents must not read or write.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        }
+      }
     }
   }
 }

@@ -60,6 +60,8 @@ def semver_to_internal(version: str) -> int | None:
         return 1 + minor
     if major == 2:
         return 6 + minor
+    if major == 3:
+        return 9 + minor  # 3.0->9, 3.1->10, ...
     return major * 3 + minor
 
 

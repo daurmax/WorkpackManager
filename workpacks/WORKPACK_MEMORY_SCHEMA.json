@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "WORKPACK_MEMORY_SCHEMA",
+  "title": "Workpack Memory Entry",
+  "description": "Schema for knowledge base entries extracted from completed workpack retrospectives. Each entry captures reusable lessons, patterns, and anti-patterns discovered during workpack execution.",
+  "type": "object",
+  "required": ["entry_id", "source_workpack", "created_at", "category", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "entry_id": {
+      "type": "string",
+      "description": "Unique identifier for this memory entry (e.g. MEM-001).",
+      "pattern": "^MEM-[0-9]{3,}$"
+    },
+    "source_workpack": {
+      "type": "string",
+      "description": "ID of the workpack that produced this lesson.",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO 8601 timestamp when this entry was created.",
+      "format": "date-time"
+    },
+    "category": {
+      "type": "string",
+      "description": "Classification of the lesson.",
+      "enum": [
+        "pattern",
+        "anti-pattern",
+        "tooling",
+        "estimation",
+        "dependency",
+        "process",
+        "architecture",
+        "testing"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "description": "One-line human-readable summary of the lesson.",
+      "minLength": 10,
+      "maxLength": 200
+    },
+    "detail": {
+      "type": "string",
+      "description": "Extended description with context and rationale."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Free-form tags for filtering and discovery.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "impact": {
+      "type": "string",
+      "description": "Severity or importance of the lesson.",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "recommendation": {
+      "type": "string",
+      "description": "Actionable recommendation derived from the lesson."
+    },
+    "related_prompts": {
+      "type": "array",
+      "description": "Prompt stems from the source workpack relevant to this lesson.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "supersedes": {
+      "type": "string",
+      "description": "Entry ID that this lesson replaces or updates.",
+      "pattern": "^MEM-[0-9]{3,}$"
+    }
+  }
+}

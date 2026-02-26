@@ -585,7 +585,7 @@ def build_meta_payload(
         meta.pop("group", None)
     meta["title"] = title
     meta["summary"] = summary
-    meta["protocol_version"] = "2.2.1"
+    meta["protocol_version"] = "3.0.0"
     meta["workpack_version"] = meta.get("workpack_version", "1.0.0")
     meta["category"] = identity.category
     meta["created_at"] = identity.created_at

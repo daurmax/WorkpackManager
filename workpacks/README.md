@@ -2,7 +2,7 @@
 
 Workpacks provide a structured, git-tracked workflow for multi-step engineering tasks handled by humans and/or agents.
 
-Protocol 2.0.0 separates static metadata from runtime state so tooling can index and orchestrate work without relying only on markdown parsing.
+Protocol 3.0.0 separates static metadata from runtime state so tooling can index and orchestrate work without relying only on markdown parsing. It also adds an MCP server, event streaming, a knowledge base, execution-environment hints, model-preference metadata, and cross-workpack knowledge references.
 
 For the full normative contract, read `workpacks/PROTOCOL_SPEC.md`.
 
