@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workpacks/WORKPACK_META_SCHEMA.json",
+  "title": "Workpack Metadata",
+  "description": "Static, version-controlled metadata for a workpack instance. Runtime and mutable execution data belongs in workpack.state.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "protocol_version",
+    "workpack_version",
+    "category",
+    "created_at",
+    "requires_workpack",
+    "tags",
+    "owners",
+    "repos",
+    "delivery_mode",
+    "target_branch",
+    "prompts"
+  ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workpackId": {
+      "type": "string",
+      "description": "Workpack folder identifier. Standalone: '<slug>'. Grouped: '<NN>_<group-id>_<slug>'.",
+      "pattern": "^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$"
+    },
+    "groupId": {
+      "type": "string",
+      "description": "Group directory identifier.",
+      "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+    },
+    "promptStem": {
+      "type": "string",
+      "description": "Prompt filename stem without extension (for example: A0_bootstrap, A1_protocol_spec).",
+      "pattern": "^[A-Z][A-Za-z0-9]*(?:_[a-z0-9][a-z0-9_]*)+$"
+    },
+    "effort": {
+      "type": "string",
+      "description": "Estimated effort: XS <30m, S 30m-2h, M 2h-4h, L 4h-8h, XL >8h.",
+      "enum": ["XS", "S", "M", "L", "XL"]
+    }
+  },
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/workpackId"
+    },
+    "group": {
+      "$ref": "#/$defs/groupId"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable workpack title.",
+      "minLength": 5,
+      "maxLength": 160
+    },
+    "summary": {
+      "type": "string",
+      "description": "Brief description of the workpack objective.",
+      "minLength": 10,
+      "maxLength": 600
+    },
+    "protocol_version": {
+      "type": "string",
+      "description": "Workpack protocol version.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "workpack_version": {
+      "type": "string",
+      "description": "Semantic version of this workpack instance.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
+      "examples": ["1.0.0", "1.1.0-rc.1"]
+    },
+    "category": {
+      "type": "string",
+      "description": "Workpack classification.",
+      "enum": ["feature", "refactor", "bugfix", "hotfix", "debug", "docs", "perf", "security"]
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO 8601 date (YYYY-MM-DD).",
+      "format": "date"
+    },
+    "requires_workpack": {
+      "type": "array",
+      "description": "Workpack IDs that must complete before this workpack starts.",
+      "items": {
+        "$ref": "#/$defs/workpackId"
+      },
+      "default": [],
+      "uniqueItems": true
+    },
+    "tags": {
+      "type": "array",
+      "description": "Free-form tags used for filtering and grouping.",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "default": [],
+      "uniqueItems": true
+    },
+    "owners": {
+      "type": "array",
+      "description": "People or teams responsible for the workpack.",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "default": [],
+      "uniqueItems": true
+    },
+    "repos": {
+      "type": "array",
+      "description": "Repository names touched by this workpack.",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      },
+      "default": [],
+      "uniqueItems": true
+    },
+    "delivery_mode": {
+      "type": "string",
+      "description": "How the workpack changes are delivered.",
+      "enum": ["pr", "direct_push"],
+      "default": "pr"
+    },
+    "target_branch": {
+      "type": "string",
+      "description": "Target branch for merge/push.",
+      "minLength": 1,
+      "default": "main"
+    },
+    "prompts": {
+      "type": "array",
+      "description": "Machine-readable prompt DAG and ownership metadata.",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stem", "agent_role", "depends_on", "repos", "estimated_effort"],
+        "properties": {
+          "stem": {
+            "$ref": "#/$defs/promptStem"
+          },
+          "agent_role": {
+            "type": "string",
+            "description": "Short role description for this prompt.",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "depends_on": {
+            "type": "array",
+            "description": "Prompt stems that must complete before this prompt.",
+            "items": {
+              "$ref": "#/$defs/promptStem"
+            },
+            "default": [],
+            "uniqueItems": true
+          },
+          "repos": {
+            "type": "array",
+            "description": "Repositories touched by this prompt.",
+            "items": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "default": [],
+            "uniqueItems": true
+          },
+          "estimated_effort": {
+            "$ref": "#/$defs/effort"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,22 +1,38 @@
 {
   "workpack_id": "04_workpack-protocol_npm-distribution",
-  "overall_status": "not_started",
-  "last_updated": "2026-02-23T22:29:38Z",
+  "overall_status": "in_progress",
+  "last_updated": "2026-02-25T17:48:52Z",
   "prompt_status": {
     "A0_bootstrap": {
       "status": "pending"
     },
     "A1_monorepo_structure": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-25T16:36:00Z",
+      "completed_at": "2026-02-25T16:43:30Z",
+      "output_validated": true
     },
     "A2_protocol_package": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-25T17:15:54Z",
+      "completed_at": "2026-02-25T17:19:11Z",
+      "output_validated": true
     },
     "A3_init_command": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-25T17:40:20Z",
+      "completed_at": "2026-02-25T17:48:52Z",
+      "output_validated": true
     },
     "A4_extension_scaffold": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-02-25T17:23:45Z",
+      "completed_at": "2026-02-25T17:27:19Z",
+      "output_validated": true
     },
     "V1_integration_meta": {
       "status": "pending"
@@ -25,7 +41,12 @@
       "status": "pending"
     }
   },
-  "agent_assignments": {},
+  "agent_assignments": {
+    "A1_monorepo_structure": "codex",
+    "A2_protocol_package": "codex",
+    "A3_init_command": "codex",
+    "A4_extension_scaffold": "codex"
+  },
   "blocked_by": [],
   "execution_log": [
     {
@@ -34,6 +55,62 @@
       "prompt_stem": null,
       "agent": null,
       "notes": "Workpack scaffold created"
+    },
+    {
+      "timestamp": "2026-02-25T16:36:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A1_monorepo_structure",
+      "agent": "codex",
+      "notes": "A1 monorepo structure started."
+    },
+    {
+      "timestamp": "2026-02-25T16:43:30Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A1_monorepo_structure",
+      "agent": "codex",
+      "notes": "A1 monorepo structure completed with workspace setup, README update, and regression verification."
+    },
+    {
+      "timestamp": "2026-02-25T17:15:54Z",
+      "event": "prompt_started",
+      "prompt_stem": "A2_protocol_package",
+      "agent": "codex",
+      "notes": "A2 protocol npm package implementation started."
+    },
+    {
+      "timestamp": "2026-02-25T17:19:11Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A2_protocol_package",
+      "agent": "codex",
+      "notes": "A2 protocol package completed with schemas, templates, agent docs, workflow, and npm pack dry-run verification."
+    },
+    {
+      "timestamp": "2026-02-25T17:23:45Z",
+      "event": "prompt_started",
+      "prompt_stem": "A4_extension_scaffold",
+      "agent": "codex",
+      "notes": "A4 extension scaffold implementation started."
+    },
+    {
+      "timestamp": "2026-02-25T17:27:19Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A4_extension_scaffold",
+      "agent": "codex",
+      "notes": "A4 extension scaffold completed with VS Code manifest, TypeScript entrypoint, Python spawn stub, and regression verification."
+    },
+    {
+      "timestamp": "2026-02-25T17:40:20Z",
+      "event": "prompt_started",
+      "prompt_stem": "A3_init_command",
+      "agent": "codex",
+      "notes": "A3 init CLI implementation started."
+    },
+    {
+      "timestamp": "2026-02-25T17:48:52Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A3_init_command",
+      "agent": "codex",
+      "notes": "A3 init CLI completed with --dir and --protocol-version flags, plus integration test coverage."
     }
   ],
   "notes": null

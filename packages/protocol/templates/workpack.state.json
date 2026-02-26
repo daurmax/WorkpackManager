@@ -1,0 +1,18 @@
+{
+  "workpack_id": "__WORKPACK_ID__",
+  "overall_status": "not_started",
+  "last_updated": "__LAST_UPDATED__",
+  "prompt_status": {},
+  "agent_assignments": {},
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "__LAST_UPDATED__",
+      "event": "created",
+      "prompt_stem": null,
+      "agent": null,
+      "notes": "Workpack scaffold created"
+    }
+  ],
+  "notes": null
+}

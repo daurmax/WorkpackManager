@@ -11,12 +11,16 @@
   },
   "artifacts": {
     "pr_url": "",
-    "commit_shas": [],
+    "commit_shas": [
+      "570c08d"
+    ],
     "branch_verified": false
   },
   "changes": {
     "files_modified": [],
-    "files_created": [],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/outputs/A0_bootstrap.json"
+    ],
     "contracts_changed": [],
     "breaking_change": false
   },
