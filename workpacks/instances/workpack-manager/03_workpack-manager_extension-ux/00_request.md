@@ -2,7 +2,7 @@
 
 ## Workpack Protocol Version
 
-Workpack Protocol Version: 6
+Workpack Protocol Version: 2.0.0
 
 ## Original Request
 

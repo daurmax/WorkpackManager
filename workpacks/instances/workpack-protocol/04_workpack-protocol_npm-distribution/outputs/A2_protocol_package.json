@@ -1,0 +1,321 @@
+{
+  "schema_version": "1.2",
+  "workpack": "04_workpack-protocol_npm-distribution",
+  "prompt": "A2_protocol_package",
+  "component": "npm-package",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/npm-distribution",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "570c08d"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/99_status.md",
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.state.json"
+    ],
+    "files_created": [
+      ".github/workflows/publish-protocol.yml",
+      "packages/protocol/package.json",
+      "packages/protocol/README.md",
+      "packages/protocol/bin/init.js",
+      "packages/protocol/agent-docs/AGENT_RULES.md",
+      "packages/protocol/agent-docs/AGENT_STATE_MACHINE.md",
+      "packages/protocol/schemas/WORKPACK_META_SCHEMA.json",
+      "packages/protocol/schemas/WORKPACK_STATE_SCHEMA.json",
+      "packages/protocol/schemas/WORKPACK_OUTPUT_SCHEMA.json",
+      "packages/protocol/schemas/WORKPACK_GROUP_SCHEMA.json",
+      "packages/protocol/schemas/WORKPACK_CONFIG_SCHEMA.json",
+      "packages/protocol/templates/00_request.md",
+      "packages/protocol/templates/01_plan.md",
+      "packages/protocol/templates/99_status.md",
+      "packages/protocol/templates/README.md",
+      "packages/protocol/templates/workpack.meta.json",
+      "packages/protocol/templates/workpack.state.json",
+      "packages/protocol/templates/outputs/.gitkeep",
+      "packages/protocol/templates/prompts/A0_bootstrap.md",
+      "packages/protocol/templates/prompts/B_template.md",
+      "packages/protocol/templates/prompts/PROMPT_STYLE_GUIDE.md",
+      "packages/protocol/templates/prompts/R_retrospective.md",
+      "packages/protocol/templates/prompts/V_bugfix_verify.md",
+      "packages/protocol/templates/prompts/V1_integration_meta.md",
+      "packages/protocol/tools/agent_context.py",
+      "packages/protocol/tools/validate_templates.py",
+      "packages/protocol/tools/validate_workpack_files.py",
+      "packages/protocol/tools/verify_commits.py",
+      "packages/protocol/tools/verify_md_json_sync.py",
+      "packages/protocol/tools/verify_output_artifacts.py",
+      "packages/protocol/tools/verify_prompt_style.py",
+      "packages/protocol/tools/verify_state_transitions.py",
+      "packages/protocol/tools/workpack_config.py",
+      "packages/protocol/tools/workpack_lint.py",
+      "packages/protocol/tools/workpack_scaffold.py",
+      "packages/protocol/tools/workpack_verify.py",
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/outputs/A2_protocol_package.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "node -e \"const p=require('./packages/protocol/package.json'); console.log(p.name, p.version)\"",
+        "result": "pass",
+        "notes": "Reported @workpack/protocol 0.1.0."
+      },
+      {
+        "cmd": "cd packages/protocol && npm pack --dry-run",
+        "result": "pass",
+        "notes": "Tarball created in dry-run with schemas, templates, agent docs, bin, and tools included."
+      },
+      {
+        "cmd": "Get-ChildItem packages/protocol/schemas -File | Select-Object -ExpandProperty Name",
+        "result": "pass",
+        "notes": "All five schema files present, including WORKPACK_CONFIG_SCHEMA.json."
+      },
+      {
+        "cmd": "Get-ChildItem packages/protocol/templates -Recurse -File | ForEach-Object { $_.FullName.Substring((Resolve-Path '.').Path.Length + 1) }",
+        "result": "pass",
+        "notes": "Template scaffold files were copied under packages/protocol/templates."
+      },
+      {
+        "cmd": "if (Test-Path .github/workflows/publish-protocol.yml) { 'OK' } else { 'MISSING'; exit 1 }",
+        "result": "pass",
+        "notes": "Manual publish workflow exists."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_output_artifacts.py workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution --json",
+        "result": "pass",
+        "notes": "No schema, output existence, or declared-file issues."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_md_json_sync.py --plan-md workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/01_plan.md --meta-json workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.meta.json --status-md workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/99_status.md --state-json workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.state.json --json",
+        "result": "pass",
+        "notes": "No plan/meta/status/state synchronization findings."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "New package/assets only; no existing runtime behavior changed."
+  },
+  "handoff": {
+    "summary": "@workpack/protocol npm package created with schemas, templates, agent docs, tools assets, and manual publish workflow.",
+    "next_steps": [
+      "Proceed to A3_init_command."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": ".github/workflows/publish-protocol.yml",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/package.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/README.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/bin/init.js",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/agent-docs/AGENT_RULES.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/agent-docs/AGENT_STATE_MACHINE.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/schemas/WORKPACK_META_SCHEMA.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/schemas/WORKPACK_STATE_SCHEMA.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/schemas/WORKPACK_OUTPUT_SCHEMA.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/schemas/WORKPACK_GROUP_SCHEMA.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/schemas/WORKPACK_CONFIG_SCHEMA.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/00_request.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/01_plan.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/99_status.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/README.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/workpack.meta.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/workpack.state.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/outputs/.gitkeep",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/prompts/A0_bootstrap.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/prompts/B_template.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/prompts/PROMPT_STYLE_GUIDE.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/prompts/R_retrospective.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/prompts/V_bugfix_verify.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/templates/prompts/V1_integration_meta.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/agent_context.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/validate_templates.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/validate_workpack_files.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/verify_commits.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/verify_md_json_sync.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/verify_output_artifacts.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/verify_prompt_style.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/verify_state_transitions.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/workpack_config.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/workpack_lint.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/workpack_scaffold.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/tools/workpack_verify.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/outputs/A2_protocol_package.json",
+      "action": "created"
+    }
+  ],
+  "notes": ""
+}

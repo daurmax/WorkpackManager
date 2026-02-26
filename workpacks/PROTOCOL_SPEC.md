@@ -1,6 +1,6 @@
-# Workpack Protocol v6 Specification
+# Workpack Protocol Specification
 
-This document is the normative specification for Workpack Protocol v6 in this repository.
+This document is the normative specification for the Workpack Protocol in this repository.
 It defines file structure, field semantics, lifecycle rules, tooling contracts, and backward compatibility expectations for workpack consumers (CLI, CI, editor extensions, and agents).
 
 ---
@@ -17,19 +17,21 @@ A workpack is a durable, version-controlled unit of work that captures:
 - Runtime status (`99_status.md`, `workpack.state.json`)
 - Structured handoffs (`outputs/*.json`)
 
-Protocol v6 formalizes machine-readable metadata and runtime state so tooling can consume workpacks without parsing markdown as the only source of truth.
+Protocol 2.0.0 formalizes machine-readable metadata and runtime state so tooling can consume workpacks without parsing markdown as the only source of truth.
 
 ### 1.2 Version History Summary
 
-- v5 introduced `workpacks/instances/`, DAG front-matter (`depends_on`, `repos`), execution metrics in outputs, R-series retrospective prompts, and cross-workpack references.
-- v6.0 introduced `workpack.meta.json` (static metadata) and `workpack.state.json` (mutable runtime state), including prompt indexing, assignments, and execution log.
-- v6.1 added workpack groups (`group.meta.json`, `GROUP.md`) and updated naming conventions.
+- 1.4.0 introduced `workpacks/instances/`, DAG front-matter (`depends_on`, `repos`), execution metrics in outputs, R-series retrospective prompts, and cross-workpack references.
+- 2.0.0 introduced `workpack.meta.json` (static metadata) and `workpack.state.json` (mutable runtime state), including prompt indexing, assignments, and execution log.
+- 2.1.0 added workpack groups (`group.meta.json`, `GROUP.md`) and updated naming conventions.
+
+See `CHANGELOG.md` for the complete version history from 1.0.0 onwards.
 
 ### 1.3 Design Philosophy
 
 - Separate static contract from mutable execution data.
 - Keep markdown readable for humans, JSON parseable for tools.
-- Preserve backward compatibility with v5 workpacks (additive evolution).
+- Preserve backward compatibility with 1.x workpacks (additive evolution).
 - Prefer explicit DAG declarations over inferred sequencing.
 - Maintain auditability via append-only state events and per-prompt outputs.
 
@@ -50,20 +52,20 @@ The `workpacks/` directory should include:
 - `_template/`
 - `instances/`
 
-### 2.2 Per-Workpack Instance Layout (v6)
+### 2.2 Per-Workpack Instance Layout (2.0.0+)
 
 ```text
 workpacks/instances/<workpack-id>/
   00_request.md                 # required
   01_plan.md                    # required
   prompts/                      # required
-  outputs/                      # required by protocol v2+
+  outputs/                      # required by protocol 1.1.0+
   99_status.md                  # recommended human status surface
-  workpack.meta.json            # required for native v6
-  workpack.state.json           # required for native v6 runtime tracking
+  workpack.meta.json            # required for native 2.0.0+
+  workpack.state.json           # required for native 2.0.0+ runtime tracking
 ```
 
-### 2.3 Grouped Layout (v6.1)
+### 2.3 Grouped Layout (2.1.0+)
 
 ```text
 workpacks/instances/<group-id>/
@@ -118,7 +120,7 @@ Schema: `workpacks/WORKPACK_META_SCHEMA.json`
 | `id` | string | Workpack identifier; must match folder name and pattern `^[a-z0-9][a-z0-9_-]+$`. |
 | `title` | string | Display title for humans/tools. |
 | `summary` | string | Concise 1–3 sentence description of scope and outcome. |
-| `protocol_version` | string | Protocol version implemented by this workpack (example: `"6"`). |
+| `protocol_version` | string | Protocol version implemented by this workpack (example: `"2.0.0"`). |
 | `workpack_version` | string | Semantic version of the workpack content itself (plan/prompt evolution). |
 | `category` | enum | One of: `feature`, `refactor`, `bugfix`, `hotfix`, `debug`, `docs`, `perf`, `security`. |
 | `created_at` | date | Creation date (`YYYY-MM-DD`). |
@@ -167,7 +169,7 @@ Tools should treat markdown and JSON as two synchronized views of the same graph
   "id": "02_platform_refactor",
   "title": "Platform Refactor",
   "summary": "Refactor the platform module layout and update tooling hooks.",
-  "protocol_version": "6",
+  "protocol_version": "2.0.0",
   "workpack_version": "1.0.0",
   "category": "refactor",
   "created_at": "2026-02-23",
@@ -341,28 +343,81 @@ Log entries provide a durable audit trail and should never be rewritten to hide 
 
 ## 7. Backward Compatibility
 
-### 7.1 v5 Workpacks in a v6 Repository
+### 7.1 1.x Workpacks in a 2.0.0 Repository
 
-Protocol v6 is additive. v5 workpacks remain valid when they follow v5 structure and conventions.
+Protocol 2.0.0 is additive. 1.x workpacks remain valid when they follow 1.x structure and conventions.
 
 ### 7.2 When `workpack.meta.json` Is Absent
 
-Treat the workpack as legacy (v5-style) unless repository policy explicitly requires v6 metadata.
+Treat the workpack as legacy (1.x-style) unless repository policy explicitly requires 2.0.0 metadata.
 
 Compatibility behavior:
 
 - Do not assume `prompts[]` index exists.
 - Derive prompt graph from markdown/front-matter as fallback.
-- Avoid hard failure solely due to absent v6 files in legacy mode.
+- Avoid hard failure solely due to absent 2.0.0 files in legacy mode.
 
 ### 7.3 Mixed Fleets
 
-Repositories may contain both v5 and v6 workpacks during migration.
+Repositories may contain both 1.x and 2.x workpacks during migration.
 Tooling should:
 
 - detect mode per workpack,
 - apply matching validation profile,
 - emit explicit diagnostics for mismatches.
+
+### 7.4 Legacy-to-Modern Migration Method (2.0.0/2.1.0 -> 2.2.0+)
+
+This section defines the standard modernization workflow for existing 2.x workpacks.
+
+#### 7.4.1 Supported Source and Target Versions
+
+- Supported source versions: `2.0.0`, `2.1.0`.
+- Supported target versions: `2.2.0` and higher minor/patch releases in the 2.x line.
+- 1.x workpacks should first complete the 1.x -> 2.0.0 upgrade path before applying this 2.x modernization checklist.
+
+#### 7.4.2 Ordered Migration Checklist
+
+1. Update `00_request.md`:
+   - Confirm the request states modernization intent and target protocol `2.2.0+`.
+   - Ensure acceptance criteria include commit tracking and maintenance prompt expectations where applicable.
+2. Update `01_plan.md`:
+   - Confirm prompt DAG still reflects current execution order after modernization tasks are introduced.
+   - Ensure the post-verification B-series DAG section exists for bug-fix ordering.
+3. Update `workpack.meta.json`:
+   - Set `protocol_version` to `2.2.0` or higher.
+   - Keep `prompts[]` synchronized with `prompts/*.md` stems and `depends_on` edges.
+   - Preserve existing IDs/slugs; do not rename workpack identity fields solely for modernization.
+4. Update `workpack.state.json`:
+   - Add missing prompt status entries for newly introduced prompts.
+   - Preserve historical `execution_log` entries (append-only); do not rewrite prior events.
+   - Refresh `last_updated` and keep `workpack_id` aligned with `workpack.meta.json.id`.
+5. Update prompt front-matter and output contracts:
+   - Ensure each prompt uses required YAML front-matter (`depends_on`, `repos`).
+   - For output payloads using schema `1.2+`, ensure `artifacts.commit_shas` is present and non-empty when files changed.
+   - Ensure integration verification prompts set `artifacts.branch_verified` after commit/branch checks.
+
+#### 7.4.3 Backward Compatibility Guardrails
+
+- Migration must be additive and non-destructive: keep legacy outputs and history unless intentionally superseded.
+- Mixed fleets remain valid: non-modernized `2.0.0`/`2.1.0` workpacks continue to lint under their original profile.
+- Commit-tracking strictness applies when the workpack is modernized to protocol `2.2.0+` (or outputs adopt schema `1.2+`).
+- Avoid introducing required-field changes to `workpack.meta.json`/`workpack.state.json` that would break older workpacks.
+
+#### 7.4.4 Required Post-Migration Verification
+
+Run all of the following after modernization updates:
+
+```bash
+python workpacks/tools/validate_templates.py
+python workpacks/tools/workpack_lint.py
+```
+
+If protocol tooling or lint rules were changed during migration, also run:
+
+```bash
+python -m pytest workpacks/tools/tests/ -v
+```
 
 ---
 
@@ -436,10 +491,11 @@ When unresolved dependencies exist:
 ### 10.2 Completion Flow
 
 1. Apply file changes for the prompt scope.
-2. Write/update `outputs/<PROMPT>.json` to satisfy `WORKPACK_OUTPUT_SCHEMA.json`.
-3. Update `99_status.md`.
-4. Set prompt status to `complete`, set `completed_at`, optionally set `output_validated`.
-5. Append `prompt_completed` event and update `last_updated`.
+2. Commit prompt changes on the work branch.
+3. Write/update `outputs/<PROMPT>.json` to satisfy `WORKPACK_OUTPUT_SCHEMA.json`.
+4. Update `99_status.md`.
+5. Set prompt status to `complete`, set `completed_at`, optionally set `output_validated`.
+6. Append `prompt_completed` event and update `last_updated`.
 
 ### 10.3 Output JSON Expectations
 
@@ -461,6 +517,51 @@ Recommended additions:
 - Do not mark prompts complete without corresponding output artifacts.
 - Keep state mutations minimal, explicit, and timestamped.
 
+### 10.5 B-series Dependency DAG (Post-Verification)
+
+When a verification/integration gate (`V1_*`) identifies bugs and emits B-series prompts:
+
+- Each B-series prompt MAY declare `depends_on` in YAML front-matter (example: `depends_on: [B1_shared_refactor]`).
+- `workpack.meta.json.prompts[]` MAY include dynamically-added B-series entries with matching `depends_on`.
+- B-series prompts at the same DAG depth (no dependency edges between them) MAY run in parallel.
+- The integration prompt that generates B-series prompts MUST also produce a B-series dependency plan that makes ordering/parallelization explicit.
+- `01_plan.md` SHOULD include a post-verification B-series DAG section that captures dependency ordering once bugs are known.
+
+### 10.6 Commit Tracking
+
+For protocol version 2.2.0+:
+
+- Every prompt that modifies files MUST commit changes before writing `outputs/<PROMPT>.json`.
+- Commit message format MUST follow `<type>(<workpack-slug>/<prompt-stem>): <summary>`.
+- Commit SHA values MUST be recorded in `output.json` under `artifacts.commit_shas`.
+- `branch.work` in output payloads MUST match the actual branch where those commits exist.
+- Pure verification/integration prompts that do not modify source files MAY set `artifacts.commit_shas` to `[]` only when no files were changed.
+
+### 10.7 Integration Prompt Verification Responsibilities (V-series)
+
+Integration prompts (`V*_...`) MUST verify upstream output integrity before authorizing merge readiness.
+
+#### 10.7.1 Commit Verification
+
+For each prior prompt output JSON:
+
+1. Extract `artifacts.commit_shas`.
+2. Verify each SHA exists on the work branch with `git log --oneline <branch> | grep <sha>`.
+3. For each commit, inspect changed files with `git show --stat <sha>`.
+4. Cross-reference diffed files against `change_details[].file` in that output JSON.
+5. Report discrepancies:
+   - files present in commit but not declared in `change_details`, and
+   - files declared in `change_details` but absent from commit.
+6. Set `artifacts.branch_verified` to `true` in the integration prompt's own output only when all checks pass.
+
+#### 10.7.2 B-series DAG Verification
+
+If B-series prompts exist, integration prompts MUST:
+
+1. Verify the B-series DAG is acyclic.
+2. Verify B-series execution order respected declared dependencies.
+3. Verify every B-series prompt referenced in the DAG has a corresponding `outputs/<PROMPT>.json`.
+
 ---
 
 ## 11. Practical Notes for Implementers
@@ -468,5 +569,5 @@ Recommended additions:
 - Prefer JSON schemas as enforcement boundary; markdown parsing is a fallback for compatibility.
 - Keep metadata stable to minimize noisy diffs.
 - Treat `workpack.state.json` as operational data and preserve log history.
-- During migration from v5, introduce `workpack.meta.json` first, then add runtime orchestration via `workpack.state.json`.
+- During migration from 1.x, introduce `workpack.meta.json` first, then add runtime orchestration via `workpack.state.json`.
 

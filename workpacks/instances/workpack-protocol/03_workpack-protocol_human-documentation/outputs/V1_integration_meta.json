@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-protocol_human-documentation",
+  "prompt": "V1_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/human-documentation",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "262533a"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/00_request.md",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/01_plan.md",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/99_status.md",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A0_bootstrap.json",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A1_concepts_guide.json",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A2_quickstart_guide.json",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A3_integration_guide.json",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A4_troubleshooting_guide.json",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/prompts/A3_integration_guide.md",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/prompts/R1_retrospective.md",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/workpack.meta.json",
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/V1_integration_meta.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "All schema/template checks passed."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation",
+        "result": "pass",
+        "notes": "All workpack lint checks pass."
+      },
+      {
+        "cmd": "python workpacks/tools/validate_workpack_files.py workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation",
+        "result": "pass",
+        "notes": "All required files and output artifacts are present."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_output_artifacts.py workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation --json",
+        "result": "pass",
+        "notes": "No output artifact errors or warnings."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_commits.py workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation --work-branch feature/human-documentation --json",
+        "result": "pass",
+        "notes": "SHA existence checks pass; tool emits non-blocking warnings from git show --stat path truncation."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_verify.py --workpack 03_workpack-protocol_human-documentation --json",
+        "result": "pass",
+        "notes": "State, sync, output, and style pass; commit category reports non-blocking warnings noted above."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests -q",
+        "result": "pass",
+        "notes": "189 passed in 1.57s."
+      },
+      {
+        "cmd": "python - (manual markdown link and anchor checker over docs/*.md)",
+        "result": "pass",
+        "notes": "BROKEN_LINKS_NONE."
+      },
+      {
+        "cmd": "manual AC evidence scan (Select-String/Test-Path checks for AC1-AC12)",
+        "result": "pass",
+        "notes": "All acceptance criteria have direct command/file evidence."
+      },
+      {
+        "cmd": "manual commit audit (A0-A4): git log --oneline feature/human-documentation | findstr <SHA>; git show --name-only <SHA>",
+        "result": "pass",
+        "notes": "All A0-A4 SHAs exist on branch and each commit file set matches change_details.file exactly."
+      },
+      {
+        "cmd": "security check precondition: repository manifest/config discovery",
+        "result": "not_run",
+        "notes": "No package.json, pyproject.toml, requirements.txt, or workpack.config.json found."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Documentation-only scope; no runtime application code changed."
+  },
+  "handoff": {
+    "summary": "Integration gate PASS: deliverables are complete, legacy ADOPTION_GUIDE removed with docs references cleaned, and prior prompt commit audits pass on feature/human-documentation.",
+    "next_steps": [
+      "Proceed to R1_retrospective.",
+      "Open PR from feature/human-documentation to main."
+    ],
+    "known_issues": [
+      "verify_commits/workpack_verify may emit commit cross-reference warnings due git show --stat path truncation for long paths; manual git show --name-only reconciliation for A0-A4 is clean."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "GPT-5-Codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/00_request.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/01_plan.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A0_bootstrap.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A1_concepts_guide.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A2_quickstart_guide.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A3_integration_guide.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/A4_troubleshooting_guide.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/prompts/A3_integration_guide.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/prompts/R1_retrospective.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/workpack.meta.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/03_workpack-protocol_human-documentation/outputs/V1_integration_meta.json",
+      "action": "created"
+    }
+  ],
+  "notes": "AC1 pass (CONCEPTS covers meta/state split, DAG, lifecycle, commit tracking, and integration gates). AC2 pass (2 Mermaid diagrams). AC3 pass (QUICKSTART covers prerequisites plus scaffold/execute/verify/complete flow). AC4 pass (5-minute completion claim present). AC5 pass (INTEGRATION covers single-repo, multi-repo, CI, and team workflow). AC6 pass (workpack.config.json referenced). AC7 pass (10 troubleshooting problems). AC8 pass (each entry has Symptoms, Cause, Resolution). AC9 pass (all docs cross-reference each other). AC10 pass (legacy workpacks/ADOPTION_GUIDE.md removed and docs reference scan clean). AC11 pass (no broken links in docs scan). AC12 pass (language is onboarding-oriented and accessible)."
+}

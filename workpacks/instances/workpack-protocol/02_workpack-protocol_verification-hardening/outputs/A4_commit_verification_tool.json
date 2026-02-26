@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_verification-hardening",
+  "prompt": "A4_commit_verification_tool",
+  "component": "verification-tooling",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/verification-hardening",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "2cc2a50394dd1ceebabccd6816e630d1bbb6fe8c"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/workpack.state.json",
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/99_status.md"
+    ],
+    "files_created": [
+      "workpacks/tools/verify_commits.py",
+      "workpacks/tools/tests/test_verify_commits.py",
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A4_commit_verification_tool.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "180 passed."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/test_verify_commits.py --cov=verify_commits --cov-branch --cov-report=term-missing",
+        "result": "pass",
+        "notes": "verify_commits.py branch coverage: 96%."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py",
+        "result": "fail",
+        "notes": "Global lint reports pre-existing ERR_NO_VERIFICATION issues in other workpacks and one pre-existing ERR_STATE_SCHEMA_INVALID in 02_workpack-protocol_project-config."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_commits.py",
+        "result": "pass",
+        "notes": "Tool executed successfully; current workpacks are protocol_version 2.0.0 so commit checks are skipped with INFO_PROTOCOL_NOT_APPLICABLE."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added targeted unit tests for commit SHA verification and change_details cross-reference with mocked git operations."
+  },
+  "handoff": {
+    "summary": "Implemented commit verification tooling with SHA existence checks, change_details cross-reference, protocol-version gating, git-absent graceful degradation, standalone CLI support, and comprehensive unit tests.",
+    "next_steps": [
+      "Proceed with A6_git_hooks_ci_templates and A7_unified_verify_command integration."
+    ],
+    "known_issues": [
+      "workpack_lint.py currently reports pre-existing errors outside this prompt scope."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/verify_commits.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/tools/tests/test_verify_commits.py",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/A4_commit_verification_tool.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Commit checks are intentionally gated to protocol_version >= 2.2.0 in workpack.meta.json; this workpack currently declares 2.0.0, so runtime verification emits INFO skip findings."
+}

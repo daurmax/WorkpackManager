@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.2",
+  "workpack": "04_workpack-protocol_npm-distribution",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/npm-distribution",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "b146322"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/99_status.md",
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/outputs/R1_retrospective.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution",
+        "result": "pass",
+        "notes": "Target workpack passes protocol lint checks."
+      },
+      {
+        "cmd": "python workpacks/tools/validate_workpack_files.py workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution",
+        "result": "pass",
+        "notes": "All required workpack files and prompt outputs are present."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Retrospective/state/status updates only; no product runtime changes."
+  },
+  "handoff": {
+    "summary": "Retrospective completed with scope delivery summary, rework/friction assessment, estimation analysis, and 5 owned action items. Zero B-series fixes required. Major process finding: codex agents failed to commit per-prompt, forcing V1 gate remediation.",
+    "next_steps": [
+      "Open PR from feature/npm-distribution to main.",
+      "Track AI-1 through AI-5 in the next protocol/tooling planning cycle."
+    ],
+    "known_issues": [
+      "A0_bootstrap status remained 'pending' in workpack.state.json despite completion — state tracking gap.",
+      "A1-A4 output JSONs all declare commit_shas=[570c08d] but that commit only contains A0 bootstrap output; actual deliverables were committed as 2749325 by V1 gate.",
+      "Execution telemetry fields (tokens_in, tokens_out, duration_ms) are zeroed in all output artifacts."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-6",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/outputs/R1_retrospective.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.state.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "1. Scope and delivery summary\n- Delivered full request scope: monorepo structure (pnpm-workspace.yaml, packages/protocol, packages/extension), @workpack/protocol npm package with schemas/templates/agent-docs/tools, init CLI with --dir and --protocol-version flags, VS Code extension scaffold with TypeScript activation entry point.\n- All 14 acceptance criteria (AC1-AC14) verified as met by V1 integration gate.\n- 3 feature branch commits: 570c08d (A0 bootstrap), 2749325 (A1-A4 bulk delivery), b146322 (V1 gate).\n\nMetrics\n| Metric | Value |\n|--------|-------|\n| Total prompts | 7 planned / 7 completed (A0-A4, V1, R1) |\n| First-pass completions | 6 (A0-A4 + V1; R1 in progress) |\n| B-series count | 0 |\n| Total elapsed time | 2d 12h wall-clock (2026-02-23T22:29 creation -> 2026-02-26T10:30 V1 complete); ~1h 43m active agent execution |\n\n2. What went well\n- All 4 A-series prompts completed on first pass with zero B-series corrective prompts required.\n- A2_protocol_package and A4_extension_scaffold were correctly parallelized per plan (both depend only on A1), saving elapsed time.\n- 189/189 existing tests passed throughout all prompts — zero regressions introduced.\n- A3_init_command added its own integration test (test-init.js), correctly growing regression coverage.\n- npm pack dry-run verified protocol package bundling with 35 files.\n- TypeScript extension scaffold compiled cleanly on first attempt.\n- V1 gate systematically verified all 14 ACs with documented evidence.\n\n3. What caused friction\n- Codex agents did not commit their work: A1-A4 left all code uncommitted in the working tree. V1 gate discovered this and had to create remediation commit 2749325 containing all 53 files from A1-A4.\n- A0_bootstrap.status remained 'pending' in workpack.state.json despite the prompt being executed and output JSON existing. State tracking was not updated by the bootstrap agent.\n- A1-A4 output JSONs all incorrectly reference commit SHA 570c08d (the A0 bootstrap commit) instead of their actual work commit. This is a metadata integrity failure.\n- 8 pre-existing linter errors in other workpacks created noise in baseline verification (not in scope but confusing).\n- Planned base branch was 'main' but repository default is 'master' — noted in A0 known issues but not resolved.\n\n4. Defects and rework analysis\n- Code defects requiring B-series: none (0 B-series prompts).\n- Metadata defect: commit SHA tracking fundamentally broken across all codex-executed prompts. All A1-A4 outputs reference wrong SHA.\n- Process defect: V1 gate absorbed remediation work (committing all outstanding code) that should have been done per-prompt.\n- Impact: branch_verified=false in V1 output because commit SHAs in A1-A4 outputs don't match actual change commits.\n\n5. Estimation accuracy (planned vs actual)\n| Prompt | Planned | Actual | Assessment |\n|--------|---------|--------|------------|\n| A0_bootstrap | XS | ~instant | Accurate |\n| A1_monorepo_structure | M | 7m 30s | Over-estimated |\n| A2_protocol_package | M | 3m 17s | Over-estimated |\n| A3_init_command | M | 8m 32s | Over-estimated |\n| A4_extension_scaffold | S | 3m 34s | Accurate |\n| V1_integration_meta | S | 30m | Under-estimated (remediation work) |\nOverall: A-series prompts ran significantly faster than M estimates. V1 gate was heavier than S estimate due to absorbing commit remediation.\n\n6. Action items with owners\n- AI-1: Enforce per-prompt commit discipline — each A-series prompt must commit its deliverables before producing output JSON. Owner: agent rules / AGENT_RULES.md maintainers.\n- AI-2: Add commit SHA verification to output JSON validation — reject outputs where commit_shas don't reference commits containing the declared changed files. Owner: tooling maintainers (verify_commits.py).\n- AI-3: Ensure A0_bootstrap always updates workpack.state.json to status='complete'. Owner: bootstrap prompt template maintainers.\n- AI-4: Resolve main vs master branch discrepancy at repository level (rename default branch or update protocol templates). Owner: repo admin.\n- AI-5: Recalibrate M-series effort estimates downward for codex-driven file creation prompts. Owner: workpack planners.\n\nCommit SHA handling\n- artifacts.commit_shas references b146322 (latest verified branch HEAD at V1 gate completion). R1 file changes are currently uncommitted in the working tree."
+}

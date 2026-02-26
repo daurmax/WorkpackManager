@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.2",
+  "workpack": "01_workpack-protocol_prompt-lifecycle",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/workpack-protocol-evolution",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/workpack.state.json",
+      "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/99_status.md"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/01_workpack-protocol_prompt-lifecycle/outputs/R1_retrospective.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      "python workpacks/tools/workpack_lint.py",
+      "python workpacks/tools/validate_workpack_files.py"
+    ],
+    "regression_added": false,
+    "regression_notes": "Retrospective — no code changes."
+  },
+  "handoff": {
+    "summary": "Retrospective completed. Documented scope delivery (9 prompts, 7 complete, 1 skipped, 1 retro), bootstrapping exception assessment (acceptable for self-referential protocol work), friction points (zeroed execution metrics, multi-agent handoff overhead), and 5 action items for future workpacks.",
+    "next_steps": [
+      "Merge feature/workpack-protocol-evolution into main",
+      "Apply action items to next workpack planning cycle"
+    ],
+    "known_issues": [
+      "Execution metrics (tokens_in, tokens_out, duration_ms) are zeroed in all output JSONs — no LLM cost tracking was captured",
+      "Post-merge tooling work (validate_workpack_files.py, scaffold integration, manual prompts, WARN_MISSING_RETROSPECTIVE) emerged as unplanned scope"
+    ]
+  },
+  "repos": ["WorkpackManager"],
+  "execution": {
+    "model": "claude-opus-4-6",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [],
+  "notes": "Retrospective prompt — no source code changes. This output documents execution outcomes, process assessment, and action items. The retrospective itself is embedded in the handoff.summary and the notes field below.",
+
+  "retrospective": {
+    "sections": {
+      "1_scope_and_delivery_summary": {
+        "description": "This workpack delivered three complementary enhancements to the Workpack Protocol prompt lifecycle targeting version 2.2.0: (1) B-series dependency DAG support, (2) per-prompt commit tracking, and (3) legacy-to-modern workpack modernization with maintenance prompts. All 16 acceptance criteria from the request were satisfied.",
+        "prompt_summary": {
+          "total_prompts": 9,
+          "completed": 7,
+          "skipped": 1,
+          "retrospective": 1,
+          "b_series_generated": 2,
+          "b_series_completed": 1,
+          "b_series_skipped": 1
+        },
+        "agents_used": {
+          "codex_gpt5": "A0–A5 (bootstrap through V1 gate)",
+          "claude_sonnet_4_6": "B1 (changelog), B2 review (skipped), A5 re-review (merge authorization)",
+          "claude_opus_4_6": "R1 (retrospective), post-merge tooling (validator, scaffold integration, docs)"
+        },
+        "delivery_timeline": {
+          "start": "2026-02-23T22:00:00Z",
+          "v1_gate_completed": "2026-02-24T00:39:00Z",
+          "merge_authorized": "2026-02-24T01:15:00Z",
+          "elapsed_to_merge_auth": "~3h 15m",
+          "notes": "Post-merge tooling and retrospective work extended the total timeline significantly beyond merge authorization."
+        },
+        "key_commits": [
+          "70434b2 — batch delivery of all A-series and B1 prompts",
+          "2623674 — SHA backfill and bootstrapping exception documentation",
+          "51b8cb7 — file completeness validator tool"
+        ],
+        "files_touched": {
+          "total_modified": "~40 files across protocol spec, schemas, templates, linter, tests, tools, docs",
+          "contracts_changed": ["WORKPACK_OUTPUT_SCHEMA.json", "PROTOCOL_SPEC.md", "PROMPT_STYLE_GUIDE.md"]
+        }
+      },
+
+      "2_what_went_well": [
+        "Clean DAG execution: A1 and A2 ran in parallel as planned; dependency ordering was respected throughout.",
+        "Protocol backward compatibility preserved: existing 2.0.0/2.1.0 workpacks still lint and parse without modification.",
+        "B-series mechanism validated by practice: A5 correctly identified two blocking issues and generated B1+B2 with an explicit DAG, proving the feature works.",
+        "Multi-agent handoff succeeded: codex delivered A0–A5, then claude-sonnet-4-6 picked up B1 and the A5 re-review seamlessly.",
+        "All 16 acceptance criteria verified and documented with explicit pass/fail evidence in A5 output.",
+        "Post-merge tooling improvements (validate_workpack_files.py, scaffold integration, manual prompts) emerged organically and strengthened the protocol ecosystem.",
+        "Linter test coverage expanded: 16 → 27 tests across the session, all passing."
+      ],
+
+      "3_what_caused_friction": [
+        "Bootstrapping paradox: A2 introduced commit tracking, but the protocol for commit tracking didn't exist yet when A0–A5 were being executed. This forced a retroactive SHA backfill and a documented exception — adding ~30 minutes of rework.",
+        "Zeroed execution metrics: No LLM cost tracking was captured in any output JSON (tokens_in=0, tokens_out=0, duration_ms=0 across all 7 outputs). This eliminates any possibility of cost analysis or token efficiency comparison.",
+        "Schema violations in initial state updates: workpack.state.json used 'superseded' (not in enum) and 'notes' (not in schema). These required manual fixes — the state schema's additionalProperties:false is strict and the error surfaced late.",
+        "Missing A3 output timing: A4 execution noted that A3 output was not yet present at the time. The execution log shows A3 was backfilled post-hoc at 00:25 UTC, suggesting the codex agent may not have produced it during the original A3 execution window.",
+        "R1 retrospective prompt was missing: the plan referenced R1_retrospective in Phase 6 but the prompt file was never created during the A-series work. It had to be created manually after the fact.",
+        "Multi-agent context loss: switching between codex and claude-sonnet-4-6 required re-establishing full context each time, adding overhead to the B-series and re-review phases."
+      ],
+
+      "4_defects_and_rework_analysis": {
+        "b_series_review": {
+          "B1_changelog_2_2_0": {
+            "reason": "AC11 failed — missing protocol 2.2.0 changelog entry",
+            "resolution": "Added 46-line [2.2.0] section to CHANGELOG.md covering all three features",
+            "severity": "major",
+            "rework_cost": "~8 minutes (00:42–00:50 UTC)",
+            "assessment": "Legitimate gap — the codex agent focused on spec/schema/template/linter but did not maintain the changelog. This is a common oversight in protocol evolution workpacks."
+          },
+          "B2_self_commit_audit_alignment": {
+            "reason": "Commit verification failed — A0–A4 outputs had empty commit_shas",
+            "resolution": "Skipped — bootstrapping exception documented. SHA 70434b2 backfilled retroactively.",
+            "severity": "N/A (skipped)",
+            "rework_cost": "~25 minutes for exception analysis and SHA backfill (01:00–01:15 UTC)",
+            "assessment": "Not a true defect — a structural impossibility. Commit tracking cannot be enforced before it exists."
+          }
+        },
+        "non_b_series_rework": [
+          "Schema violation fixes (superseded→skipped, notes→blocked_reason): ~10 minutes",
+          "Missing R1 prompt creation: ~15 minutes",
+          "WARN_MISSING_RETROSPECTIVE addition to validator: ~10 minutes"
+        ],
+        "total_rework_estimate": "~68 minutes of unplanned work across the session"
+      },
+
+      "5_estimation_accuracy": {
+        "planned_effort_table": [
+          {"prompt": "A0_bootstrap", "planned": "XS (<30m)", "actual": "~8m", "assessment": "Accurate"},
+          {"prompt": "A1_b_series_dag", "planned": "M (2–4h)", "actual": "~20m", "assessment": "Over-estimated — reused existing depends_on mechanism"},
+          {"prompt": "A2_commit_tracking", "planned": "M (2–4h)", "actual": "~25m", "assessment": "Over-estimated — schema and spec changes were straightforward"},
+          {"prompt": "A3_integration_verification", "planned": "S (30m–2h)", "actual": "~16m + 35m backfill", "assessment": "Accurate if backfill included"},
+          {"prompt": "A4_workpack_modernization", "planned": "M (2–4h)", "actual": "~13m + 25m reviews", "assessment": "Over-estimated"},
+          {"prompt": "A5_integration_meta", "planned": "S (30m–2h)", "actual": "~9m + 36m re-review", "assessment": "Accurate with re-review"},
+          {"prompt": "B1_changelog_2_2_0", "planned": "unplanned", "actual": "~8m", "assessment": "Minor fix, fast execution"},
+          {"prompt": "B2_self_commit_audit", "planned": "unplanned", "actual": "skipped", "assessment": "N/A"},
+          {"prompt": "R1_retrospective", "planned": "S (30m–2h)", "actual": "~45m", "assessment": "Accurate"}
+        ],
+        "overall_assessment": "A-series effort estimates were consistently over-estimated by 3–6x. The M-sized tasks (A1, A2, A4) completed in under 30 minutes each. This suggests that for protocol evolution work with clear specs, effort should be estimated one size smaller (M→S, S→XS). However, the unplanned rework (bootstrapping exception, schema fixes, tooling additions) consumed roughly as much time as the planned work itself."
+      },
+
+      "6_bootstrapping_exception_assessment": {
+        "situation": "A2 introduced per-prompt commit tracking as a new protocol requirement. However, since all A-series prompts were delivered in a single batch by the codex agent, there was no opportunity to commit each prompt's changes individually before writing output.json. The commit tracking protocol did not exist when A0–A1 were executed.",
+        "decision": "Document this as a bootstrapping exception. All 7 outputs share batch commit SHA 70434b2. B2 (self-commit audit) was skipped rather than artificially attempting to retroactively create per-prompt commits.",
+        "assessment": "ACCEPTABLE. This is an inherent limitation of self-referential protocol work: you cannot enforce a rule that you are in the process of creating. The exception was properly documented in every output JSON with explanatory notes.",
+        "recommendations": [
+          "Future workpacks that introduce new protocol requirements SHOULD plan for the bootstrapping case explicitly in the request/plan.",
+          "Consider a 'protocol bootstrap mode' flag in workpack.meta.json that relaxes newly-introduced requirements for the workpack that introduces them.",
+          "Self-referential protocol changes should be called out in the risk matrix with the bootstrapping paradox as a known risk."
+        ]
+      },
+
+      "7_action_items": [
+        {
+          "id": "AI-1",
+          "action": "Add execution metrics collection guidance to PROTOCOL_SPEC.md",
+          "rationale": "All 7 outputs had zeroed tokens/duration — no cost analysis possible",
+          "owner": "next protocol workpack",
+          "priority": "medium"
+        },
+        {
+          "id": "AI-2",
+          "action": "Add bootstrapping exception pattern to PROTOCOL_SPEC.md risk guidance",
+          "rationale": "Self-referential protocol changes will recur; document the pattern once",
+          "owner": "next protocol workpack",
+          "priority": "medium"
+        },
+        {
+          "id": "AI-3",
+          "action": "Reduce default effort estimates for protocol evolution tasks by one T-shirt size",
+          "rationale": "A1/A2/A4 planned as M, completed in <30m each; systematic over-estimation",
+          "owner": "workpack planners",
+          "priority": "low"
+        },
+        {
+          "id": "AI-4",
+          "action": "Include R1_retrospective prompt in scaffold template",
+          "rationale": "R1 was missing from the initial workpack and had to be created manually",
+          "owner": "next protocol/tooling workpack",
+          "priority": "high"
+        },
+        {
+          "id": "AI-5",
+          "action": "Ensure changelog update is part of A-series, not deferred to B-series",
+          "rationale": "B1 was generated solely because A-series didn't maintain the changelog — avoidable rework",
+          "owner": "prompt template maintainers",
+          "priority": "medium"
+        }
+      ]
+    }
+  }
+}

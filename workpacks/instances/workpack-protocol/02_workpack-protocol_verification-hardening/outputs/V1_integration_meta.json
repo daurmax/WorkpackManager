@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-protocol_verification-hardening",
+  "prompt": "V1_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/verification-hardening",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "2cc2a50394dd1ceebabccd6816e630d1bbb6fe8c",
+      "fd85531af388c8bc906522daf30a6eb573a2fd67"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/V1_integration_meta.json"
+    ],
+    "files_created": [],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "184 passed in 1.38s."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening",
+        "result": "pass",
+        "notes": "Target workpack passes lint validation (detected as 2.2.0 workpack)."
+      },
+      {
+        "cmd": "python workpacks/tools/validate_templates.py",
+        "result": "pass",
+        "notes": "All schema and template checks passed."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_state_transitions.py",
+        "result": "pass",
+        "notes": "0 errors, 28 warnings (legacy-compat in other workpacks). Target workpack clean."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_md_json_sync.py --plan-md <target>/01_plan.md --meta-json <target>/workpack.meta.json --status-md <target>/99_status.md --state-json <target>/workpack.state.json",
+        "result": "pass",
+        "notes": "No markdown-JSON synchronization drift detected for target workpack."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_output_artifacts.py",
+        "result": "pass",
+        "notes": "Target workpack: OK, no issues. Repo-wide: 43 errors (pre-existing in other workpacks)."
+      },
+      {
+        "cmd": "python workpacks/tools/verify_prompt_style.py workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/prompts",
+        "result": "fail",
+        "notes": "R1_retrospective.md missing required sections. R-series prompts use a different template structure — not a blocker."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_verify.py --workpack 02_workpack-protocol_verification-hardening --json",
+        "result": "fail",
+        "notes": "4 categories pass (state, sync, output, commits). 1 error: R1_retrospective prompt style. Non-blocking: R-series uses Retrospective template."
+      },
+      {
+        "cmd": "git status --short",
+        "result": "pass",
+        "notes": "Clean working tree. All deliverables committed."
+      },
+      {
+        "cmd": "jsonschema validation of all 9 output JSONs against WORKPACK_OUTPUT_SCHEMA.json",
+        "result": "pass",
+        "notes": "All 9 output JSONs (A0-A7, V1) pass schema validation including schema_version 1.2 commit_shas minItems:1 requirement."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No new regressions; all 184 existing tests pass."
+  },
+  "handoff": {
+    "summary": "V1 integration gate re-run after remediation. DECISION: PASS — merge-ready. All 16 acceptance criteria satisfied. All A-series prompts complete with output JSONs. DAG dependency ordering valid. All deliverables committed to feature/verification-hardening (2 commits). Schema validation passes on all output JSONs. Clean working tree.",
+    "next_steps": [
+      "Create PR from feature/verification-hardening to main",
+      "Execute R1_retrospective after merge"
+    ],
+    "known_issues": [
+      "R1_retrospective.md flagged by prompt style linter for missing A-series sections — expected for R-series prompts which use a different template structure",
+      "workpack.meta.json declares protocol_version 2.0.0 but workpack uses 2.2.0 features (linter correctly detects it as 2.2.0 via heuristic)",
+      "A1 and A3 outputs were backfilled during V1 remediation — tool code existed and tests passed, but output JSONs were not originally recorded",
+      "All output JSONs reference commit 2cc2a50 as primary deliverable SHA; A1/A3 output JSON files themselves were created in remediation commit fd85531",
+      "Execution metrics (tokens_in/out, duration_ms) are zeroed in all output JSONs — telemetry was not captured",
+      "Repo-wide verify_output_artifacts reports 43 pre-existing errors in other workpacks (outside scope)"
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "iteration": 2,
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/02_workpack-protocol_verification-hardening/outputs/V1_integration_meta.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "V1 gate re-run (iteration 2). Previous run FAILed due to 3 blockers: (1) A1/A3 pending with no output JSONs, (2) DAG dependency violation, (3) uncommitted deliverables. All 3 blockers resolved via remediation commits 2cc2a50 and fd85531. All 16 acceptance criteria now have full implementation evidence: tools created, 184 tests passing, output JSONs exist for all complete prompts, DAG ordering valid, git status clean."
+}

@@ -48,7 +48,7 @@ Last Updated: 2026-02-23
 |--------|--------|-------|
 | R1_retrospective | ✅ Complete | Completed on feature branch by request; final completion state should be set after PR merge. |
 
-## Outputs (Protocol v6)
+## Outputs (Protocol 2.0.0)
 
 | Prompt | Output JSON Path | Status |
 |--------|------------------|--------|

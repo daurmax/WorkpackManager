@@ -1,0 +1,56 @@
+{
+  "id": "workpack-protocol",
+  "title": "Workpack Protocol Evolution",
+  "summary": "Meta-group for changes to the Workpack Protocol itself. Tracks protocol specification updates, schema changes, tooling adaptations, and process improvements that evolve how workpacks work — as distinct from any specific project that uses them.",
+  "protocol_version": "2.2.1",
+  "created_at": "2026-02-23",
+  "owners": [],
+  "tags": ["workpack-protocol", "meta", "process-improvement"],
+  "repos": ["WorkpackManager"],
+  "workpacks": [
+    { "id": "01_workpack-protocol_prompt-lifecycle", "execution_order": 1, "title": "Prompt Lifecycle Enhancements (B-series DAG + Commit Tracking)" },
+    { "id": "02_workpack-protocol_verification-hardening", "execution_order": 2, "title": "Verification Hardening — Full Invariant Enforcement" },
+    { "id": "02_workpack-protocol_project-config", "execution_order": 2, "title": "Project Configuration (workpack.config.json)" },
+    { "id": "03_workpack-protocol_agent-documentation", "execution_order": 3, "title": "Agent-Optimized Documentation" },
+    { "id": "03_workpack-protocol_human-documentation", "execution_order": 3, "title": "Human-Readable Documentation Suite" },
+    { "id": "04_workpack-protocol_npm-distribution", "execution_order": 4, "title": "npm Distribution & Monorepo Setup" }
+  ],
+  "execution_dag": {
+    "phases": [
+      {
+        "order": 1,
+        "workpacks": ["01_workpack-protocol_prompt-lifecycle"],
+        "mode": "serial",
+        "description": "First protocol evolution: add B-series dependency DAG and per-prompt commit tracking with integration verification."
+      },
+      {
+        "order": 2,
+        "workpacks": ["02_workpack-protocol_verification-hardening", "02_workpack-protocol_project-config"],
+        "mode": "parallel",
+        "description": "Harden verification tooling to enforce all declared invariants; define workpack.config.json format for per-project configuration."
+      },
+      {
+        "order": 3,
+        "workpacks": ["03_workpack-protocol_agent-documentation", "03_workpack-protocol_human-documentation"],
+        "mode": "parallel",
+        "description": "Differentiated documentation: agent-optimized rules and state machine; human-readable concepts, quickstart, integration, and troubleshooting guides."
+      },
+      {
+        "order": 4,
+        "workpacks": ["04_workpack-protocol_npm-distribution"],
+        "mode": "serial",
+        "description": "Monorepo restructure and @workpack/protocol npm package for protocol distribution with init CLI command."
+      }
+    ],
+    "edges": [
+      ["01_workpack-protocol_prompt-lifecycle", "02_workpack-protocol_verification-hardening"],
+      ["01_workpack-protocol_prompt-lifecycle", "02_workpack-protocol_project-config"],
+      ["02_workpack-protocol_verification-hardening", "03_workpack-protocol_agent-documentation"],
+      ["02_workpack-protocol_project-config", "03_workpack-protocol_agent-documentation"],
+      ["02_workpack-protocol_verification-hardening", "03_workpack-protocol_human-documentation"],
+      ["02_workpack-protocol_project-config", "03_workpack-protocol_human-documentation"],
+      ["03_workpack-protocol_agent-documentation", "04_workpack-protocol_npm-distribution"],
+      ["03_workpack-protocol_human-documentation", "04_workpack-protocol_npm-distribution"]
+    ]
+  }
+}

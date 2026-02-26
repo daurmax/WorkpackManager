@@ -1,8 +1,8 @@
 {
   "id": "workpack-manager",
   "title": "WorkpackManager VS Code Extension",
-  "summary": "Full initiative to build the WorkpackManager VS Code extension and the reusable workpack protocol v6 framework. Covers protocol design, extension core architecture, agent integration, UX layer, and validation/quality infrastructure.",
-  "protocol_version": "6",
+  "summary": "Full initiative to build the WorkpackManager VS Code extension and the reusable workpack protocol 2.0.0 framework. Covers protocol design, extension core architecture, agent integration, UX layer, and validation/quality infrastructure.",
+  "protocol_version": "2.0.0",
   "created_at": "2026-02-23",
   "owners": [],
   "tags": ["vscode-extension", "workpack-protocol", "agent-integration", "developer-tools"],
@@ -20,7 +20,7 @@
         "order": 1,
         "workpacks": ["01_workpack-manager_protocol-v6"],
         "mode": "serial",
-        "description": "Foundation: define Protocol v6, schemas, templates, and tooling."
+        "description": "Foundation: define Protocol 2.0.0, schemas, templates, and tooling."
       },
       {
         "order": 2,

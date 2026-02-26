@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# Workpack verification pre-commit hook template.
+#
+# Installation options:
+# 1) Recommended (repository-managed hooks path):
+#    git config core.hooksPath workpacks/tools/hooks
+#    chmod +x workpacks/tools/hooks/pre-commit
+# 2) Git default hook location:
+#    cp workpacks/tools/hooks/pre-commit .git/hooks/pre-commit
+#    chmod +x .git/hooks/pre-commit
+#
+# This hook runs a fast verification subset on staged workpack changes:
+# - verify_state_transitions.py
+# - verify_prompt_style.py
+
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -z "${repo_root}" ]]; then
+  echo "[pre-commit] Not inside a git repository; skipping workpack checks."
+  exit 0
+fi
+cd "${repo_root}"
+
+if [[ -x "workpacks/tools/.venv/bin/python" ]]; then
+  py_cmd="workpacks/tools/.venv/bin/python"
+elif [[ -x "workpacks/tools/.venv/Scripts/python.exe" ]]; then
+  py_cmd="workpacks/tools/.venv/Scripts/python.exe"
+else
+  py_cmd="python"
+fi
+
+declare -A touched_workpacks=()
+staged_prompt_files=()
+while IFS= read -r staged_path; do
+  if [[ "${staged_path}" =~ ^workpacks/instances/[^/]+/[^/]+/ ]]; then
+    touched_workpacks["${BASH_REMATCH[0]%/}"]=1
+  fi
+  if [[ "${staged_path}" =~ ^workpacks/instances/[^/]+/[^/]+/prompts/.*\.md$ ]]; then
+    staged_prompt_files+=("${staged_path}")
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACMR)
+
+if [[ ${#touched_workpacks[@]} -eq 0 ]]; then
+  echo "[pre-commit] No staged workpack changes detected; skipping checks."
+  exit 0
+fi
+
+mapfile -t sorted_workpacks < <(printf "%s\n" "${!touched_workpacks[@]}" | sort)
+
+echo "[pre-commit] Running fast workpack verification checks..."
+for workpack_dir in "${sorted_workpacks[@]}"; do
+  echo "[pre-commit] Checking ${workpack_dir}"
+  "${py_cmd}" workpacks/tools/verify_state_transitions.py "${workpack_dir}/workpack.state.json"
+done
+
+if [[ ${#staged_prompt_files[@]} -gt 0 ]]; then
+  echo "[pre-commit] Linting staged prompt files..."
+  "${py_cmd}" - "${staged_prompt_files[@]}" <<'PY'
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path("workpacks/tools").resolve()))
+import verify_prompt_style as vps  # noqa: E402
+
+
+def render_finding(finding: dict[str, object]) -> str:
+    severity = str(finding.get("severity", "info")).upper()
+    check_id = str(finding.get("check_id", "UNKNOWN"))
+    message = str(finding.get("message", ""))
+    details = finding.get("details")
+    prompt_path = ""
+    if isinstance(details, dict):
+        prompt_path = str(details.get("prompt_path", ""))
+    suffix = f" ({prompt_path})" if prompt_path else ""
+    return f"[{severity}] {check_id}: {message}{suffix}"
+
+
+findings: list[dict[str, object]] = []
+for raw_path in sys.argv[1:]:
+    prompt_path = Path(raw_path)
+    findings.extend(vps.check_required_sections(prompt_path))
+    findings.extend(vps.check_yaml_frontmatter(prompt_path))
+
+if findings:
+    for item in findings:
+        print(render_finding(item))
+    sys.exit(1)
+PY
+fi
+
+echo "[pre-commit] Verification checks passed."

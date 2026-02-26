@@ -3,7 +3,7 @@
   "group": "workpack-manager",
   "title": "Extension Validation, Quality, and CI",
   "summary": "Test framework, workpack linter with VS Code diagnostics, drift detection, v5→v6 migration tool, and CI pipeline.",
-  "protocol_version": "6",
+  "protocol_version": "2.0.0",
   "workpack_version": "1.0.0",
   "category": "feature",
   "created_at": "2026-02-23",

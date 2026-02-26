@@ -1,0 +1,121 @@
+{
+  "schema_version": "1.2",
+  "workpack": "04_workpack-protocol_npm-distribution",
+  "prompt": "V1_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/npm-distribution",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "570c08d",
+      "2749325"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/99_status.md",
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.state.json"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/outputs/V1_integration_meta.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "jsonschema validate outputs/A0_bootstrap.json against WORKPACK_OUTPUT_SCHEMA.json",
+        "result": "pass",
+        "notes": "All 5 output JSONs (A0-A4) pass schema validation."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "189/189 tests passed."
+      },
+      {
+        "cmd": "workpacks/tools/workpack_lint.py",
+        "result": "pass",
+        "notes": "04_workpack-protocol_npm-distribution passes lint. 8 pre-existing errors in other workpacks (not in scope)."
+      },
+      {
+        "cmd": "node packages/protocol/tests/test-init.js",
+        "result": "pass",
+        "notes": "Init CLI integration test passes (default, --dir, --protocol-version)."
+      },
+      {
+        "cmd": "npx tsc --noEmit (packages/extension)",
+        "result": "pass",
+        "notes": "Extension TypeScript compiles with zero errors."
+      },
+      {
+        "cmd": "npm pack --dry-run (packages/protocol)",
+        "result": "pass",
+        "notes": "35 files packed; includes schemas, templates, agent-docs, tools, bin."
+      },
+      {
+        "cmd": "git log --oneline feature/npm-distribution | grep 570c08d",
+        "result": "pass",
+        "notes": "SHA 570c08d exists on work branch."
+      },
+      {
+        "cmd": "git show --stat 570c08d",
+        "result": "pass",
+        "notes": "Only contains outputs/A0_bootstrap.json. A1-A4 outputs incorrectly reference this SHA — their work was uncommitted until V1 gate remediation commit 2749325."
+      },
+      {
+        "cmd": "git show --stat 2749325",
+        "result": "pass",
+        "notes": "V1 remediation commit: contains all 53 files from A1-A4 deliverables plus output JSONs."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No new regression tests added by V1. Init CLI test and 189 pytest tests all pass."
+  },
+  "handoff": {
+    "summary": "V1 integration gate executed. All 14 acceptance criteria verified as met. All deliverables present and functional. Commit tracking discrepancy found and remediated: A1-A4 code agents left all work uncommitted (only A0 bootstrap was committed as 570c08d). V1 gate committed all outstanding work as 2749325. branch_verified set to false because original A1-A4 output commit_shas are incorrect.",
+    "next_steps": [
+      "Create PR from feature/npm-distribution to main",
+      "Proceed to R1_retrospective after merge"
+    ],
+    "known_issues": [
+      "A1-A4 output JSONs all declare commit_shas=[570c08d] but that commit only contains the A0 bootstrap output. The actual A1-A4 deliverables were committed in 2749325 by the V1 gate.",
+      "8 pre-existing linter errors exist in other workpacks (workpack-manager group missing V-series prompts, project-config state schema issue, agent-documentation state schema issue). None are in scope for this workpack.",
+      "A0_bootstrap output shows workpack_lint.py failed at baseline due to pre-existing errors — not a regression."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/outputs/V1_integration_meta.json",
+      "action": "created"
+    }
+  ],
+  "notes": "MERGE DECISION: PASS WITH CAVEATS. All acceptance criteria (AC1-AC14) are met. All code deliverables are functional. The only issue is that A1-A4 output JSONs have incorrect commit_shas metadata (they reference the A0 bootstrap commit instead of the actual work commit). This is a metadata-only discrepancy with no impact on code quality or functionality. Recommend merge after PR review."
+}
