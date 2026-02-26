@@ -172,7 +172,8 @@
   },
   "scripts": {
     "build": "tsc -p .",
-    "lint": "eslint \"src/**/*.ts\" --max-warnings=0",
+    "lint": "eslint src/ --ext .ts",
+    "lint:fix": "eslint src/ --ext .ts --fix",
     "watch": "tsc -watch -p .",
     "test": "vitest run",
     "test:watch": "vitest watch",

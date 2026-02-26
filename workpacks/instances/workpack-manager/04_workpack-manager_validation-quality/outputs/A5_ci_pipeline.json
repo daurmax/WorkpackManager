@@ -1,0 +1,73 @@
+{
+  "prompt_id": "A5_ci_pipeline",
+  "workpack": "04_workpack-manager_validation-quality",
+  "status": "complete_with_caveats",
+  "timestamp": "2026-02-26T00:00:00Z",
+  "summary": {
+    "implementation": "Added a GitHub Actions CI workflow for push/PR on main with Node 18/20 matrix, type check, lint, tests, coverage, and coverage artifact upload. Added lint scripts and ESLint rule alignment, and documented branch protection recommendations.",
+    "ci_secrets_required": false,
+    "coverage_artifacts_uploaded": true,
+    "target_runtime_minutes": "<5"
+  },
+  "files_changed": [
+    ".github/workflows/ci.yml",
+    "package.json",
+    "eslint.config.cjs",
+    ".eslintrc.json",
+    "docs/BRANCH_PROTECTION.md"
+  ],
+  "files_created": [
+    "workpacks/instances/workpack-manager/04_workpack-manager_validation-quality/outputs/A5_ci_pipeline.json"
+  ],
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -c \"import yaml, pathlib; yaml.safe_load(pathlib.Path('.github/workflows/ci.yml').read_text(encoding='utf-8')); print('yaml_ok')\"",
+        "result": "pass",
+        "notes": "Workflow YAML parses successfully (yaml_ok)."
+      },
+      {
+        "cmd": "npx tsc --noEmit",
+        "result": "fail",
+        "notes": "Fails due to existing unrelated error in src/__mocks__/__tests__/vscode-mock.test.ts (createFileSystemWatcher signature mismatch)."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "fail",
+        "notes": "Fails with pre-existing repository lint errors across multiple files (tests, mocks, and validation modules)."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "6/6 test files passed, 24/24 tests passed."
+      },
+      {
+        "cmd": "npm run test:coverage",
+        "result": "pass",
+        "notes": "Coverage run completed successfully and coverage artifacts generated under coverage/."
+      }
+    ]
+  },
+  "branch_protection": {
+    "documented": true,
+    "doc_path": "docs/BRANCH_PROTECTION.md",
+    "recommendations": [
+      "Require status checks to pass before merge.",
+      "Required checks: check (18), check (20).",
+      "Require pull request reviews."
+    ]
+  },
+  "gate": {
+    "workflow_file_valid_yaml": true,
+    "ci_test_push_verified": false,
+    "type_check_passes": false,
+    "lint_passes": false,
+    "tests_pass": true,
+    "coverage_command_passes": true,
+    "coverage_artifact_path_configured": true
+  },
+  "known_issues": [
+    "Cannot verify a real GitHub Actions run from local environment in this step; requires push/PR execution in GitHub.",
+    "Repository currently has pre-existing TypeScript and ESLint failures not introduced by this A5 change."
+  ]
+}

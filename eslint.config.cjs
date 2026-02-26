@@ -22,4 +22,11 @@ module.exports = tseslint.config(
       "@typescript-eslint/no-floating-promises": "off",
     },
   },
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/explicit-function-return-type": "warn",
+      "no-console": "warn",
+    },
+  },
 );
