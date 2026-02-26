@@ -1,46 +1,13 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
-import type { OverallStatus, PromptStatusValue, WorkpackInstance } from "../models";
+import type { WorkpackInstance } from "../models";
 import { parseWorkpackInstance } from "../parser/workpack-parser";
 import { scanOutputs } from "../state/output-scanner";
 import { getReadyPrompts } from "../graph/dependency-resolver";
+import { getPromptStatusIcon, getWorkpackStatusIcon } from "./status-icons";
 
 const PANEL_VIEW_TYPE = "workpackManager.detailPanel";
 const REFRESH_DEBOUNCE_MS = 200;
-
-const OVERALL_STATUS_LABEL: Record<OverallStatus, string> = {
-  not_started: "Not Started",
-  in_progress: "In Progress",
-  blocked: "Blocked",
-  review: "In Review",
-  complete: "Complete",
-  abandoned: "Abandoned",
-};
-
-const OVERALL_STATUS_ICON: Record<OverallStatus, string> = {
-  not_started: "circle-outline",
-  in_progress: "sync~spin",
-  blocked: "error",
-  review: "eye",
-  complete: "check",
-  abandoned: "close",
-};
-
-const PROMPT_STATUS_LABEL: Record<PromptStatusValue, string> = {
-  pending: "Pending",
-  in_progress: "In Progress",
-  complete: "Complete",
-  blocked: "Blocked",
-  skipped: "Skipped",
-};
-
-const PROMPT_STATUS_ICON: Record<PromptStatusValue, string> = {
-  pending: "circle-outline",
-  in_progress: "sync~spin",
-  complete: "pass-filled",
-  blocked: "error",
-  skipped: "debug-step-over",
-};
 
 export interface WebviewMessage {
   command: "openFile" | "assignAgent" | "executePrompt";
@@ -286,8 +253,9 @@ export class WorkpackDetailPanel {
         const promptState = state?.promptStatus[prompt.stem];
         const status = promptState?.status ?? "pending";
         const assignedAgent = promptState?.assignedAgent ?? state?.agentAssignments[prompt.stem] ?? "Unassigned";
-        const icon = PROMPT_STATUS_ICON[status];
-        const statusLabel = PROMPT_STATUS_LABEL[status];
+        const statusIcon = getPromptStatusIcon(status);
+        const icon = statusIcon.codicon;
+        const statusLabel = statusIcon.label;
 
         return `
           <tr>
@@ -333,9 +301,8 @@ export class WorkpackDetailPanel {
     const outputsMarkup =
       outputRows.length > 0 ? outputRows : '<p class="empty-state">No output JSON files discovered.</p>';
 
-    const overallStatus = state?.overallStatus ?? "not_started";
-    const overallStatusLabel = OVERALL_STATUS_LABEL[overallStatus];
-    const overallStatusIcon = OVERALL_STATUS_ICON[overallStatus];
+    const overallStatus = state?.overallStatus ?? "unknown";
+    const overallStatusIcon = getWorkpackStatusIcon(overallStatus);
     const metadataTags = workpack.meta.tags.length > 0 ? workpack.meta.tags.join(", ") : "None";
     const metadataOwners = workpack.meta.owners.length > 0 ? workpack.meta.owners.join(", ") : "None";
     const metadataRepos = workpack.meta.repos.length > 0 ? workpack.meta.repos.join(", ") : "None";
@@ -408,7 +375,9 @@ export class WorkpackDetailPanel {
         border: 1px solid transparent;
       }
 
-      .badge--not-started {
+      .badge--not-started,
+      .badge--pending,
+      .badge--unknown {
         background: color-mix(in srgb, var(--vscode-disabledForeground) 20%, transparent);
         border-color: var(--vscode-disabledForeground);
       }
@@ -607,8 +576,8 @@ export class WorkpackDetailPanel {
       <section class="section">
         <h2>Status</h2>
         <span class="status-chip">
-          <span class="codicon codicon-${overallStatusIcon}" aria-hidden="true"></span>
-          <span class="badge badge--${toStatusClass(overallStatus)}">${overallStatusLabel}</span>
+          <span class="codicon codicon-${overallStatusIcon.codicon}" aria-hidden="true"></span>
+          <span class="badge badge--${toStatusClass(overallStatus)}">${overallStatusIcon.label}</span>
         </span>
       </section>
 

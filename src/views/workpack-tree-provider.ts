@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
 import * as path from "node:path";
 import { promises as fs } from "node:fs";
-import type { PromptStatusValue, WorkpackInstance } from "../models";
+import type { OverallStatus, PromptStatusValue, WorkpackInstance } from "../models";
 import { discoverWorkpacks } from "../parser/workpack-discoverer";
+import { getPromptStatusIcon, getWorkpackStatusSortOrder } from "./status-icons";
 import { TreeItemKind, type WorkpackSection, WorkpackTreeItem } from "./workpack-tree-item";
 
 const REQUEST_FILE = "00_request.md";
@@ -61,11 +62,132 @@ function getCompletedPromptCount(instance: WorkpackInstance): number {
     return 0;
   }
 
-  return instance.meta.prompts.filter((prompt) => instance.state?.promptStatus[prompt.stem]?.status === "complete").length;
+  return instance.meta.prompts.filter((prompt) => {
+    const status = instance.state?.promptStatus[prompt.stem]?.status;
+    return status === "complete" || status === "skipped";
+  }).length;
 }
 
 function getPromptStatus(instance: WorkpackInstance, promptStem: string): PromptStatusValue {
   return instance.state?.promptStatus[promptStem]?.status ?? "pending";
+}
+
+function getWorkpackStatus(instance: WorkpackInstance): OverallStatus | "unknown" {
+  return instance.state?.overallStatus ?? "unknown";
+}
+
+function normalizeFilterValues(values: string[] | undefined): string[] | undefined {
+  if (!values || values.length === 0) {
+    return undefined;
+  }
+
+  const normalized = Array.from(
+    new Set(
+      values
+        .map((value) => value.trim().toLowerCase())
+        .filter((value) => value.length > 0)
+    )
+  );
+
+  return normalized.length > 0 ? normalized : undefined;
+}
+
+function cloneFilter(filter: TreeFilter): TreeFilter {
+  return {
+    status: filter.status ? [...filter.status] : undefined,
+    category: filter.category ? [...filter.category] : undefined,
+    tags: filter.tags ? [...filter.tags] : undefined,
+    searchText: filter.searchText
+  };
+}
+
+function normalizeFilter(filter: TreeFilter): TreeFilter {
+  const searchText = filter.searchText?.trim().toLowerCase();
+  return {
+    status: normalizeFilterValues(filter.status),
+    category: normalizeFilterValues(filter.category),
+    tags: normalizeFilterValues(filter.tags),
+    searchText: searchText && searchText.length > 0 ? searchText : undefined
+  };
+}
+
+function matchesFilter(instance: WorkpackInstance, filter: TreeFilter): boolean {
+  if (filter.status && filter.status.length > 0) {
+    const status = getWorkpackStatus(instance).toLowerCase();
+    if (!filter.status.includes(status)) {
+      return false;
+    }
+  }
+
+  if (filter.category && filter.category.length > 0) {
+    const category = instance.meta.category.toLowerCase();
+    if (!filter.category.includes(category)) {
+      return false;
+    }
+  }
+
+  if (filter.tags && filter.tags.length > 0) {
+    const tags = new Set(instance.meta.tags.map((tag) => tag.toLowerCase()));
+    const hasTagMatch = filter.tags.some((tag) => tags.has(tag));
+    if (!hasTagMatch) {
+      return false;
+    }
+  }
+
+  if (filter.searchText) {
+    const searchBlob = [
+      instance.meta.id,
+      instance.meta.title,
+      instance.meta.summary,
+      instance.meta.category,
+      instance.meta.tags.join(" "),
+      instance.meta.owners.join(" "),
+      instance.meta.repos.join(" ")
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    if (!searchBlob.includes(filter.searchText)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function compareByName(left: WorkpackInstance, right: WorkpackInstance): number {
+  return left.meta.id.localeCompare(right.meta.id);
+}
+
+function compareByStatus(left: WorkpackInstance, right: WorkpackInstance): number {
+  const leftOrder = getWorkpackStatusSortOrder(getWorkpackStatus(left));
+  const rightOrder = getWorkpackStatusSortOrder(getWorkpackStatus(right));
+  if (leftOrder !== rightOrder) {
+    return leftOrder - rightOrder;
+  }
+
+  return compareByName(left, right);
+}
+
+function compareByDate(left: WorkpackInstance, right: WorkpackInstance): number {
+  const createdAtCompare = right.meta.createdAt.localeCompare(left.meta.createdAt);
+  if (createdAtCompare !== 0) {
+    return createdAtCompare;
+  }
+
+  return compareByName(left, right);
+}
+
+function compareInstances(left: WorkpackInstance, right: WorkpackInstance, sortBy: TreeSortMode): number {
+  if (sortBy === "status") {
+    return compareByStatus(left, right);
+  }
+
+  if (sortBy === "date") {
+    return compareByDate(left, right);
+  }
+
+  return compareByName(left, right);
 }
 
 export interface WorkpackParser {
@@ -83,6 +205,15 @@ interface WorkpackTreeProviderOptions {
   watchFileSystem?: boolean;
 }
 
+export interface TreeFilter {
+  status?: string[];
+  category?: string[];
+  tags?: string[];
+  searchText?: string;
+}
+
+export type TreeSortMode = "status" | "name" | "date";
+
 export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTreeItem>, vscode.Disposable {
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<WorkpackTreeItem | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -92,6 +223,8 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
   private readonly watcherFactory: (pattern: vscode.GlobPattern) => vscode.FileSystemWatcher;
 
   private instances: WorkpackInstance[] = [];
+  private activeFilter: TreeFilter = {};
+  private activeSort: TreeSortMode = "name";
   private isLoaded = false;
   private loadPromise: Promise<void> | null = null;
 
@@ -123,6 +256,29 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
   refresh(): void {
     this.isLoaded = false;
     this._onDidChangeTreeData.fire(undefined);
+  }
+
+  setFilter(filter: TreeFilter): void {
+    this.activeFilter = normalizeFilter(filter);
+    this.refresh();
+  }
+
+  clearFilter(): void {
+    this.activeFilter = {};
+    this.refresh();
+  }
+
+  getFilter(): TreeFilter {
+    return cloneFilter(this.activeFilter);
+  }
+
+  setSort(sortBy: TreeSortMode): void {
+    this.activeSort = sortBy;
+    this.refresh();
+  }
+
+  getSort(): TreeSortMode {
+    return this.activeSort;
   }
 
   getTreeItem(element: WorkpackTreeItem): vscode.TreeItem {
@@ -171,7 +327,7 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
 
     try {
       const discovered = await this.parser.discover([this.workspacePath]);
-      this.instances = [...discovered].sort((left, right) => left.meta.id.localeCompare(right.meta.id));
+      this.instances = [...discovered];
     } catch (error) {
       warn("Unable to discover workpacks", error);
       this.instances = [];
@@ -186,25 +342,28 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
   }
 
   private getWorkpackItems(): WorkpackTreeItem[] {
-    return this.instances.map((instance) => {
-      const promptCount = instance.meta.prompts.length;
-      const completedPrompts = getCompletedPromptCount(instance);
-      const status = instance.state?.overallStatus ?? "unknown";
+    return this.instances
+      .filter((instance) => matchesFilter(instance, this.activeFilter))
+      .sort((left, right) => compareInstances(left, right, this.activeSort))
+      .map((instance) => {
+        const promptCount = instance.meta.prompts.length;
+        const completedPrompts = getCompletedPromptCount(instance);
+        const status = getWorkpackStatus(instance);
 
-      const item = new WorkpackTreeItem(
-        TreeItemKind.Workpack,
-        instance.meta.id,
-        instance.meta.id,
-        vscode.TreeItemCollapsibleState.Collapsed,
-        undefined,
-        undefined,
-        status
-      );
+        const item = new WorkpackTreeItem(
+          TreeItemKind.Workpack,
+          instance.meta.id,
+          instance.meta.id,
+          vscode.TreeItemCollapsibleState.Collapsed,
+          undefined,
+          undefined,
+          status
+        );
 
-      item.description = `${completedPrompts}/${promptCount} prompts`;
-      item.tooltip = `${instance.meta.title}\n${instance.folderPath}`;
-      return item;
-    });
+        item.description = `${completedPrompts} / ${promptCount} prompts`;
+        item.tooltip = `${instance.meta.title}\n${instance.folderPath}`;
+        return item;
+      });
   }
 
   private getSectionItems(workpackId: string): WorkpackTreeItem[] {
@@ -293,7 +452,7 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
           status
         );
 
-        item.description = status;
+        item.description = getPromptStatusIcon(status).label;
         return item;
       })
     );

@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.1",
+  "workpack": "03_workpack-manager_extension-ux",
+  "prompt": "A4_status_visualization",
+  "component": "status-visualization-filtering-sorting",
+  "delivery_mode": "pr",
+  "changes": {
+    "files_modified": [
+      "src/views/status-icons.ts",
+      "src/views/workpack-tree-provider.ts",
+      "src/views/workpack-detail-panel.ts",
+      "src/views/__tests__/tree-provider.test.ts",
+      "src/views/__tests__/detail-panel.test.ts"
+    ],
+    "files_created": [
+      "src/views/__tests__/status-icons.test.ts",
+      "outputs/A4_status_visualization.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npx tsc --noEmit",
+        "result": "pass",
+        "notes": "Type-check passes after status mapping, tree filter/sort, and webview alignment updates."
+      },
+      {
+        "cmd": "npx tsc -p . && node --test out/views/__tests__/tree-provider.test.js out/views/__tests__/detail-panel.test.js out/views/__tests__/status-icons.test.js",
+        "result": "pass",
+        "notes": "All view-layer tests passed, including new A4 coverage for status mappings, filter/sort logic, and progress description."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "Repository test suite passed; parser warnings from malformed fixtures are expected."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added status icon map tests, sort-order assertions, tree filtering/sorting checks, refresh filter persistence checks, and progress description formatting checks."
+  },
+  "handoff": {
+    "summary": "Implemented shared status visualization metadata (codicon + ThemeColor + label + sortOrder), wired it into both tree and webview rendering, added tree root filtering and sorting APIs, and added workpack prompt progress descriptions.",
+    "next_steps": [
+      "Manual VS Code validation: confirm codicon colors, spin icons, and badge rendering in the Workpacks view and detail webview.",
+      "Optional: expose filter/sort controls via commands or quick-picks for interactive UX."
+    ],
+    "known_issues": [
+      "Manual in-editor validation was not executed in this run."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ]
+}

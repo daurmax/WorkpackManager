@@ -22,6 +22,17 @@ class MockUri {
   }
 }
 
+class MockThemeColor {
+  constructor(public readonly id: string) {}
+}
+
+class MockThemeIcon {
+  constructor(
+    public readonly id: string,
+    public readonly color?: MockThemeColor,
+  ) {}
+}
+
 class MockWebview {
   html = "";
   readonly cspSource = "vscode-webview://mock";
@@ -184,6 +195,8 @@ function createMockVscodeContext(): MockVscodeContext {
       Active: 1,
     },
     Uri: MockUri,
+    ThemeColor: MockThemeColor,
+    ThemeIcon: MockThemeIcon,
     RelativePattern: MockRelativePattern,
     commands: {
       executeCommand: async (...args: unknown[]) => {

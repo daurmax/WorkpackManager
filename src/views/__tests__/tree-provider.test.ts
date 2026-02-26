@@ -38,6 +38,9 @@ class TreeItem {
   constructor(label, collapsibleState) { this.label = label; this.collapsibleState = collapsibleState; }
 }
 class ThemeIcon {
+  constructor(id, color) { this.id = id; this.color = color; }
+}
+class ThemeColor {
   constructor(id) { this.id = id; }
 }
 class RelativePattern {
@@ -55,6 +58,7 @@ module.exports = {
   EventEmitter,
   TreeItem,
   ThemeIcon,
+  ThemeColor,
   RelativePattern,
   TreeItemCollapsibleState: { None: 0, Collapsed: 1, Expanded: 2 },
   Uri: { file: (filePath) => ({ fsPath: filePath }) },
