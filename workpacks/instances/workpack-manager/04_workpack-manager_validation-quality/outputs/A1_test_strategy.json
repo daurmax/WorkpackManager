@@ -1,0 +1,53 @@
+{
+  "prompt_id": "A1_test_strategy",
+  "workpack": "04_workpack-manager_validation-quality",
+  "status": "complete",
+  "branch": "feature/extension-validation-quality",
+  "test_framework": {
+    "runner": "vitest",
+    "extension_host_runner": "mocha",
+    "vscode_test_cli": true
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:extension": "npm run build && mocha \"out/test/**/*.test.js\""
+  },
+  "artifacts": {
+    "vitest_config": "vitest.config.ts",
+    "vscode_test_config": ".vscode-test.mjs",
+    "vscode_mock": "src/__mocks__/vscode.ts",
+    "fixtures_root": "src/__fixtures__/workpacks"
+  },
+  "tests_added": [
+    "src/models/__tests__/types.test.ts",
+    "src/parser/__tests__/parser.test.ts",
+    "src/state/__tests__/state.test.ts",
+    "src/__mocks__/__tests__/vscode-mock.test.ts"
+  ],
+  "tests_verified_existing": [
+    "src/agents/__tests__/registry.test.ts",
+    "src/views/__tests__/tree-provider.test.ts"
+  ],
+  "fixtures_created": [
+    "src/__fixtures__/workpacks/valid-v6",
+    "src/__fixtures__/workpacks/invalid-missing-files",
+    "src/__fixtures__/workpacks/v5-legacy"
+  ],
+  "gate": {
+    "npm_test": "pass",
+    "coverage_report_generated": true,
+    "all_scoped_tests_pass": true,
+    "vscode_mock_functional": true
+  },
+  "coverage": {
+    "lines": 75.71,
+    "functions": 71.84,
+    "branches": 66.55,
+    "statements": 75.71,
+    "threshold": 60
+  },
+  "timestamp": "2026-02-26T17:02:09.0561653Z"
+}
