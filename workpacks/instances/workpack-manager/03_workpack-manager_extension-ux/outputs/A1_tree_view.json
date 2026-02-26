@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.1",
+  "workpack": "03_workpack-manager_extension-ux",
+  "prompt": "A1_tree_view",
+  "component": "tree-view-provider",
+  "delivery_mode": "pr",
+  "changes": {
+    "files_modified": [
+      "package.json",
+      "src/extension.ts",
+      "src/views/status-icons.ts",
+      "src/views/workpack-tree-item.ts",
+      "src/views/workpack-tree-provider.ts"
+    ],
+    "files_created": [
+      "src/views/__tests__/tree-provider.test.ts",
+      "outputs/A1_tree_view.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npx tsc --noEmit",
+        "result": "pass",
+        "notes": "Type-check passes with the tree provider implementation and tests."
+      },
+      {
+        "cmd": "npx tsc -p . && node --test out/views/__tests__/tree-provider.test.js",
+        "result": "pass",
+        "notes": "Tree provider unit tests pass in Node test runner with a VS Code mock module."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added tree provider coverage for roots, sections, prompt nodes, context values, refresh event, and empty workspace behavior."
+  },
+  "handoff": {
+    "summary": "Implemented a functional workpack tree view data provider with hierarchical nodes, status icons, unique IDs, context values, async file discovery, and file-system auto-refresh.",
+    "next_steps": [
+      "Run manual VS Code validation for tree rendering and watcher-triggered refresh.",
+      "Integrate A4 status color/theme mapping if richer icon semantics are required."
+    ],
+    "known_issues": [
+      "Manual UI validation for tree rendering and watcher behavior is not automated in this repository test suite."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ]
+}

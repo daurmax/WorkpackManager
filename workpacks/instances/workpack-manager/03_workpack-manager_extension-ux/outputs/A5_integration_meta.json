@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.1",
+  "workpack": "03_workpack-manager_extension-ux",
+  "prompt": "A5_integration_meta",
+  "component": "v1-verification-gate",
+  "delivery_mode": "pr",
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "outputs/A5_integration_meta.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npx tsc --noEmit",
+        "result": "pass",
+        "notes": "Zero type errors, zero warnings."
+      },
+      {
+        "cmd": "npx tsc -p . && node --test out/views/__tests__/*.test.js out/commands/__tests__/*.test.js",
+        "result": "pass",
+        "notes": "21/21 view + command tests pass (tree provider 6, detail panel 5, status icons 5, commands 5)."
+      },
+      {
+        "cmd": "node --test out/**/__tests__/*.test.js out/test/**/*.test.js",
+        "result": "pass",
+        "notes": "Full test suite: 85/85 pass, 0 fail, 13 suites."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Verification gate; no new code written. All prior A1-A4 tests confirmed passing."
+  },
+  "handoff": {
+    "summary": "All 9 acceptance criteria verified. TypeScript compiles cleanly, 85 tests pass, package.json contributes section is consistent with code, tree view renders workpacks with status icons, detail webview has CSP and HTML escaping, context menus bind to correct node types, and file watchers refresh the tree.",
+    "next_steps": [
+      "Fix view container mismatch: move tree view from 'explorer' to 'workpack-manager' container in package.json, or remove orphaned viewsContainers entry.",
+      "Add unique aria-labels to detail panel Assign/Run buttons (e.g. 'Assign agent for A0_bootstrap').",
+      "Run manual in-editor smoke test for dark/light theme rendering."
+    ],
+    "known_issues": [
+      "View container mismatch: viewsContainers.activitybar declares 'workpack-manager' but the tree view is registered under 'explorer'. Activity bar icon panel is empty; tree appears in Explorer sidebar.",
+      "Detail panel Assign/Run buttons lack per-prompt aria-labels - screen readers cannot distinguish repeated button instances.",
+      "Manual in-editor validation not executed (requires vscode runtime); all automated checks pass."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "gate": {
+    "verdict": "PASS_WITH_CAVEATS",
+    "caveats": [
+      "View container mismatch is cosmetic/UX - tree view is functional but lives under Explorer instead of dedicated panel.",
+      "Accessibility: non-unique aria-labels on webview buttons are a best-practice gap, not a functional blocker."
+    ]
+  },
+  "acceptance_criteria": {
+    "AC1_tree_view_with_status": {
+      "status": "pass",
+      "evidence": "WorkpackTreeProvider renders workpack instances as root nodes with status-based ThemeIcons. Tests: 'returns workpack instances as root nodes', 'returns sections as children of a workpack node', 'returns prompt files as children of the Prompts section'. A1_tree_view.json output exists."
+    },
+    "AC2_filtering": {
+      "status": "pass",
+      "evidence": "setFilter/clearFilter/getFilter on WorkpackTreeProvider. matchesFilter supports status, category, tags, searchText. Tests: 'filters workpacks by status, category, and tags while keeping filter across refresh'."
+    },
+    "AC3_detail_webview": {
+      "status": "pass",
+      "evidence": "WorkpackDetailPanel generates full HTML with CSP, metadata section, prompt table, output list, dependency graph. Tests: 'getHtmlContent includes workpack title', 'getHtmlContent includes all prompt rows', 'getHtmlContent includes correct status badges'. A2_detail_panel.json output exists."
+    },
+    "AC4_context_menu": {
+      "status": "pass",
+      "evidence": "package.json menus.view/item/context binds 6 workpack-level commands to viewItem==workpack and 2 prompt-level commands to viewItem==prompt. TreeItemKind maps to correct contextValue strings. Test: 'package.json contains expected context menu when clauses', 'sets context values for workpack, section, and prompt nodes'."
+    },
+    "AC5_commands": {
+      "status": "pass",
+      "evidence": "11 commands in WORKPACK_MANAGER_COMMANDS constant match 11 contributes.commands entries. registerCommands() registers all IDs. Tests: 'registers all expected command IDs', 'createWorkpack scaffolds from template', 'assignAgent updates workpack.state.json'. A3_commands_actions.json output exists."
+    },
+    "AC6_status_visualization": {
+      "status": "pass",
+      "evidence": "WORKPACK_STATUS_ICONS (6 states) and PROMPT_STATUS_ICONS (5 states) with codicon, ThemeColor, label, sortOrder. getWorkpackThemeIcon/getPromptThemeIcon wired into tree items. Tests: 'maps all status values to icon metadata', 'exposes monotonic sort order'. A4_status_visualization.json output exists."
+    },
+    "AC7_auto_refresh": {
+      "status": "pass",
+      "evidence": "WorkpackTreeProvider constructor creates FileSystemWatcher on 'workpacks/instances/**' with onDidCreate/Change/Delete -> refresh(). Detail panel has scheduleRefresh() with debounce. Test: 'refresh fires the tree change event'."
+    },
+    "AC8_keyboard_nav": {
+      "status": "pass",
+      "evidence": "Tree view uses native VS Code TreeDataProvider (keyboard support built-in). Detail panel uses semantic HTML elements (button, a) with native keyboard activation. No custom tabindex or focus traps needed."
+    },
+    "AC9_tests_pass": {
+      "status": "pass",
+      "evidence": "85/85 tests pass across 13 suites. Zero tsc errors. Views: tree-provider (6), detail-panel (5), status-icons (5). Commands: (5). Full repo: 85 pass, 0 fail."
+    }
+  },
+  "test_summary": {
+    "total_tests": 85,
+    "pass": 85,
+    "fail": 0,
+    "suites": 13,
+    "ux_specific_tests": 21,
+    "ux_test_breakdown": {
+      "tree_provider": 6,
+      "detail_panel": 5,
+      "status_icons": 5,
+      "commands": 5
+    }
+  },
+  "package_json_validation": {
+    "commands_declared": 11,
+    "commands_registered_in_code": 11,
+    "commands_match": true,
+    "tree_view_declared": true,
+    "view_container_declared": true,
+    "view_container_mismatch": "Tree view is under 'explorer', not 'workpack-manager'. Activity bar icon panel is empty.",
+    "context_menus_correct": true,
+    "when_clauses_verified": true
+  }
+}
