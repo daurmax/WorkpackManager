@@ -1,11 +1,11 @@
 # Status
 
 ## Overall Status
-🟡 In Progress
+� Complete
 
 Last Updated: 2026-02-26
 
-Current Focus: `R1_retrospective`
+Current Focus: Done — all prompts complete
 
 ## Checklist
 
@@ -20,7 +20,7 @@ Current Focus: `R1_retrospective`
 - [x] YAML front-matter in prompt files
 
 ### Implementation Progress (A-series)
-- [ ] A0_bootstrap completed
+- [x] A0_bootstrap completed
 - [x] A1_monorepo_structure completed
 - [x] A2_protocol_package completed
 - [x] A3_init_command completed
@@ -36,7 +36,7 @@ No B-series prompts yet.
 
 ### Retrospective (R-series)
 
-- [ ] R1_retrospective completed post-merge
+- [x] R1_retrospective completed post-merge
 
 ## Outputs (Protocol 2.2.0)
 | Prompt | Output JSON Path | Status |
@@ -47,4 +47,4 @@ No B-series prompts yet.
 | A3_init_command | `outputs/A3_init_command.json` | Created |
 | A4_extension_scaffold | `outputs/A4_extension_scaffold.json` | Created |
 | V1_integration_meta | `outputs/V1_integration_meta.json` | Created |
-| R1_retrospective | `outputs/R1_retrospective.json` | Not Created |
+| R1_retrospective | `outputs/R1_retrospective.json` | Created |
