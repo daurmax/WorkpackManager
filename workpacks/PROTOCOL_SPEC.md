@@ -564,7 +564,42 @@ If B-series prompts exist, integration prompts MUST:
 
 ---
 
-## 11. Practical Notes for Implementers
+## 11. MCP Server Integration
+
+### 11.1 Purpose
+
+The Workpack MCP Server (`packages/mcp-server/`) exposes workpack data through the [Model Context Protocol](https://modelcontextprotocol.io/), allowing AI agents and tools to discover and inspect workpacks via a standardized read-only interface without parsing files directly.
+
+### 11.2 Resources
+
+| URI | Description |
+|---|---|
+| `workpack://list` | JSON array of all discovered workpack instances with summary fields (id, title, category, status). |
+| `workpack://{id}/meta` | Full `workpack.meta.json` for the specified workpack. |
+| `workpack://{id}/state` | Full `workpack.state.json` for the specified workpack. |
+| `workpack://{id}/next-prompts` | DAG-resolved list of prompt stems whose `depends_on` are satisfied and whose status is `pending`. |
+
+### 11.3 Tools
+
+| Tool | Description |
+|---|---|
+| `list_workpacks` | Discover and list all workpack instances with status summary. |
+| `get_workpack_detail` | Retrieve full meta + state for a specific workpack by ID. |
+| `get_next_prompts` | Compute DAG-resolved prompts ready for execution. |
+
+### 11.4 Design Constraints
+
+- The server is **read-only** — it never mutates workpack files.
+- Discovery follows the same rules as the CLI tooling: scan `workpacks/instances/` (and optionally `workpack.config.json` discovery roots), skip directories starting with `_` or `.`.
+- DAG resolution for `next-prompts` checks `depends_on` edges against `prompt_status` in `workpack.state.json`. A prompt is executable when all upstream stems have status `complete` or `skipped` and the prompt's own status is `pending`.
+
+### 11.5 Transport
+
+The server uses **stdio** transport by default, compatible with Claude Desktop, VS Code MCP clients, and other MCP-aware tools.
+
+---
+
+## 12. Practical Notes for Implementers
 
 - Prefer JSON schemas as enforcement boundary; markdown parsing is a fallback for compatibility.
 - Keep metadata stable to minimize noisy diffs.
