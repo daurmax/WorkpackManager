@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workpacks/WORKPACK_EVENT_SCHEMA.json",
+  "title": "Workpack Event",
+  "description": "Schema for individual events in a workpack event stream (workpack.events.jsonl). Each line in the JSONL file is one event conforming to this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "timestamp",
+    "workpack_id",
+    "event_type"
+  ],
+  "$defs": {
+    "workpackId": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$"
+    },
+    "promptStem": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*(?:_[a-z0-9][a-z0-9_]*)+$"
+    },
+    "agentId": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Unique event identifier. Recommended format: UUID v4.",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when the event occurred."
+    },
+    "workpack_id": {
+      "$ref": "#/$defs/workpackId",
+      "description": "Workpack this event belongs to."
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Event classification.",
+      "enum": [
+        "workpack.created",
+        "workpack.started",
+        "workpack.blocked",
+        "workpack.unblocked",
+        "workpack.review",
+        "workpack.completed",
+        "workpack.abandoned",
+        "prompt.started",
+        "prompt.completed",
+        "prompt.blocked",
+        "prompt.unblocked",
+        "prompt.skipped",
+        "agent.assigned",
+        "agent.unassigned",
+        "output.written",
+        "output.validated",
+        "dependency.resolved",
+        "dependency.blocked"
+      ]
+    },
+    "prompt_stem": {
+      "anyOf": [
+        { "$ref": "#/$defs/promptStem" },
+        { "type": "null" }
+      ],
+      "description": "Prompt stem related to the event (null for workpack-level events)."
+    },
+    "agent_id": {
+      "anyOf": [
+        { "$ref": "#/$defs/agentId" },
+        { "type": "null" }
+      ],
+      "description": "Agent that triggered the event (null when not agent-initiated)."
+    },
+    "previous_status": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ],
+      "description": "Status before the transition (for state-change events)."
+    },
+    "new_status": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ],
+      "description": "Status after the transition (for state-change events)."
+    },
+    "metadata": {
+      "anyOf": [
+        {
+          "type": "object",
+          "description": "Arbitrary event-specific metadata.",
+          "additionalProperties": true
+        },
+        { "type": "null" }
+      ]
+    },
+    "notes": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ],
+      "description": "Human-readable notes about the event."
+    }
+  }
+}
