@@ -22,7 +22,8 @@
       "repos": [
         "__REPO_NAME__"
       ],
-      "estimated_effort": "XS"
+      "estimated_effort": "XS",
+      "model_preference": "gpt-4o"
     }
   ]
 }

@@ -151,6 +151,7 @@ Optional item fields:
 - `depends_on` (string[])
 - `repos` (string[])
 - `estimated_effort` (`XS` | `S` | `M` | `L` | `XL`)
+- `model_preference` (string): preferred model or model class for this prompt (e.g. `gpt-4o`, `claude-sonnet`, `codex`). Informational — orchestrators MAY use this to route prompt execution.
 
 ### 4.4 How `prompts[]` Mirrors the DAG
 
