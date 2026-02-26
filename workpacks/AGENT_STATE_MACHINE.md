@@ -8,10 +8,13 @@ stateDiagram-v2
     not_started --> in_progress: first prompt started
     in_progress --> blocked: blocker detected
     blocked --> in_progress: blocker resolved
-    in_progress --> complete: all prompts complete
+    in_progress --> review: implementation done, gate pending
+    review --> complete: verification passes
+    review --> in_progress: verification fails, rework needed
     not_started --> abandoned: manual abandon
     in_progress --> abandoned: manual abandon
     blocked --> abandoned: manual abandon
+    review --> abandoned: manual abandon
     complete --> [*]
     abandoned --> [*]
 ```
@@ -24,10 +27,10 @@ stateDiagram-v2
     pending --> in_progress: agent picks up prompt
     pending --> skipped: prompt explicitly skipped
     in_progress --> complete: verification passes
-    in_progress --> failed: verification fails
+    in_progress --> blocked: blocker detected
     in_progress --> skipped: prompt explicitly skipped
-    failed --> in_progress: retry
-    failed --> skipped: prompt explicitly skipped
+    blocked --> in_progress: blocker resolved
+    blocked --> skipped: prompt explicitly skipped
     complete --> [*]
     skipped --> [*]
 ```
@@ -45,7 +48,7 @@ flowchart TD
     S3 --> S4["4. Set prompt status to in_progress"]
     S4 --> S5["5. Execute Implementation Requirements"]
     S5 --> S6["6. Run Verification commands"]
-    S6 -->|Fail| B2["mark failed, attempt fix or escalate"]
+    S6 -->|Fail| B2["mark blocked, attempt fix or escalate"]
     B2 --> S5
     B2 --> S9
 
