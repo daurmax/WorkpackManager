@@ -1,0 +1,11 @@
+{
+  "workpack_id": "03_workpack-manager_agent-integration",
+  "prompt_id": "A3_codex_provider",
+  "status": "complete",
+  "summary": "CodexProvider implemented with configurable endpoint, SecretStorage-backed auth, and error classification.",
+  "files_changed": [
+    "src/agents/providers/codex-provider.ts",
+    "src/agents/__tests__/codex-provider.test.ts",
+    "package.json"
+  ]
+}

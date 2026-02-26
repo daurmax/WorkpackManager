@@ -46,6 +46,21 @@
           "type": "boolean",
           "default": true,
           "description": "Automatically scan workspace folders for workpacks/instances."
+        },
+        "workpackManager.codex.baseUrl": {
+          "type": "string",
+          "default": "https://api.openai.com/v1",
+          "description": "OpenAI API base URL"
+        },
+        "workpackManager.codex.model": {
+          "type": "string",
+          "default": "gpt-4o",
+          "description": "Model identifier"
+        },
+        "workpackManager.codex.maxResponseTokens": {
+          "type": "number",
+          "default": 4096,
+          "description": "Maximum response tokens"
         }
       }
     }
