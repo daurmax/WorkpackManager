@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.2",
+  "workpack": "04_workpack-manager_validation-quality",
+  "prompt": "A2_protocol_linter",
+  "component": "validation",
+  "delivery_mode": "direct_push",
+  "branch": {
+    "base": "main",
+    "work": "current",
+    "merge_target": "main"
+  },
+  "changes": {
+    "files_modified": [
+      "src/validation/lint-rules.ts",
+      "src/validation/linter.ts",
+      "src/validation/diagnostics.ts"
+    ],
+    "files_created": [
+      "src/validation/__tests__/linter.test.ts"
+    ],
+    "contracts_changed": [
+      "src/validation/lint-rules.ts#LintDiagnostic",
+      "src/validation/lint-rules.ts#LintRule",
+      "src/validation/linter.ts#WorkpackLinter",
+      "src/validation/diagnostics.ts#WorkpackDiagnosticProvider"
+    ],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npx tsc --noEmit",
+        "result": "fail",
+        "notes": "Fails due to pre-existing unrelated error in src/__mocks__/__tests__/vscode-mock.test.ts (workspace.createFileSystemWatcher signature mismatch)."
+      },
+      {
+        "cmd": "npx tsc --module commonjs --target ES2022 --moduleResolution node --esModuleInterop --types node --skipLibCheck --outDir .tmp-tests src/validation/lint-rules.ts src/validation/linter.ts src/validation/__tests__/linter.test.ts; node --test .tmp-tests/validation/__tests__/linter.test.js",
+        "result": "pass",
+        "notes": "Focused validation suite passes: 16/16 tests."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added comprehensive unit coverage for WP001-WP013, lintAll, schema validation, cycle detection, orphan prompt detection, malformed JSON handling, and rule-disabling behavior."
+  },
+  "handoff": {
+    "summary": "Implemented a full Workpack Protocol linter (WP001-WP013), schema-backed validation (meta/state/output), linter orchestration APIs, and VS Code diagnostics publishing with diagnostic collection lifecycle management.",
+    "next_steps": [
+      "Wire WorkpackDiagnosticProvider into command execution or workspace watchers for automatic Problems panel refresh.",
+      "Optionally address the pre-existing TypeScript error in src/__mocks__/__tests__/vscode-mock.test.ts to restore global tsc gate.",
+      "Run full extension test matrix after integrating diagnostics trigger points."
+    ],
+    "known_issues": [
+      "Global `npx tsc --noEmit` gate currently fails due to an unrelated pre-existing test typing issue outside validation scope."
+    ]
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "878e5ef"
+    ],
+    "branch_verified": false
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5.3-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/validation/lint-rules.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/validation/linter.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/validation/diagnostics.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/validation/__tests__/linter.test.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/04_workpack-manager_validation-quality/outputs/A2_protocol_linter.json",
+      "action": "created"
+    }
+  ],
+  "notes": null
+}

@@ -77,6 +77,7 @@ export interface RegisterCommandsOptions {
   providerRegistry?: ProviderRegistry;
   discoverWorkpacksFn?: (workspaceFolders: string[]) => Promise<WorkpackInstance[]>;
   scaffoldWorkpackFn?: (request: ScaffoldWorkpackRequest) => Promise<ScaffoldWorkpackResult>;
+  onLintWorkpack?: (workpackFolderPath: string) => Promise<void>;
 }
 
 export interface ScaffoldWorkpackRequest {
@@ -719,6 +720,18 @@ export function registerCommands(
       );
       if (!folderPath) {
         return;
+      }
+
+      if (options.onLintWorkpack) {
+        try {
+          await options.onLintWorkpack(folderPath);
+        } catch (error) {
+          await vscodeApi.window.showWarningMessage(
+            `Lint diagnostics could not be published: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          );
+        }
       }
 
       await runLintCommand(vscodeApi, folderPath, workspaceRoot);

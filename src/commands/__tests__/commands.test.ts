@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, it } from "node:test";
+import { afterEach, describe, it } from "vitest";
 import { ProviderRegistry } from "../../agents/registry";
 import type { AgentCapability, AgentProvider, PromptDispatchContext, PromptResult } from "../../agents/types";
 import type { WorkpackInstance } from "../../models";
@@ -332,6 +332,39 @@ describe("commands", () => {
     await refreshCommand();
 
     assert.equal(refreshCount, 1);
+  });
+
+  it("lintWorkpack invokes diagnostics hook before running lint script", async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-lint-workpack-"));
+    tempFolders.push(workspaceRoot);
+
+    const workpackFolder = path.join(workspaceRoot, "workpacks", "instances", "wp-lint-test");
+    const lintScriptPath = path.join(workspaceRoot, "workpacks", "tools", "workpack_lint.py");
+    await mkdir(path.dirname(lintScriptPath), { recursive: true });
+    await mkdir(workpackFolder, { recursive: true });
+    await writeFile(lintScriptPath, "print('ok')\n", "utf8");
+
+    const mock = createMockVscode([workspaceRoot]);
+    const context = createMockContext();
+    const lintedPaths: string[] = [];
+
+    registerCommands(context, {
+      vscodeApi: mock.api,
+      onLintWorkpack: async (workpackPath: string) => {
+        lintedPaths.push(workpackPath);
+      }
+    });
+
+    const lintCommand = getRegisteredCommand(mock.commandMap, WORKPACK_MANAGER_COMMANDS.lintWorkpack);
+    await lintCommand({
+      contextValue: "workpack",
+      workpackId: "wp-lint-test",
+      folderPath: workpackFolder
+    });
+
+    assert.deepEqual(lintedPaths, [workpackFolder]);
+    assert.equal(mock.terminalCommands.length, 1);
+    assert.equal(mock.terminalCommands[0].includes("workpack_lint.py"), true);
   });
 
   it("package.json contains expected context menu when clauses", async () => {

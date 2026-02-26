@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { CodexProvider, CopilotProvider, ProviderRegistry } from "./agents";
 import { registerCommands } from "./commands";
+import { WorkpackDiagnosticProvider } from "./validation";
 import { DiscovererWorkpackParser, WorkpackTreeProvider } from "./views";
 
 function getPrimaryWorkspacePath(): string | null {
@@ -33,6 +34,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const treeProvider = new WorkpackTreeProvider(new DiscovererWorkpackParser(), workspacePath, {
     watchFileSystem: workspacePath.length > 0
   });
+  const diagnosticProvider = new WorkpackDiagnosticProvider();
   const providerRegistry = createProviderRegistry();
 
   const treeView = vscode.window.createTreeView("workpackManager", {
@@ -40,7 +42,7 @@ export function activate(context: vscode.ExtensionContext): void {
     showCollapseAll: true
   });
 
-  context.subscriptions.push(treeProvider, treeView);
+  context.subscriptions.push(treeProvider, treeView, diagnosticProvider);
   context.subscriptions.push({
     dispose: () => {
       for (const agentProvider of providerRegistry.listAll()) {
@@ -52,7 +54,10 @@ export function activate(context: vscode.ExtensionContext): void {
   registerCommands(context, {
     vscodeApi: vscode,
     treeProvider,
-    providerRegistry
+    providerRegistry,
+    onLintWorkpack: async (workpackFolderPath: string) => {
+      await diagnosticProvider.publishDiagnostics(workpackFolderPath);
+    }
   });
 }
 
