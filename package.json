@@ -12,33 +12,138 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onView:workpackExplorer"
+    "onView:workpackManager"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "workpackManager",
-          "title": "Workpacks",
-          "icon": "resources/workpack.svg"
+          "id": "workpack-manager",
+          "title": "Workpack Manager",
+          "icon": "$(tasklist)"
         }
       ]
     },
     "views": {
-      "workpackManager": [
+      "explorer": [
         {
-          "id": "workpackExplorer",
-          "name": "Workpack Explorer"
+          "id": "workpackManager",
+          "name": "Workpacks",
+          "icon": "$(tasklist)",
+          "contextualTitle": "Workpack Manager"
         }
       ]
     },
     "commands": [
       {
-        "command": "workpackManager.refresh",
-        "title": "Workpack Manager: Refresh Workpacks"
+        "command": "workpackManager.createWorkpack",
+        "title": "Create New",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.scaffoldFromTemplate",
+        "title": "Scaffold from Template",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.lintWorkpack",
+        "title": "Lint",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.openRequest",
+        "title": "Open Request",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.openPlan",
+        "title": "Open Plan",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.openStatus",
+        "title": "Open Status",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.viewDetails",
+        "title": "View Details",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.assignAgent",
+        "title": "Assign Agent",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.executePrompt",
+        "title": "Execute Prompt",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.executeAll",
+        "title": "Execute All Ready Prompts",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.refreshTree",
+        "title": "Refresh",
+        "category": "Workpack",
+        "icon": "$(refresh)"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "workpackManager.refreshTree",
+          "when": "view == workpackManager",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "workpackManager.openRequest",
+          "when": "viewItem == workpack",
+          "group": "1_open@1"
+        },
+        {
+          "command": "workpackManager.openPlan",
+          "when": "viewItem == workpack",
+          "group": "1_open@2"
+        },
+        {
+          "command": "workpackManager.openStatus",
+          "when": "viewItem == workpack",
+          "group": "1_open@3"
+        },
+        {
+          "command": "workpackManager.viewDetails",
+          "when": "viewItem == workpack",
+          "group": "1_open@4"
+        },
+        {
+          "command": "workpackManager.lintWorkpack",
+          "when": "viewItem == workpack",
+          "group": "2_actions@1"
+        },
+        {
+          "command": "workpackManager.executeAll",
+          "when": "viewItem == workpack",
+          "group": "2_actions@2"
+        },
+        {
+          "command": "workpackManager.assignAgent",
+          "when": "viewItem == prompt",
+          "group": "1_agent@1"
+        },
+        {
+          "command": "workpackManager.executePrompt",
+          "when": "viewItem == prompt",
+          "group": "1_agent@2"
+        }
+      ]
+    },
     "configuration": {
       "title": "Workpack Manager",
       "properties": {

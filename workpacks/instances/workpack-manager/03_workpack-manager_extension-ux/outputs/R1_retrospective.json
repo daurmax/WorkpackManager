@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-manager_extension-ux",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/extension-ux",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "8bc2a94"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager/03_workpack-manager_extension-ux/99_status.md",
+      "workpacks/instances/workpack-manager/03_workpack-manager_extension-ux/workpack.state.json"
+    ],
+    "files_created": [
+      "outputs/R1_retrospective.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "git branch --show-current",
+        "result": "pass",
+        "notes": "Retrospective executed on feature/extension-ux."
+      },
+      {
+        "cmd": "git log --oneline -1",
+        "result": "pass",
+        "notes": "HEAD commit: 8bc2a94 verify(extension-ux/A5_integration_meta)."
+      },
+      {
+        "cmd": "npx tsc --noEmit",
+        "result": "pass",
+        "notes": "Previously verified clean in A5 gate."
+      },
+      {
+        "cmd": "node --test out/**/__tests__/*.test.js out/test/**/*.test.js",
+        "result": "pass",
+        "notes": "Previously verified in A5 gate: 85/85 tests passing."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Retrospective/status updates only; no runtime UX behavior changes."
+  },
+  "handoff": {
+    "summary": "Retrospective completed for extension UX workpack. A0-A5 were completed and verified at gate with PASS_WITH_CAVEATS, and R1 is now closed with action items for container alignment and accessibility labeling.",
+    "next_steps": [
+      "Open or refresh PR from feature/extension-ux to main and merge after caveat triage decision.",
+      "Address caveats in follow-up: move tree view to the declared container or remove mismatch, and add unique aria-labels for per-prompt action buttons.",
+      "After merge, update workpack state from review to complete."
+    ],
+    "known_issues": [
+      "View container mismatch remains: tree is shown under explorer while workpack-manager container is declared.",
+      "Detail panel Assign/Run controls still need per-prompt unique aria-labels for stronger accessibility.",
+      "Execution telemetry fields remain zeroed for this retrospective output."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5.3-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/03_workpack-manager_extension-ux/outputs/R1_retrospective.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/03_workpack-manager_extension-ux/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager/03_workpack-manager_extension-ux/workpack.state.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "1. Summary\n- Workpack: 03_workpack-manager_extension-ux\n- Duration: 2026-02-23 to 2026-02-26\n- Agents Used: GitHub Copilot\n- Total Prompts: 7 (A0-A5 + R1)\n- Status: Complete\n\n2. What went well\n- UX scope was implemented end-to-end with clear separation across tree provider, detail panel, commands, and status visualization.\n- Verification gate confirmed 9/9 acceptance criteria and 85/85 tests passing.\n- Command contribution/registration parity was validated (11 declared and 11 registered).\n- CSP and HTML escaping checks were explicitly covered in test evidence for the detail panel.\n\n3. What could be improved\n- Resolve view container mismatch earlier to avoid discoverability confusion in Explorer vs dedicated container.\n- Bake accessibility checks into earlier prompts so unique aria-label issues are caught before A5.\n- Capture prompt-level telemetry (tokens/duration) to improve effort estimate calibration.\n\n4. UX-specific observations\n- Tree hierarchy is intuitive (workpack -> sections -> prompts) and tested for correctness.\n- Detail webview provides sufficient summary and prompt/output context for inspection workflows.\n- Command names and context-menu placement are discoverable and validated against package.json.\n- VS Code API limitation encountered: native tree/webview keyboard behavior is available, but finer accessibility semantics in repeated controls still need explicit labels.\n\n5. Metrics\n| Metric | Value |\n|--------|-------|\n| Total prompts | 7 |\n| Completed on first try | 6 |\n| Required rework | 0 |\n| Average prompt duration | Not instrumented (telemetry unavailable) |\n\n6. Action items\n| Action | Owner | Priority | Target |\n|--------|-------|----------|--------|\n| Align tree view container placement with contributes.viewsContainers | extension maintainers | P1 | Next UX patch |\n| Add unique per-prompt aria-labels for Assign/Run actions in detail panel | extension maintainers | P1 | Next UX patch |\n| Add protocol-level telemetry capture for output execution fields | tooling maintainers | P2 | Next tooling iteration |\n| Add retrospective checklist item for accessibility semantics in webview controls | workpack maintainers | P2 | Next workpack template update |"
+}
