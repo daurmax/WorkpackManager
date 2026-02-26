@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
+import { randomUUID } from "node:crypto";
 import type {
   EffortEstimate,
   ExecutionEvent,
@@ -303,7 +304,7 @@ export async function saveWorkpackStateAtomic(
   const dirPath = path.dirname(stateFilePath);
   const tempPath = path.join(
     dirPath,
-    `${path.basename(stateFilePath)}.${process.pid}.${Date.now()}.tmp`
+    `${path.basename(stateFilePath)}.${process.pid}.${Date.now()}.${randomUUID()}.tmp`
   );
   const serialized = `${JSON.stringify(serializeStatePayload(state), null, 2)}\n`;
 

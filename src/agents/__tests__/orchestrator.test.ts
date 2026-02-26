@@ -80,6 +80,38 @@ function createMockProvider(
   };
 }
 
+class MockProvider implements AgentProvider {
+  readonly id = "mock";
+  readonly displayName = "Mock Agent";
+  readonly dispatchedPrompts: string[] = [];
+
+  capabilities(): AgentCapability {
+    return {
+      multiFileEdit: false,
+      commandExecution: false,
+      longRunning: false,
+      maxPromptTokens: 1_000,
+      tags: ["test"],
+    };
+  }
+
+  async dispatch(_promptContent: string, context: PromptDispatchContext): Promise<PromptResult> {
+    this.dispatchedPrompts.push(context.promptStem);
+    return {
+      success: true,
+      summary: "Mock result",
+    };
+  }
+
+  async isAvailable(): Promise<boolean> {
+    return true;
+  }
+
+  dispose(): void {
+    // No-op for tests.
+  }
+}
+
 async function createWorkpackFixture(
   meta: WorkpackMeta,
   assignments: Record<string, string> = {}
@@ -155,6 +187,34 @@ afterEach(async () => {
 });
 
 describe("execution orchestrator", () => {
+  it("registers and dispatches a minimal MockProvider without core changes", async () => {
+    const meta = createMeta("wp-mock-provider", [createPrompt("A")]);
+    const setup = await createWorkpackFixture(meta, { A: "mock" });
+    tempFolders.push(setup.folderPath);
+
+    const mockProvider = new MockProvider();
+    const registry = new ProviderRegistry();
+    registry.register(mockProvider);
+
+    const assignment = new AssignmentModel(setup.stateFilePath, registry);
+    const orchestrator = new ExecutionOrchestrator(registry, assignment, {
+      maxParallel: 1,
+      continueOnError: false,
+      timeoutMs: 2_000,
+    });
+
+    const summary = await orchestrator.execute(meta, setup.stateFilePath);
+    const promptStatuses = await readPromptStatuses(setup.stateFilePath);
+
+    assert.equal(summary.completed, 1);
+    assert.equal(summary.failed, 0);
+    assert.equal(summary.skipped, 0);
+    assert.deepEqual(mockProvider.dispatchedPrompts, ["A"]);
+    assert.equal(summary.results.A.success, true);
+    assert.equal(summary.results.A.summary, "Mock result");
+    assert.equal(promptStatuses.A.status, "complete");
+  });
+
   it("executes a linear chain A -> B -> C", async () => {
     const meta = createMeta("wp-linear", [
       createPrompt("A"),
