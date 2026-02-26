@@ -1,0 +1,19 @@
+{
+  "workpack_id": "03_workpack-manager_agent-integration",
+  "prompt_id": "A0_bootstrap",
+  "status": "complete",
+  "summary": "Feature branch created, WP01 deliverables verified, agent module scaffolded.",
+  "files_changed": [
+    "src/agents/index.ts",
+    "src/agents/types.ts",
+    "src/agents/registry.ts",
+    "src/agents/providers/copilot-provider.ts",
+    "src/agents/providers/codex-provider.ts",
+    "src/agents/orchestrator.ts",
+    "src/agents/assignment.ts"
+  ],
+  "commands_run": [
+    "git checkout -b feature/extension-agent-integration",
+    "npx tsc --noEmit"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "schema-invalid-meta",
+  "title": "Schema Invalid Meta",
+  "summary": "Fixture that must fail metadata schema validation on date format.",
+  "protocol_version": "2.0.0",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "23-02-2026",
+  "requires_workpack": [],
+  "tags": [],
+  "owners": [],
+  "repos": ["WorkpackManager"],
+  "delivery_mode": "pr",
+  "target_branch": "main",
+  "prompts": []
+}

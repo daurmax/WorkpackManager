@@ -1,0 +1,10 @@
+{
+  "workpack_id": "03_workpack-manager_agent-integration",
+  "prompt_id": "A2_copilot_provider",
+  "status": "complete",
+  "summary": "CopilotProvider implemented using vscode.lm API with full unit tests.",
+  "files_changed": [
+    "src/agents/providers/copilot-provider.ts",
+    "src/agents/__tests__/copilot-provider.test.ts"
+  ]
+}

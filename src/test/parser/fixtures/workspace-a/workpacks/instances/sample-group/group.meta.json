@@ -1,0 +1,31 @@
+{
+  "id": "sample-group",
+  "title": "Sample Group",
+  "summary": "Fixture group for parser discovery tests.",
+  "protocol_version": "6",
+  "created_at": "2026-02-23",
+  "owners": [],
+  "tags": ["fixture"],
+  "repos": ["WorkpackManager"],
+  "workpacks": [
+    { "id": "01_sample-group_parser-v6", "execution_order": 1, "title": "Parser v6" },
+    { "id": "02_sample-group_legacy-fallback", "execution_order": 2, "title": "Legacy fallback" }
+  ],
+  "execution_dag": {
+    "phases": [
+      {
+        "order": 1,
+        "workpacks": ["01_sample-group_parser-v6"],
+        "mode": "serial",
+        "description": "Protocol v6 path"
+      },
+      {
+        "order": 2,
+        "workpacks": ["02_sample-group_legacy-fallback"],
+        "mode": "serial",
+        "description": "Legacy fallback path"
+      }
+    ],
+    "edges": [["01_sample-group_parser-v6", "02_sample-group_legacy-fallback"]]
+  }
+}

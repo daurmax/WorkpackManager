@@ -1,0 +1,20 @@
+{
+  "workpack_id": "schema-invalid-state",
+  "overall_status": "in_progress",
+  "last_updated": "not-a-date-time",
+  "prompt_status": {
+    "A1_schema": {
+      "status": "pending"
+    }
+  },
+  "agent_assignments": {
+    "A1_schema": "codex"
+  },
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "2026-02-23T00:00:00Z",
+      "event": "started"
+    }
+  ]
+}
