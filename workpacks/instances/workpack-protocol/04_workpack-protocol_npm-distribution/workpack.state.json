@@ -1,7 +1,7 @@
 {
   "workpack_id": "04_workpack-protocol_npm-distribution",
   "overall_status": "in_progress",
-  "last_updated": "2026-02-25T17:48:52Z",
+  "last_updated": "2026-02-26T10:30:00Z",
   "prompt_status": {
     "A0_bootstrap": {
       "status": "pending"
@@ -35,7 +35,11 @@
       "output_validated": true
     },
     "V1_integration_meta": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "claude-opus-4-20250514",
+      "started_at": "2026-02-26T10:00:00Z",
+      "completed_at": "2026-02-26T10:30:00Z",
+      "output_validated": true
     },
     "R1_retrospective": {
       "status": "pending"
@@ -111,6 +115,20 @@
       "prompt_stem": "A3_init_command",
       "agent": "codex",
       "notes": "A3 init CLI completed with --dir and --protocol-version flags, plus integration test coverage."
+    },
+    {
+      "timestamp": "2026-02-26T10:00:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "V1_integration_meta",
+      "agent": "claude-opus-4-20250514",
+      "notes": "V1 integration gate started."
+    },
+    {
+      "timestamp": "2026-02-26T10:30:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "V1_integration_meta",
+      "agent": "claude-opus-4-20250514",
+      "notes": "V1 integration gate completed. All ACs pass. Commit discrepancy in A1-A4 outputs documented (work was uncommitted; remediated in V1 commit 2749325)."
     }
   ],
   "notes": null
