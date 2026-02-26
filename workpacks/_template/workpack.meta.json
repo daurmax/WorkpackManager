@@ -2,7 +2,7 @@
   "id": "__WORKPACK_ID__",
   "title": "__WORKPACK_TITLE__",
   "summary": "__WORKPACK_SUMMARY__",
-  "protocol_version": "2.2.1",
+  "protocol_version": "3.0.0",
   "workpack_version": "1.0.0",
   "category": "feature",
   "created_at": "__CREATED_AT__",
@@ -22,7 +22,8 @@
       "repos": [
         "__REPO_NAME__"
       ],
-      "estimated_effort": "XS"
+      "estimated_effort": "XS",
+      "model_preference": "gpt-4o"
     }
   ]
 }

@@ -56,7 +56,7 @@ When to choose this scenario:
 ```json
 {
   "workpackDir": "workpacks",
-  "protocolVersion": "2.2.0",
+  "protocolVersion": "3.0.0",
   "strictMode": true,
   "verifyCommands": {
     "build": "npm run build",
@@ -260,13 +260,19 @@ Location:
 | `strictMode` | boolean | No | Enables stricter validation behavior. Default: `false`. |
 | `discovery.roots` | string[] | No | Additional roots for multi-root workpack discovery. |
 | `discovery.exclude` | string[] | No | Glob patterns excluded from discovery scans. |
+| `executionEnvironment.sandbox` | enum | No | Sandbox mode: `"none"`, `"container"`, `"vm"`, `"nsjail"`. Default: `"none"`. |
+| `executionEnvironment.networkAccess` | boolean | No | Whether agents may access the network. Default: `true`. |
+| `executionEnvironment.maxConcurrentAgents` | integer | No | Max concurrent agent executions. Default: `1`. |
+| `executionEnvironment.timeoutSeconds` | integer | No | Wall-clock timeout per prompt execution (0 = unlimited). Default: `0`. |
+| `executionEnvironment.allowedCommands` | string[] | No | Allowlist of shell commands agents may execute (empty = unrestricted). |
+| `executionEnvironment.deniedPaths` | string[] | No | Glob patterns for filesystem paths agents must not access. |
 
 ### Full example
 
 ```json
 {
   "workpackDir": "workpacks",
-  "protocolVersion": "2.2.0",
+  "protocolVersion": "3.0.0",
   "strictMode": true,
   "verifyCommands": {
     "build": "npm run build",
@@ -276,6 +282,14 @@ Location:
   "discovery": {
     "roots": ["../shared-workpacks", "../platform-workpacks"],
     "exclude": ["**/node_modules/**", "**/.git/**", "**/archive/**"]
+  },
+  "executionEnvironment": {
+    "sandbox": "container",
+    "networkAccess": false,
+    "maxConcurrentAgents": 2,
+    "timeoutSeconds": 600,
+    "allowedCommands": ["npm", "node", "python", "git"],
+    "deniedPaths": ["**/.env", "**/secrets/**"]
   }
 }
 ```
