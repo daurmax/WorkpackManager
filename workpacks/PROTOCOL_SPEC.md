@@ -132,6 +132,7 @@ Schema: `workpacks/WORKPACK_META_SCHEMA.json`
 |---|---|---|
 | `group` | string | Parent group ID for grouped workpacks. |
 | `requires_workpack` | string[] | Cross-workpack dependencies that must complete first. |
+| `lessons_from` | string[] | Workpack IDs whose retrospectives/outputs contain relevant lessons. Informational only — does not create execution dependencies. |
 | `tags` | string[] | Free-form indexing tags. |
 | `owners` | string[] | Responsible people/teams/handles. |
 | `repos` | string[] | Repositories touched by this workpack. |

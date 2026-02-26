@@ -96,6 +96,15 @@
       "default": [],
       "uniqueItems": true
     },
+    "lessons_from": {
+      "type": "array",
+      "description": "Workpack IDs whose retrospectives or outputs contain lessons relevant to this workpack. Unlike requires_workpack, this is informational and does not create execution dependencies.",
+      "items": {
+        "$ref": "#/$defs/workpackId"
+      },
+      "default": [],
+      "uniqueItems": true
+    },
     "tags": {
       "type": "array",
       "description": "Free-form tags used for filtering and grouping.",
