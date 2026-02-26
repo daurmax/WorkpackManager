@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.0] - 2026-02-26
+
+### ⚠️ Major Version
+
+This is a **major** release introducing agent interoperability, coordination infrastructure, execution sandboxing, and persistent knowledge management. All additions are backward-compatible with 2.x workpacks — no existing required fields are removed or renamed.
+
+### Added
+
+- **MCP Server Integration** (`packages/mcp-server/`): Read-only Model Context Protocol server exposing workpack data through standardized resources (`workpack://list`, `workpack://{id}/meta`, `workpack://{id}/state`, `workpack://{id}/next-prompts`) and tools (`list_workpacks`, `get_workpack_detail`, `get_next_prompts`). Enables AI agents and editor extensions to discover and inspect workpacks without direct file parsing. Uses stdio transport.
+- **Event Stream** (`WORKPACK_EVENT_SCHEMA.json`): Append-only JSONL event log for cross-workpack coordination. 18 event types covering workpack lifecycle (`workpack.*`), prompt transitions (`prompt.*`), agent assignment (`agent.*`), output tracking (`output.*`), and dependency resolution (`dependency.*`).
+- **Execution Environment** (`executionEnvironment` in `workpack.config.json`): Declarative sandboxing and resource constraint hints including `sandbox` mode (none/container/vm/nsjail), `networkAccess`, `maxConcurrentAgents`, `timeoutSeconds`, `allowedCommands`, and `deniedPaths`.
+- **Model Preference** (`model_preference` in `prompts[]` items in `workpack.meta.json`): Optional string field for routing prompts to preferred LLM models. Informational for orchestrators.
+- **Cross-Workpack Knowledge References** (`lessons_from` in `workpack.meta.json`): Optional string array referencing workpack IDs with relevant retrospective learnings. Informational only — creates no execution dependencies.
+- **Knowledge Base / Memory** (`workpacks/memory/`, `WORKPACK_MEMORY_SCHEMA.json`): Persistent, searchable knowledge base for lessons extracted from completed workpack retrospectives. Append-only JSONL format with 8 categories (pattern, anti-pattern, tooling, estimation, dependency, process, architecture, testing). Includes `workpack_memory.py` CLI tool for extraction, reporting, validation, and search.
+- **`WORKPACK_EVENT_SCHEMA.json`**: New JSON Schema for event stream entries.
+- **`WORKPACK_MEMORY_SCHEMA.json`**: New JSON Schema for knowledge base entries.
+
+### Fixed
+
+- **State machine consistency**: `AGENT_STATE_MACHINE.md` workpack-level diagram now includes the `review` state; prompt-level diagram uses `blocked` (matching the schema) instead of the previously undefined `failed`.
+
+### Changed
+
+- **`PROTOCOL_SPEC.md`**: Major restructuring with new sections for Event Stream (§6), Execution Environment (§9.4), MCP Server Integration (§12), Knowledge Base (§13), and Migration 2.x → 3.0.0 (§8.6). Version history updated. Section numbering revised (14 top-level sections).
+- **`WORKPACK_META_SCHEMA.json`**: Added `model_preference` to `prompts[]` items and `lessons_from` at top level.
+- **`WORKPACK_CONFIG_SCHEMA.json`**: Added `executionEnvironment` object with sandboxing and constraint fields.
+- **`WORKPACK_GROUP_SCHEMA.json`**: `protocol_version` enum extended with `"3.0.0"`.
+- **`docs/INTEGRATION.md`**: Configuration reference updated with `executionEnvironment` fields and example.
+
+### Backward Compatibility
+
+- All 2.x workpacks remain valid without modification.
+- New fields (`model_preference`, `lessons_from`, `executionEnvironment`) are optional.
+- New schemas (`WORKPACK_EVENT_SCHEMA`, `WORKPACK_MEMORY_SCHEMA`) are additive.
+- Tooling detects protocol version per workpack and applies the matching rule set.
+- The `memory/` directory and MCP server are opt-in infrastructure.
+
+### Migration
+
+See `PROTOCOL_SPEC.md` §8.6 for the 2.x → 3.0.0 migration checklist. Key steps: update `protocol_version` to `"3.0.0"`, update `00_request.md` version header. All new features are opt-in.
+
+---
+
 ## [2.2.1] - 2026-02-23
 
 ### ⚠️ Breaking Changes

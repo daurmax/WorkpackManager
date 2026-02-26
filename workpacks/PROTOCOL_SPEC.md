@@ -24,6 +24,8 @@ Protocol 2.0.0 formalizes machine-readable metadata and runtime state so tooling
 - 1.4.0 introduced `workpacks/instances/`, DAG front-matter (`depends_on`, `repos`), execution metrics in outputs, R-series retrospective prompts, and cross-workpack references.
 - 2.0.0 introduced `workpack.meta.json` (static metadata) and `workpack.state.json` (mutable runtime state), including prompt indexing, assignments, and execution log.
 - 2.1.0 added workpack groups (`group.meta.json`, `GROUP.md`) and updated naming conventions.
+- 2.2.0 added B-series dependency DAG, per-prompt commit tracking, integration commit verification, and legacy-to-modern migration.
+- 3.0.0 added MCP server integration, event stream, execution environment sandboxing, knowledge base (memory), model preference routing, and cross-workpack knowledge references (`lessons_from`).
 
 See `CHANGELOG.md` for the complete version history from 1.0.0 onwards.
 
@@ -31,7 +33,7 @@ See `CHANGELOG.md` for the complete version history from 1.0.0 onwards.
 
 - Separate static contract from mutable execution data.
 - Keep markdown readable for humans, JSON parseable for tools.
-- Preserve backward compatibility with 1.x workpacks (additive evolution).
+- Preserve backward compatibility with prior major versions (additive evolution).
 - Prefer explicit DAG declarations over inferred sequencing.
 - Maintain auditability via append-only state events and per-prompt outputs.
 
@@ -46,15 +48,15 @@ The `workpacks/` directory should include:
 - `WORKPACK_META_SCHEMA.json`
 - `WORKPACK_STATE_SCHEMA.json`
 - `WORKPACK_OUTPUT_SCHEMA.json`
-- `WORKPACK_EVENT_SCHEMA.json` *(2.3.0+)*
+- `WORKPACK_EVENT_SCHEMA.json` *(3.0.0+)*
 - `WORKPACK_CONFIG_SCHEMA.json`
-- `WORKPACK_MEMORY_SCHEMA.json` *(2.3.0+)*
+- `WORKPACK_MEMORY_SCHEMA.json` *(3.0.0+)*
 - `CHANGELOG.md`
 - `README.md`
 - `PROTOCOL_SPEC.md` (this document)
 - `_template/`
 - `instances/`
-- `memory/` *(2.3.0+)*
+- `memory/` *(3.0.0+)*
 
 ### 2.2 Per-Workpack Instance Layout (2.0.0+)
 
@@ -432,24 +434,32 @@ Compatibility behavior:
 
 ### 8.3 Mixed Fleets
 
-Repositories may contain both 1.x and 2.x workpacks during migration.
+Repositories may contain 1.x, 2.x, and 3.x workpacks during migration.
 Tooling should:
 
 - detect mode per workpack,
 - apply matching validation profile,
 - emit explicit diagnostics for mismatches.
 
-### 8.4 Legacy-to-Modern Migration Method (2.0.0/2.1.0 -> 2.2.0+)
+### 8.4 2.x Workpacks in a 3.0.0 Repository
+
+Protocol 3.0.0 is backward-compatible with 2.x workpacks:
+
+- Existing 2.x workpacks continue to validate and execute without modification.
+- New 3.0.0 features (event stream, MCP server, execution environment, memory, model_preference, lessons_from) are **opt-in** — they do not impose new required fields on existing workpacks.
+- The `protocol_version` field in `workpack.meta.json` distinguishes 2.x from 3.x workpacks; tooling applies the matching rule set.
+
+### 8.5 Legacy-to-Modern Migration Method (2.0.0/2.1.0 -> 2.2.0+)
 
 This section defines the standard modernization workflow for existing 2.x workpacks.
 
-#### 7.4.1 Supported Source and Target Versions
+#### 8.5.1 Supported Source and Target Versions
 
 - Supported source versions: `2.0.0`, `2.1.0`.
 - Supported target versions: `2.2.0` and higher minor/patch releases in the 2.x line.
 - 1.x workpacks should first complete the 1.x -> 2.0.0 upgrade path before applying this 2.x modernization checklist.
 
-#### 7.4.2 Ordered Migration Checklist
+#### 8.5.2 Ordered Migration Checklist
 
 1. Update `00_request.md`:
    - Confirm the request states modernization intent and target protocol `2.2.0+`.
@@ -470,14 +480,14 @@ This section defines the standard modernization workflow for existing 2.x workpa
    - For output payloads using schema `1.2+`, ensure `artifacts.commit_shas` is present and non-empty when files changed.
    - Ensure integration verification prompts set `artifacts.branch_verified` after commit/branch checks.
 
-#### 7.4.3 Backward Compatibility Guardrails
+#### 8.5.3 Backward Compatibility Guardrails
 
 - Migration must be additive and non-destructive: keep legacy outputs and history unless intentionally superseded.
 - Mixed fleets remain valid: non-modernized `2.0.0`/`2.1.0` workpacks continue to lint under their original profile.
 - Commit-tracking strictness applies when the workpack is modernized to protocol `2.2.0+` (or outputs adopt schema `1.2+`).
 - Avoid introducing required-field changes to `workpack.meta.json`/`workpack.state.json` that would break older workpacks.
 
-#### 7.4.4 Required Post-Migration Verification
+#### 8.5.4 Required Post-Migration Verification
 
 Run all of the following after modernization updates:
 
@@ -491,6 +501,50 @@ If protocol tooling or lint rules were changed during migration, also run:
 ```bash
 python -m pytest workpacks/tools/tests/ -v
 ```
+
+### 8.6 Migration Method: 2.x → 3.0.0
+
+This section defines the upgrade path from any 2.x workpack to protocol 3.0.0.
+
+#### 8.6.1 What Changes in 3.0.0
+
+Protocol 3.0.0 introduces the following **additive** capabilities:
+
+| Feature | Files Involved | Required? |
+|---|---|---|
+| Event stream | `WORKPACK_EVENT_SCHEMA.json`, `events.jsonl` per instance | No |
+| MCP server | `packages/mcp-server/` | No (infrastructure) |
+| Execution environment | `executionEnvironment` in `workpack.config.json` | No |
+| Model preference | `model_preference` in `prompts[]` items | No |
+| Cross-workpack knowledge | `lessons_from` in `workpack.meta.json` | No |
+| Knowledge base (memory) | `memory/entries.jsonl`, `WORKPACK_MEMORY_SCHEMA.json` | No |
+
+**No existing required fields are removed or renamed.** All 3.0.0 additions are optional.
+
+#### 8.6.2 Ordered Migration Checklist
+
+1. Update `workpack.meta.json`:
+   - Set `protocol_version` to `"3.0.0"`.
+   - Optionally add `lessons_from` referencing prior workpacks.
+   - Optionally add `model_preference` to individual `prompts[]` items.
+2. Update `00_request.md`:
+   - Change `Workpack Protocol Version: X.Y.Z` header to `3.0.0`.
+3. Optionally adopt new features:
+   - Add `executionEnvironment` to `workpack.config.json`.
+   - Create `events.jsonl` in the instance directory for event tracking.
+   - Extract lessons from completed workpacks into `workpacks/memory/entries.jsonl`.
+4. Run verification:
+   ```bash
+   python workpacks/tools/validate_templates.py
+   python workpacks/tools/workpack_lint.py
+   ```
+
+#### 8.6.3 Backward Compatibility Guardrails
+
+- Migration is purely additive: no existing fields are removed or redefined.
+- 2.x workpacks that are not migrated continue to lint and execute under their original profile.
+- Tooling detects protocol version per workpack and applies the matching rule set.
+- The `lessons_from` and `model_preference` fields are informational; they create no execution dependencies.
 
 ---
 
@@ -527,12 +581,12 @@ Editor and runtime tooling should:
 - treat `execution_log` as audit timeline,
 - support blocker visualization through `blocked_by`.
 
-### 9.4 `workpack.config.json` and `executionEnvironment` *(2.3.0+)*
+### 9.4 `workpack.config.json` and `executionEnvironment` *(3.0.0+)*
 
 `workpack.config.json` at repository root configures protocol-aware tooling.
 Its full schema is defined in `WORKPACK_CONFIG_SCHEMA.json`.
 
-Starting with protocol `2.3.0`, the optional `executionEnvironment` object lets repository owners declare **sandboxing and resource constraints** that agent runtimes and orchestrators should honour:
+Starting with protocol `3.0.0`, the optional `executionEnvironment` object lets repository owners declare **sandboxing and resource constraints** that agent runtimes and orchestrators should honour:
 
 | Field | Type | Default | Description |
 |---|---|---|---|
@@ -691,7 +745,7 @@ The server uses **stdio** transport by default, compatible with Claude Desktop, 
 
 ---
 
-## 13. Knowledge Base (Memory) *(2.3.0+)*
+## 13. Knowledge Base (Memory) *(3.0.0+)*
 
 ### 13.1 Purpose
 

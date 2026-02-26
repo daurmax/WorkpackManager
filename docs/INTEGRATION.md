@@ -56,7 +56,7 @@ When to choose this scenario:
 ```json
 {
   "workpackDir": "workpacks",
-  "protocolVersion": "2.2.0",
+  "protocolVersion": "3.0.0",
   "strictMode": true,
   "verifyCommands": {
     "build": "npm run build",
@@ -272,7 +272,7 @@ Location:
 ```json
 {
   "workpackDir": "workpacks",
-  "protocolVersion": "2.2.0",
+  "protocolVersion": "3.0.0",
   "strictMode": true,
   "verifyCommands": {
     "build": "npm run build",

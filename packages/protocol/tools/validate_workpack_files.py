@@ -92,6 +92,8 @@ def _semver_to_internal(raw: str) -> int:
         return 1 + minor
     elif major == 2:
         return 6 + minor
+    elif major == 3:
+        return 9 + minor  # 3.0->9, 3.1->10
     else:
         return major * 3 + minor
 
@@ -99,6 +101,7 @@ def _semver_to_internal(raw: str) -> int:
 _INTERNAL_TO_DISPLAY = {
     1: "1.0.0", 2: "1.1.0", 3: "1.2.0", 4: "1.3.0", 5: "1.4.0",
     6: "2.0.0", 7: "2.1.0", 8: "2.2.0",
+    9: "3.0.0",
 }
 
 

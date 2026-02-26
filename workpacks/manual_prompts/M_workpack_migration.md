@@ -6,8 +6,8 @@ Use this prompt to migrate one existing workpack to a specific protocol target.
 
 - Target workpack path: `<workpacks/instances/<group>/<workpack-id>>`
 - Target workpack id: `<workpack-id>`
-- Source protocol version (current): `<2.0.0|2.1.0|...>`
-- Target protocol version: `<2.2.0+ or custom>`
+- Source protocol version (current): `<2.0.0|2.1.0|2.2.0|2.2.1|3.0.0>`
+- Target protocol version: `<3.0.0 or custom>`
 - Repositories: `[<REPO_NAME>]`
 - Migration mode: `<pr|direct_push>`
 - Additional constraints/context: `<optional>`
