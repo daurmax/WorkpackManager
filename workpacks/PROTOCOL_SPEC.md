@@ -47,6 +47,7 @@ The `workpacks/` directory should include:
 - `WORKPACK_STATE_SCHEMA.json`
 - `WORKPACK_OUTPUT_SCHEMA.json`
 - `WORKPACK_EVENT_SCHEMA.json` *(2.3.0+)*
+- `WORKPACK_CONFIG_SCHEMA.json`
 - `CHANGELOG.md`
 - `README.md`
 - `PROTOCOL_SPEC.md` (this document)
@@ -385,17 +386,17 @@ External orchestrators or monitoring tools can tail `workpack.events.jsonl` acro
 
 ## 7. Relationship to Markdown Files
 
-### 6.1 `00_request.md`
+### 7.1 `00_request.md`
 
 - Canonical narrative for request, constraints, and acceptance criteria.
 - `protocol_version` in metadata should align with declared version intent.
 
-### 6.2 `01_plan.md`
+### 7.2 `01_plan.md`
 
 - Human-readable WBS and DAG rationale.
 - Must align with `workpack.meta.json.prompts` (same stems and dependency intent).
 
-### 6.3 `99_status.md`
+### 7.3 `99_status.md`
 
 - Human-readable operational status and notes.
 - Complements but does not replace `workpack.state.json`.
@@ -403,7 +404,7 @@ External orchestrators or monitoring tools can tail `workpack.events.jsonl` acro
   - `workpack.state.json.prompt_status`
   - `outputs/<PROMPT>.json` presence
 
-### 6.4 Consistency Rules
+### 7.4 Consistency Rules
 
 - JSON is authoritative for machine interpretation.
 - Markdown is authoritative for human context and rationale.
@@ -523,6 +524,25 @@ Editor and runtime tooling should:
 - reflect live progress from `workpack.state.json`,
 - treat `execution_log` as audit timeline,
 - support blocker visualization through `blocked_by`.
+
+### 9.4 `workpack.config.json` and `executionEnvironment` *(2.3.0+)*
+
+`workpack.config.json` at repository root configures protocol-aware tooling.
+Its full schema is defined in `WORKPACK_CONFIG_SCHEMA.json`.
+
+Starting with protocol `2.3.0`, the optional `executionEnvironment` object lets repository owners declare **sandboxing and resource constraints** that agent runtimes and orchestrators should honour:
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `sandbox` | enum `"none"` \| `"container"` \| `"vm"` \| `"nsjail"` | `"none"` | Isolation mechanism for agent execution. |
+| `networkAccess` | boolean | `true` | Whether agents may access the network. |
+| `maxConcurrentAgents` | integer ≥ 1 | `1` | Maximum concurrent prompt executions. |
+| `timeoutSeconds` | integer ≥ 0 | `0` | Wall-clock limit per prompt (0 = no limit). |
+| `allowedCommands` | string[] | `[]` | Shell command allowlist (empty = unrestricted). |
+| `deniedPaths` | string[] | `[]` | Glob patterns for paths agents must not access. |
+
+These fields are **declarative hints**: they inform orchestrators and CI pipelines but do not change the prompt execution model.
+Orchestrators that do not support a given constraint should log a warning and proceed with their default behavior.
 
 ---
 
