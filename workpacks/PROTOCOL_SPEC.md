@@ -48,11 +48,13 @@ The `workpacks/` directory should include:
 - `WORKPACK_OUTPUT_SCHEMA.json`
 - `WORKPACK_EVENT_SCHEMA.json` *(2.3.0+)*
 - `WORKPACK_CONFIG_SCHEMA.json`
+- `WORKPACK_MEMORY_SCHEMA.json` *(2.3.0+)*
 - `CHANGELOG.md`
 - `README.md`
 - `PROTOCOL_SPEC.md` (this document)
 - `_template/`
 - `instances/`
+- `memory/` *(2.3.0+)*
 
 ### 2.2 Per-Workpack Instance Layout (2.0.0+)
 
@@ -689,7 +691,50 @@ The server uses **stdio** transport by default, compatible with Claude Desktop, 
 
 ---
 
-## 13. Practical Notes for Implementers
+## 13. Knowledge Base (Memory) *(2.3.0+)*
+
+### 13.1 Purpose
+
+The memory system captures reusable lessons, patterns, and anti-patterns extracted from completed workpack retrospectives. It creates a persistent, searchable knowledge base that future workpacks can reference through the `lessons_from` field in `workpack.meta.json`.
+
+### 13.2 Storage Format
+
+Memory entries live in `workpacks/memory/entries.jsonl` — an append-only JSONL file where each line is a JSON object conforming to `WORKPACK_MEMORY_SCHEMA.json`.
+
+### 13.3 Entry Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `entry_id` | string | Yes | Unique ID (e.g. `MEM-001`). |
+| `source_workpack` | string | Yes | ID of the originating workpack. |
+| `created_at` | date-time | Yes | When the entry was created. |
+| `category` | enum | Yes | One of: `pattern`, `anti-pattern`, `tooling`, `estimation`, `dependency`, `process`, `architecture`, `testing`. |
+| `summary` | string | Yes | One-line description (10-200 chars). |
+| `detail` | string | No | Extended context and rationale. |
+| `tags` | string[] | No | Free-form tags for filtering. |
+| `impact` | enum | No | `low`, `medium`, `high`, `critical`. |
+| `recommendation` | string | No | Actionable recommendation. |
+| `related_prompts` | string[] | No | Prompt stems relevant to this lesson. |
+| `supersedes` | string | No | Entry ID this lesson replaces. |
+
+### 13.4 Lifecycle
+
+1. A workpack reaches terminal status (`complete` or `abandoned`).
+2. Run `python workpacks/tools/workpack_memory.py extract <workpack-id>` to scan `99_status.md` retrospective sections and `execution_log` notable events.
+3. Review and optionally edit the generated entries.
+4. Future workpacks reference the source via `lessons_from` in their metadata.
+
+### 13.5 Integration with `lessons_from`
+
+When `workpack.meta.json.lessons_from` lists workpack IDs, tooling should:
+
+- Filter `entries.jsonl` for entries whose `source_workpack` matches.
+- Surface matched entries to agents before prompt execution as contextual guidance.
+- Memory entries are **informational** — they do not create execution dependencies.
+
+---
+
+## 14. Practical Notes for Implementers
 
 - Prefer JSON schemas as enforcement boundary; markdown parsing is a fallback for compatibility.
 - Keep metadata stable to minimize noisy diffs.
