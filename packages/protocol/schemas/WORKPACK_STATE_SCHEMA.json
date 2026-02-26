@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workpacks/WORKPACK_STATE_SCHEMA.json",
+  "title": "Workpack Runtime State",
+  "description": "Mutable execution state for a workpack instance. This file is updated by agents and tooling during execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "workpack_id",
+    "overall_status",
+    "last_updated",
+    "prompt_status",
+    "agent_assignments",
+    "blocked_by",
+    "execution_log"
+  ],
+  "$defs": {
+    "workpackId": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$"
+    },
+    "promptStem": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*(?:_[a-z0-9][a-z0-9_]*)+$"
+    },
+    "agentId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "isoDateTimeOrNull": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "promptRuntimeState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "in_progress", "complete", "blocked", "skipped"]
+        },
+        "assigned_agent": {
+          "$ref": "#/$defs/agentId"
+        },
+        "started_at": {
+          "$ref": "#/$defs/isoDateTimeOrNull"
+        },
+        "completed_at": {
+          "$ref": "#/$defs/isoDateTimeOrNull"
+        },
+        "output_validated": {
+          "type": "boolean",
+          "default": false
+        },
+        "blocked_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "blocked"
+              }
+            }
+          },
+          "then": {
+            "required": ["blocked_reason"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "in_progress"
+              }
+            }
+          },
+          "then": {
+            "required": ["started_at"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "complete"
+              }
+            }
+          },
+          "then": {
+            "required": ["completed_at"]
+          }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "workpack_id": {
+      "$ref": "#/$defs/workpackId",
+      "description": "Must match workpack.meta.json:id."
+    },
+    "overall_status": {
+      "type": "string",
+      "description": "Current lifecycle status for the full workpack.",
+      "enum": ["not_started", "in_progress", "blocked", "review", "complete", "abandoned"]
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of the latest state update."
+    },
+    "prompt_status": {
+      "type": "object",
+      "description": "Per-prompt runtime state keyed by prompt stem.",
+      "propertyNames": {
+        "$ref": "#/$defs/promptStem"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/promptRuntimeState"
+      }
+    },
+    "agent_assignments": {
+      "type": "object",
+      "description": "Default agent assignment per prompt stem.",
+      "propertyNames": {
+        "$ref": "#/$defs/promptStem"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/agentId"
+      }
+    },
+    "blocked_by": {
+      "type": "array",
+      "description": "Workpack IDs currently blocking this workpack.",
+      "items": {
+        "$ref": "#/$defs/workpackId"
+      },
+      "default": [],
+      "uniqueItems": true
+    },
+    "execution_log": {
+      "type": "array",
+      "description": "Append-only audit log of lifecycle events.",
+      "default": [],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["timestamp", "event"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "created",
+              "started",
+              "prompt_started",
+              "prompt_completed",
+              "blocked",
+              "unblocked",
+              "review",
+              "completed",
+              "abandoned"
+            ]
+          },
+          "prompt_stem": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/promptStem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/agentId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Optional free-form notes about current state."
+    }
+  }
+}

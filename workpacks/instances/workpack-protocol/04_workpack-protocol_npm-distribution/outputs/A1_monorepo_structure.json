@@ -1,0 +1,125 @@
+{
+  "schema_version": "1.2",
+  "workpack": "04_workpack-protocol_npm-distribution",
+  "prompt": "A1_monorepo_structure",
+  "component": "monorepo",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "main",
+    "work": "feature/npm-distribution",
+    "merge_target": "main"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "570c08d"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "README.md",
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/99_status.md",
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.state.json"
+    ],
+    "files_created": [
+      "package.json",
+      "pnpm-workspace.yaml",
+      "packages/protocol/.gitkeep",
+      "packages/extension/.gitkeep",
+      "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/outputs/A1_monorepo_structure.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "if ((Test-Path 'packages/protocol') -and (Test-Path 'packages/extension')) { 'OK' } else { throw 'Missing packages directories.' }",
+        "result": "pass",
+        "notes": "Directories exist."
+      },
+      {
+        "cmd": "if (Test-Path 'pnpm-workspace.yaml') { 'OK' } elseif (Test-Path 'package.json') { node -e \"const p=require('./package.json'); if(!p.workspaces){process.exit(1)}; console.log(JSON.stringify(p.workspaces));\"; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; 'OK' } else { throw 'No workspace configuration found.' }",
+        "result": "pass",
+        "notes": "pnpm workspace configuration found at root."
+      },
+      {
+        "cmd": "if ((Test-Path 'workpacks') -and (Test-Path 'workpacks/tools') -and (Test-Path 'workpacks/instances')) { 'OK' } else { throw 'Existing workpacks paths missing.' }",
+        "result": "pass",
+        "notes": "Existing workpacks paths remain intact."
+      },
+      {
+        "cmd": "python workpacks/tools/workpack_lint.py --help",
+        "result": "pass",
+        "notes": "Command executed successfully."
+      },
+      {
+        "cmd": "python -m pytest workpacks/tools/tests/ -v",
+        "result": "pass",
+        "notes": "189 passed."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Monorepo structure change only; existing workpack tooling and tests remain functional."
+  },
+  "handoff": {
+    "summary": "Monorepo structure created with packages/protocol and packages/extension plus root pnpm workspace configuration.",
+    "next_steps": [
+      "Proceed to A2_protocol_package and A4_extension_scaffold in parallel."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "package.json",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "pnpm-workspace.yaml",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/.gitkeep",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/extension/.gitkeep",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "README.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/99_status.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/workpack.state.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-protocol/04_workpack-protocol_npm-distribution/outputs/A1_monorepo_structure.json",
+      "action": "created"
+    }
+  ],
+  "notes": ""
+}

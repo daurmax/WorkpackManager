@@ -24,6 +24,37 @@ A protocol specification and toolkit for structured AI-agent-driven development:
 - **Tooling**: Linter, scaffolder, and validation tools
 - **Adoption guide**: Instructions for integrating workpacks into external projects
 
+## Monorepo Structure
+
+This repository now uses a workspace monorepo layout:
+
+```text
+.
+├── packages/
+│   ├── protocol/   # npm package: @workpack/protocol
+│   └── extension/  # VS Code extension package scaffold
+├── workpacks/      # Protocol assets, instances, templates, tools
+└── ...
+```
+
+Workspace configuration is defined in `pnpm-workspace.yaml` (`packages/*`).
+
+Important path guarantee: existing paths under `workpacks/` are unchanged so current tooling and instances continue to run as-is (`workpacks/tools/*.py`, `workpacks/instances/*`).
+
+## Distribution Overview
+
+- `packages/protocol/` is the publish target for `@workpack/protocol`.
+- `packages/extension/` is reserved for the VS Code extension package scaffold.
+- Python tooling remains in `workpacks/tools/` and is not relocated into Node packages.
+
+Root workspace setup:
+
+```bash
+pnpm install
+```
+
+The protocol package contents, init CLI, and extension scaffold are implemented in follow-up prompts (`A2`, `A3`, `A4`).
+
 ## Project Status
 
 This project is bootstrapped via workpacks. See `workpacks/instances/` for the implementation plan.
