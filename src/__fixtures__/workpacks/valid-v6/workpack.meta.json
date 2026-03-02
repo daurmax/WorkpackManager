@@ -1,0 +1,31 @@
+{
+  "id": "valid-v6",
+  "title": "Valid V6 Fixture",
+  "summary": "Schema-valid v6 fixture for parser and model tests.",
+  "protocol_version": "2.0.0",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "2026-02-26",
+  "requires_workpack": [],
+  "tags": ["fixture", "v6"],
+  "owners": ["qa"],
+  "repos": ["WorkpackManager"],
+  "delivery_mode": "pr",
+  "target_branch": "main",
+  "prompts": [
+    {
+      "stem": "A0_bootstrap",
+      "agent_role": "Bootstrap",
+      "depends_on": [],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "A1_test_strategy",
+      "agent_role": "Test framework architect",
+      "depends_on": ["A0_bootstrap"],
+      "repos": ["WorkpackManager"],
+      "estimated_effort": "M"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { afterEach, describe, it } from "node:test";
+import { afterEach, describe, it } from "vitest";
 import { CodexProvider, type CodexProviderConfig } from "../providers/codex-provider";
 import type { PromptDispatchContext } from "../types";
 

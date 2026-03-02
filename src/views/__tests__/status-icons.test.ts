@@ -4,7 +4,7 @@ import { promises as fs } from "node:fs";
 import { Module } from "node:module";
 import * as os from "node:os";
 import * as path from "node:path";
-import { afterEach, describe, it } from "node:test";
+import { afterEach, describe, it } from "vitest";
 import type { OverallStatus, PromptStatusValue, WorkpackCategory, WorkpackInstance } from "../../models";
 
 type StatusIconsRuntime = typeof import("../status-icons");

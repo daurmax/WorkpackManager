@@ -1,0 +1,27 @@
+{
+  "prompt_id": "A3_drift_detection",
+  "workpack": "04_workpack-manager_validation-quality",
+  "status": "complete",
+  "summary": "Implemented full state-vs-artifact drift detection with tolerant status markdown parsing, safe auto-fix for orphaned outputs, and comprehensive fixture-based tests (A-G + auto-fix + malformed workpack handling).",
+  "files_modified": [
+    "src/validation/drift-detector.ts"
+  ],
+  "files_created": [
+    "src/validation/__tests__/drift-detector.test.ts"
+  ],
+  "verification": {
+    "tsc_no_emit": "pass",
+    "drift_detector_tests": "pass"
+  },
+  "commands": [
+    {
+      "cmd": "npx tsc --noEmit",
+      "result": "pass"
+    },
+    {
+      "cmd": "npm run build; node --test out/validation/__tests__/drift-detector.test.js",
+      "result": "pass"
+    }
+  ],
+  "timestamp": "2026-02-26T00:00:00Z"
+}

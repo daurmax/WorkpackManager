@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, it } from "node:test";
+import { afterEach, describe, it } from "vitest";
 import type { PromptEntry, WorkpackMeta } from "../../models";
 import { AssignmentModel } from "../assignment";
 import { ExecutionOrchestrator } from "../orchestrator";
