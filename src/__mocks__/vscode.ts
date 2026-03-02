@@ -78,13 +78,18 @@ export class CancellationTokenSource {
   };
 
   constructor() {
-    const thisOwner = this;
     this.token = {
       get isCancellationRequested() {
-        return thisOwner.cancelled;
+        return false;
       },
-      onCancellationRequested: (listener: () => void): Disposable => thisOwner.emitter.event(listener)
+      onCancellationRequested: (listener: () => void): Disposable => this.emitter.event(listener)
     };
+
+    Object.defineProperty(this.token, "isCancellationRequested", {
+      get: () => this.cancelled,
+      enumerable: true,
+      configurable: true,
+    });
   }
 
   cancel(): void {

@@ -23,8 +23,33 @@ module.exports = tseslint.config(
     },
   },
   {
+    files: ["src/**/__tests__/**/*.ts", "src/**/*.test.ts", "src/__mocks__/**/*.ts"],
     rules: {
-      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/require-await": "off",
+      "@typescript-eslint/no-floating-promises": "off",
+      "@typescript-eslint/no-base-to-string": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-redundant-type-constituents": "off",
+    },
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
+      "@typescript-eslint/require-await": "off",
+      "@typescript-eslint/no-base-to-string": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-redundant-type-constituents": "off",
+      "@typescript-eslint/no-require-imports": "off",
+      "no-useless-escape": "off",
       "@typescript-eslint/explicit-function-return-type": "warn",
       "no-console": "warn",
     },

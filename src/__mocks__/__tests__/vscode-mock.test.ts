@@ -19,7 +19,7 @@ describe("vscode mock", () => {
   });
 
   it("creates file system watcher and cancellation token source", () => {
-    const watcher = workspace.createFileSystemWatcher("**/*") as unknown as FileSystemWatcher;
+    const watcher = workspace.createFileSystemWatcher() as unknown as FileSystemWatcher;
     const source = new CancellationTokenSource();
 
     assert.equal(watcher instanceof FileSystemWatcher, true);
