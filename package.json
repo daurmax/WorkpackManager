@@ -3,6 +3,7 @@
   "displayName": "Workpack Manager",
   "description": "VS Code extension for discovering and managing workpacks.",
   "version": "0.0.1",
+  "license": "MIT",
   "publisher": "workpack-manager",
   "engines": {
     "vscode": "^1.96.0"
