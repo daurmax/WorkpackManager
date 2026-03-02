@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import Module from "node:module";
 import * as path from "node:path";
-import { describe, it } from "node:test";
+import { describe, it } from "vitest";
 import type { WorkpackInstance } from "../../models";
 
 type ModuleLoad = (request: string, parent: NodeModule | null, isMain: boolean) => unknown;

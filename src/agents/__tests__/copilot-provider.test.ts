@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import Module from "node:module";
-import { describe, it } from "node:test";
+import { describe, it } from "vitest";
 import type { AgentProvider, PromptDispatchContext } from "../types";
 
 type ModuleLoad = (request: string, parent: NodeModule | null, isMain: boolean) => unknown;
