@@ -1,0 +1,37 @@
+{
+  "workpack_id": "02_workpack-manager-v2_extension-consolidation",
+  "overall_status": "not_started",
+  "last_updated": "2026-03-03T15:37:59Z",
+  "prompt_status": {
+    "A0_bootstrap": {
+      "status": "pending"
+    },
+    "A1_resolve_extension_scaffold": {
+      "status": "pending"
+    },
+    "A2_extract_ajv_cache": {
+      "status": "pending"
+    },
+    "A3_clean_merged_branches": {
+      "status": "pending"
+    },
+    "V1_integration_meta": {
+      "status": "pending"
+    },
+    "R1_retrospective": {
+      "status": "pending"
+    }
+  },
+  "agent_assignments": {},
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "2026-03-03T15:37:59Z",
+      "event": "created",
+      "prompt_stem": null,
+      "agent": null,
+      "notes": "Workpack scaffold created"
+    }
+  ],
+  "notes": null
+}

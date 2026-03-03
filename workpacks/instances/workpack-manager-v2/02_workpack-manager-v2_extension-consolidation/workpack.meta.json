@@ -1,0 +1,88 @@
+{
+  "id": "02_workpack-manager-v2_extension-consolidation",
+  "title": "Extension Consolidation",
+  "summary": "Resolve the monorepo scaffold ambiguity by removing the empty packages/extension/ stub (since all extension code correctly lives at root src/), extract a shared SchemaValidatorCache utility to eliminate triple-duplicated AJV caching logic, and clean up stale merged Git branches. This is a pure refactor with no behavioral changes.",
+  "protocol_version": "3.0.0",
+  "workpack_version": "1.0.0",
+  "category": "refactor",
+  "created_at": "2026-03-03",
+  "requires_workpack": [
+    "01_workpack-manager-v2_execution-wiring"
+  ],
+  "tags": [],
+  "owners": [],
+  "repos": [
+    "WorkpackManager"
+  ],
+  "delivery_mode": "pr",
+  "target_branch": "master",
+  "prompts": [
+    {
+      "stem": "A0_bootstrap",
+      "agent_role": "Create feature branch, verify build and tests pass",
+      "depends_on": [],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "XS"
+    },
+    {
+      "stem": "A1_resolve_extension_scaffold",
+      "agent_role": "Remove packages/extension/ scaffold, update monorepo docs",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "A2_extract_ajv_cache",
+      "agent_role": "Extract shared SchemaValidatorCache from parser, lint-rules, and migration",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A3_clean_merged_branches",
+      "agent_role": "Delete merged Git branches (local + remote), document cleanup",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "XS"
+    },
+    {
+      "stem": "V1_integration_meta",
+      "agent_role": "Verification gate: build, lint, tests, import integrity",
+      "depends_on": [
+        "A1_resolve_extension_scaffold",
+        "A2_extract_ajv_cache",
+        "A3_clean_merged_branches"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "R1_retrospective",
+      "agent_role": "Post-merge retrospective",
+      "depends_on": [
+        "V1_integration_meta"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "XS"
+    }
+  ],
+  "group": "workpack-manager-v2"
+}
