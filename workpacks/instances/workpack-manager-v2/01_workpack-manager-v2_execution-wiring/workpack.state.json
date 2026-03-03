@@ -1,0 +1,40 @@
+{
+  "workpack_id": "01_workpack-manager-v2_execution-wiring",
+  "overall_status": "not_started",
+  "last_updated": "2026-03-03T15:37:53Z",
+  "prompt_status": {
+    "A0_bootstrap": {
+      "status": "pending"
+    },
+    "A1_wire_execute_prompt": {
+      "status": "pending"
+    },
+    "A2_wire_execute_all": {
+      "status": "pending"
+    },
+    "A3_provider_configuration": {
+      "status": "pending"
+    },
+    "A4_webview_error_boundary": {
+      "status": "pending"
+    },
+    "V1_integration_meta": {
+      "status": "pending"
+    },
+    "R1_retrospective": {
+      "status": "pending"
+    }
+  },
+  "agent_assignments": {},
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "2026-03-03T15:37:53Z",
+      "event": "created",
+      "prompt_stem": null,
+      "agent": null,
+      "notes": "Workpack scaffold created"
+    }
+  ],
+  "notes": null
+}
