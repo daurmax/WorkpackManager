@@ -1,0 +1,40 @@
+{
+  "workpack_id": "03_workpack-manager-v2_marketplace-publishing",
+  "overall_status": "not_started",
+  "last_updated": "2026-03-03T15:38:09Z",
+  "prompt_status": {
+    "A0_bootstrap": {
+      "status": "pending"
+    },
+    "A1_vsix_packaging": {
+      "status": "pending"
+    },
+    "A2_npm_publish_protocol": {
+      "status": "pending"
+    },
+    "A3_ci_release_pipeline": {
+      "status": "pending"
+    },
+    "A4_readme_marketplace": {
+      "status": "pending"
+    },
+    "V1_integration_meta": {
+      "status": "pending"
+    },
+    "R1_retrospective": {
+      "status": "pending"
+    }
+  },
+  "agent_assignments": {},
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "2026-03-03T15:38:09Z",
+      "event": "created",
+      "prompt_stem": null,
+      "agent": null,
+      "notes": "Workpack scaffold created"
+    }
+  ],
+  "notes": null
+}
