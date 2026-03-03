@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.2",
+  "workpack": "01_workpack-manager-v2_execution-wiring",
+  "prompt": "A2_wire_execute_all",
+  "component": "execution-wiring",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/execution-wiring",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "83b9cc3a55e3252a8b10d07cd2242468f00d9dc0"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/prompts/A2_wire_execute_all.md"
+    ],
+    "files_created": [],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "git show --name-only --pretty=format:%H 83b9cc3a55e3252a8b10d07cd2242468f00d9dc0",
+        "result": "pass",
+        "notes": "Verified the A2 prompt commit exists and includes only A2_wire_execute_all.md."
+      },
+      {
+        "cmd": "npm run build",
+        "result": "not_run",
+        "notes": "No runtime code changes were made in this prompt-delivery step."
+      },
+      {
+        "cmd": "npm run test",
+        "result": "not_run",
+        "notes": "No test-bearing code changes were made in this prompt-delivery step."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Completed A2 prompt authoring by replacing template placeholders with concrete executeAll implementation requirements, acceptance criteria, and verification steps.",
+    "next_steps": [
+      "Implement the command wiring described in A2_wire_execute_all.md.",
+      "Produce code-level A2 changes and update this output if additional commits are created."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/prompts/A2_wire_execute_all.md",
+      "action": "modified"
+    }
+  ],
+  "notes": "Output file committed after the A2 prompt authoring commit to satisfy workpack deliverable tracking."
+}
