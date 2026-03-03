@@ -1,0 +1,98 @@
+{
+  "id": "01_workpack-manager-v2_execution-wiring",
+  "title": "Execution Wiring",
+  "summary": "Wire the existing ExecutionOrchestrator to the executePrompt and executeAll VS Code commands. Add progress reporting with cancellation, OutputChannel logging, configurable CopilotProvider maxPromptTokens, and an error boundary for WorkpackDetailPanel. This transforms the extension from a read-only viewer into a functional agent dispatch tool.",
+  "protocol_version": "3.0.0",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "2026-03-03",
+  "requires_workpack": [],
+  "tags": [],
+  "owners": [],
+  "repos": [
+    "WorkpackManager"
+  ],
+  "delivery_mode": "pr",
+  "target_branch": "master",
+  "prompts": [
+    {
+      "stem": "A0_bootstrap",
+      "agent_role": "Create feature branch, verify build and tests pass",
+      "depends_on": [],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "XS"
+    },
+    {
+      "stem": "A1_wire_execute_prompt",
+      "agent_role": "Wire executePrompt command to ExecutionOrchestrator single-prompt dispatch",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A2_wire_execute_all",
+      "agent_role": "Wire executeAll command to ExecutionOrchestrator batch dispatch with progress",
+      "depends_on": [
+        "A1_wire_execute_prompt"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A3_provider_configuration",
+      "agent_role": "Make CopilotProvider maxPromptTokens configurable via VS Code settings",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "A4_webview_error_boundary",
+      "agent_role": "Add error boundary to WorkpackDetailPanel for malformed data",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "V1_integration_meta",
+      "agent_role": "Verification gate: all commands functional, tests pass, no regressions",
+      "depends_on": [
+        "A1_wire_execute_prompt",
+        "A2_wire_execute_all",
+        "A3_provider_configuration",
+        "A4_webview_error_boundary"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "R1_retrospective",
+      "agent_role": "Post-merge retrospective",
+      "depends_on": [
+        "V1_integration_meta"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    }
+  ],
+  "group": "workpack-manager-v2"
+}

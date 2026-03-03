@@ -1,0 +1,44 @@
+{
+  "id": "workpack-manager-v2",
+  "title": "WorkpackManager v2 — Execution, Quality & Distribution",
+  "summary": "Second-phase development for the WorkpackManager VS Code extension. Wires agent execution to the UI, consolidates the monorepo scaffold, hardens test coverage, and delivers marketplace-ready packaging for both the extension (VSIX) and the protocol package (npm).",
+  "protocol_version": "3.0.0",
+  "created_at": "2026-03-03",
+  "owners": [],
+  "tags": ["vscode-extension", "execution", "testing", "publishing", "refactor"],
+  "repos": ["WorkpackManager"],
+  "workpacks": [
+    { "id": "01_workpack-manager-v2_execution-wiring", "execution_order": 1, "title": "Execution Wiring" },
+    { "id": "02_workpack-manager-v2_extension-consolidation", "execution_order": 2, "title": "Extension Consolidation" },
+    { "id": "02_workpack-manager-v2_test-coverage-hardening", "execution_order": 2, "title": "Test Coverage Hardening" },
+    { "id": "03_workpack-manager-v2_marketplace-publishing", "execution_order": 3, "title": "Marketplace Publishing" }
+  ],
+  "execution_dag": {
+    "phases": [
+      {
+        "order": 1,
+        "workpacks": ["01_workpack-manager-v2_execution-wiring"],
+        "mode": "serial",
+        "description": "Wire the ExecutionOrchestrator to UI commands, making the extension actually functional for agent dispatch."
+      },
+      {
+        "order": 2,
+        "workpacks": ["02_workpack-manager-v2_extension-consolidation", "02_workpack-manager-v2_test-coverage-hardening"],
+        "mode": "parallel",
+        "description": "Parallel: consolidate monorepo scaffold and extract shared utilities; harden test coverage for under-tested modules."
+      },
+      {
+        "order": 3,
+        "workpacks": ["03_workpack-manager-v2_marketplace-publishing"],
+        "mode": "serial",
+        "description": "Package and publish: VSIX for VS Code marketplace, npm for @workpack/protocol, CI/CD release pipeline."
+      }
+    ],
+    "edges": [
+      ["01_workpack-manager-v2_execution-wiring", "02_workpack-manager-v2_extension-consolidation"],
+      ["01_workpack-manager-v2_execution-wiring", "02_workpack-manager-v2_test-coverage-hardening"],
+      ["02_workpack-manager-v2_extension-consolidation", "03_workpack-manager-v2_marketplace-publishing"],
+      ["02_workpack-manager-v2_test-coverage-hardening", "03_workpack-manager-v2_marketplace-publishing"]
+    ]
+  }
+}

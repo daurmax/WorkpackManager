@@ -1,0 +1,99 @@
+{
+  "id": "02_workpack-manager-v2_test-coverage-hardening",
+  "title": "Test Coverage Hardening",
+  "summary": "Systematically increase test coverage for the five under-tested TypeScript modules (reconciliation-engine, output-scanner, workpack-parser, status-icons, workpack-tree-item) to 85%+ statements and 75%+ branches. Add integration tests for the extension lifecycle. Update vitest coverage thresholds to enforce the new minimums going forward.",
+  "protocol_version": "3.0.0",
+  "workpack_version": "1.0.0",
+  "category": "feature",
+  "created_at": "2026-03-03",
+  "requires_workpack": [
+    "01_workpack-manager-v2_execution-wiring"
+  ],
+  "tags": [],
+  "owners": [],
+  "repos": [
+    "WorkpackManager"
+  ],
+  "delivery_mode": "pr",
+  "target_branch": "master",
+  "prompts": [
+    {
+      "stem": "A0_bootstrap",
+      "agent_role": "Create feature branch, scan current coverage baseline",
+      "depends_on": [],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "XS"
+    },
+    {
+      "stem": "A1_state_module_coverage",
+      "agent_role": "Add tests for reconciliation-engine and output-scanner (state module)",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A2_parser_coverage",
+      "agent_role": "Add tests for workpack-parser branches (schema validation, legacy, grouped)",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "A3_views_coverage",
+      "agent_role": "Add tests for status-icons branches and workpack-tree-item variants",
+      "depends_on": [
+        "A0_bootstrap"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "A4_integration_tests",
+      "agent_role": "Add integration tests for command registration and tree provider lifecycle",
+      "depends_on": [
+        "A1_state_module_coverage",
+        "A2_parser_coverage",
+        "A3_views_coverage"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "M"
+    },
+    {
+      "stem": "V1_integration_meta",
+      "agent_role": "Verification: all coverage targets met, thresholds updated, no regressions",
+      "depends_on": [
+        "A4_integration_tests"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "S"
+    },
+    {
+      "stem": "R1_retrospective",
+      "agent_role": "Post-merge retrospective",
+      "depends_on": [
+        "V1_integration_meta"
+      ],
+      "repos": [
+        "WorkpackManager"
+      ],
+      "estimated_effort": "XS"
+    }
+  ],
+  "group": "workpack-manager-v2"
+}
