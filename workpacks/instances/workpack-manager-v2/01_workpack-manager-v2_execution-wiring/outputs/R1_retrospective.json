@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.2",
+  "workpack": "01_workpack-manager-v2_execution-wiring",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/execution-wiring",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "f1c8cc8",
+      "8de4a59",
+      "0375fa5",
+      "83b9cc3",
+      "c424688",
+      "c18b736",
+      "9a434e8",
+      "34295dd",
+      "c26621a",
+      "591c018",
+      "2acf469"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/99_status.md",
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/workpack.state.json",
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A0_bootstrap.json",
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A1_wire_execute_prompt.json",
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A2_wire_execute_all.json",
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A4_webview_error_boundary.json",
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/V1_integration_meta.json"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/R1_retrospective.json",
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A3_provider_configuration.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      { "cmd": "npm run build", "result": "pass", "notes": "tsc clean, 0 errors" },
+      { "cmd": "npm run lint", "result": "pass", "notes": "0 errors, 33 warnings (pre-existing)" },
+      { "cmd": "npm test", "result": "pass", "notes": "8 files, 38 tests, all pass" },
+      { "cmd": "npm audit --audit-level=high", "result": "pass", "notes": "0 vulnerabilities" }
+    ],
+    "regression_added": false,
+    "regression_notes": "No regressions. Test count grew from 24 (baseline) to 38."
+  },
+  "handoff": {
+    "summary": "Retrospective completed for workpack 01_workpack-manager-v2_execution-wiring. All 5 A-series prompts delivered first-pass, V1 gate passed after one re-run to fix output schema issues, 0 B-series bugs. Branch ready to merge.",
+    "next_steps": [
+      "Merge feature/execution-wiring into master",
+      "Add coverage/ to .gitignore across all branches",
+      "Consider adding detail-panel.test.ts to vitest include allowlist",
+      "Plan next workpack for remaining extension features"
+    ],
+    "known_issues": [
+      "src/views/__tests__/detail-panel.test.ts not in vitest include allowlist - tests only run when explicitly targeted",
+      "ESLint reports 33 pre-existing warnings (unused vars, any types) - not introduced by this workpack"
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-sonnet-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    { "repo": "WorkpackManager", "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/R1_retrospective.json", "action": "created" },
+    { "repo": "WorkpackManager", "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/workpack.state.json", "action": "modified" },
+    { "repo": "WorkpackManager", "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/99_status.md", "action": "modified" },
+    { "repo": "WorkpackManager", "file": ".gitignore", "action": "modified" }
+  ],
+  "notes": "## Retrospective: 01_workpack-manager-v2_execution-wiring\n\n### 1. Scope and Delivery Summary\n\nWired ExecutionOrchestrator to VS Code commands (executePrompt, executeAll), added configurable maxPromptTokens for CopilotProvider, and added an error boundary to WorkpackDetailPanel. Branch: feature/execution-wiring, 11 commits, 22 files changed (+1856/-318).\n\n### 2. What Went Well\n\n- All 5 A-series prompts completed first-pass with no B-series rework needed\n- Implementation commit 34295dd bundled A1+A2+A3 changes efficiently into a single well-tested commit\n- Test count grew from 24 to 38 (+58%) with focused coverage on new command wiring and provider config\n- A4 (error boundary) was cleanly isolated in its own commit c18b736\n- The existing ExecutionOrchestrator API was sufficient — no rewrite needed as constrained\n\n### 3. What Caused Friction\n\n- V1 gate failed on first run due to: (a) A0 had a schema violation (missing repo/action in change_details), (b) A4 referenced wrong commit SHA (A1 prompt-authoring SHA instead of its own implementation SHA), (c) A1/A2/A3 outputs only captured prompt-authoring commits, not the actual implementation\n- Output JSON authoring happened incrementally across multiple commits, leading to stale data that needed reconciliation\n- detail-panel.test.ts was created but not added to vitest include allowlist, causing it to be silently skipped in CI-equivalent runs\n\n### 4. Defects and Rework Analysis\n\n- 0 B-series prompts needed\n- V1 required 1 re-run: first execution found 4 blocking issues in output metadata (not in source code), all fixed in commit 2acf469\n- Root cause: output JSONs were authored at prompt-definition time rather than after implementation, causing SHA/file mismatches\n- Recommendation: author output JSONs only after the implementation commit is finalized\n\n### 5. Estimation Accuracy\n\n| Prompt | Estimated | Actual | Notes |\n|--------|-----------|--------|-------|\n| A0_bootstrap | XS | XS | Straightforward branch + baseline |\n| A1_wire_execute_prompt | M | M | Correct — significant command wiring + tests |\n| A2_wire_execute_all | M | S | Simpler than expected — reused A1 patterns |\n| A3_provider_configuration | S | S | Correct — config plumbing + test |\n| A4_webview_error_boundary | S | S | Correct — try/catch + fallback UI |\n| V1_integration_meta | M | M | Needed re-run due to output metadata issues |\n| R1_retrospective | S | S | Data gathering + JSON authoring |\n\nTotal elapsed: ~1h 33m (16:48 → 18:21 CET). Reasonable for 5 implementation prompts + verification.\n\n### 6. Action Items\n\n| # | Action | Owner | Priority |\n|---|--------|-------|----------|\n| 1 | Add detail-panel.test.ts to vitest include allowlist | next-workpack | medium |\n| 2 | Author output JSONs only after implementation commit | process | high |\n| 3 | Add coverage/ to .gitignore (done in this commit) | done | — |\n| 4 | Address 33 pre-existing ESLint warnings in dedicated chore workpack | backlog | low |\n\n### Metrics\n\n| Metric | Value |\n|--------|-------|\n| Total prompts | 7 (A0-A4, V1, R1) |\n| First-pass completions | 5/5 A-series |\n| B-series count | 0 |\n| V1 re-runs | 1 (metadata fixes only) |\n| Total elapsed time | ~93 min |\n| Commits | 11 |\n| Files changed | 22 |\n| Lines added | 1856 |\n| Lines removed | 318 |\n| Tests added | 14 (24 → 38) |"
+}
