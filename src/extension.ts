@@ -13,7 +13,11 @@ function createProviderRegistry(): ProviderRegistry {
   const registry = new ProviderRegistry();
   const configuration = vscode.workspace.getConfiguration("workpackManager");
 
-  registry.register(new CopilotProvider());
+  registry.register(
+    new CopilotProvider({
+      maxPromptTokens: configuration.get<number>("copilot.maxPromptTokens", 8_192)
+    })
+  );
   registry.register(
     new CodexProvider(
       {

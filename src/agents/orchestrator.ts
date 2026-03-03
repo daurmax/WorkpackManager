@@ -144,6 +144,51 @@ export class ExecutionOrchestrator {
     };
   }
 
+  async executeOne(
+    meta: WorkpackMeta,
+    stateFilePath: string,
+    promptStem: string
+  ): Promise<ExecutionSummary> {
+    const promptByStem = new Map(meta.prompts.map((prompt) => [prompt.stem, prompt]));
+    if (!promptByStem.has(promptStem)) {
+      throw new Error(`Prompt '${promptStem}' is not declared in workpack '${meta.id}'.`);
+    }
+
+    const requiredPrompts = new Set<string>();
+    const stack = [promptStem];
+
+    while (stack.length > 0) {
+      const currentStem = stack.pop();
+      if (!currentStem || requiredPrompts.has(currentStem)) {
+        continue;
+      }
+
+      const currentPrompt = promptByStem.get(currentStem);
+      if (!currentPrompt) {
+        throw new Error(`Prompt '${currentStem}' is not declared in workpack '${meta.id}'.`);
+      }
+
+      requiredPrompts.add(currentStem);
+
+      for (const dependencyStem of currentPrompt.dependsOn) {
+        if (!promptByStem.has(dependencyStem)) {
+          throw new Error(
+            `Prompt '${currentStem}' depends on missing prompt '${dependencyStem}'.`
+          );
+        }
+
+        stack.push(dependencyStem);
+      }
+    }
+
+    const scopedMeta: WorkpackMeta = {
+      ...meta,
+      prompts: topologicalSortPrompts(meta).filter((prompt) => requiredPrompts.has(prompt.stem)),
+    };
+
+    return this.execute(scopedMeta, stateFilePath);
+  }
+
   getReadyPrompts(meta: WorkpackMeta, state: WorkpackState): PromptEntry[] {
     return computeReadyPrompts(meta, state);
   }

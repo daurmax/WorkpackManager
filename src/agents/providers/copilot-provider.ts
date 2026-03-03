@@ -6,16 +6,13 @@ import type {
   PromptResult,
 } from "../types";
 
-const copilotCapabilities: AgentCapability = {
-  multiFileEdit: false,
-  commandExecution: false,
-  longRunning: false,
-  maxPromptTokens: 8_192,
-  tags: ["chat", "inline", "language-model"],
-};
-
 const DEFAULT_TIMEOUT_MS = 120_000;
 const APPROX_CHARS_PER_TOKEN = 4;
+const DEFAULT_MAX_PROMPT_TOKENS = 8_192;
+
+export interface CopilotProviderConfig {
+  maxPromptTokens?: number;
+}
 
 interface ExtendedPromptDispatchContext extends PromptDispatchContext {
   timeoutMs?: number;
@@ -39,9 +36,20 @@ export class CopilotProvider implements AgentProvider {
   readonly id = "copilot";
   readonly displayName = "GitHub Copilot";
   private readonly activeCancellationSources = new Set<vscode.CancellationTokenSource>();
+  private readonly maxPromptTokens: number;
+
+  constructor(config: CopilotProviderConfig = {}) {
+    this.maxPromptTokens = this.resolveMaxPromptTokens(config.maxPromptTokens);
+  }
 
   capabilities(): AgentCapability {
-    return copilotCapabilities;
+    return {
+      multiFileEdit: false,
+      commandExecution: false,
+      longRunning: false,
+      maxPromptTokens: this.maxPromptTokens,
+      tags: ["chat", "inline", "language-model"],
+    };
   }
 
   async dispatch(promptContent: string, context: PromptDispatchContext): Promise<PromptResult> {
@@ -218,7 +226,7 @@ export class CopilotProvider implements AgentProvider {
     model: vscode.LanguageModelChat,
     cancellationToken: vscode.CancellationToken
   ): Promise<string> {
-    const maxPromptTokens = this.capabilities().maxPromptTokens;
+    const maxPromptTokens = this.maxPromptTokens;
 
     try {
       const countedTokens = await model.countTokens(promptContent, cancellationToken);
@@ -248,6 +256,14 @@ export class CopilotProvider implements AgentProvider {
       const maxCharacters = maxPromptTokens * APPROX_CHARS_PER_TOKEN;
       return promptContent.slice(0, maxCharacters);
     }
+  }
+
+  private resolveMaxPromptTokens(value: number | undefined): number {
+    if (value === undefined || !Number.isFinite(value) || value <= 0) {
+      return DEFAULT_MAX_PROMPT_TOKENS;
+    }
+
+    return Math.floor(value);
   }
 
   private parseResponseOutput(responseText: string): Record<string, unknown> {
