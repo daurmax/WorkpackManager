@@ -2,7 +2,7 @@
   "schema_version": "1.2",
   "workpack": "01_workpack-manager-v2_execution-wiring",
   "prompt": "A1_wire_execute_prompt",
-  "component": "execution-command-prompt-wiring",
+  "component": "command-wiring",
   "delivery_mode": "pr",
   "branch": {
     "base": "master",
@@ -12,12 +12,18 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "0375fa5"
+      "0375fa5",
+      "34295dd"
     ],
     "branch_verified": false
   },
   "changes": {
     "files_modified": [
+      "src/commands/register-commands.ts",
+      "src/commands/__tests__/commands.test.ts",
+      "src/agents/orchestrator.ts",
+      "src/extension.ts",
+      "vitest.config.ts",
       "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/prompts/A1_wire_execute_prompt.md"
     ],
     "files_created": [
@@ -30,34 +36,30 @@
     "commands": [
       {
         "cmd": "npm run build",
-        "result": "not_run",
-        "notes": "Not run in this prompt; artifact documents A1 prompt-definition updates only."
+        "result": "pass",
+        "notes": "TypeScript build completed successfully."
       },
       {
-        "cmd": "npm run test -- src/commands/__tests__/commands.test.ts",
-        "result": "not_run",
-        "notes": "Not run in this prompt; no runtime command wiring was implemented in this step."
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "Vitest: 8 files, 38 tests passed including new executePrompt wiring tests."
       }
     ],
-    "regression_added": false,
-    "regression_notes": "No product code changes; this prompt finalized the A1 implementation brief."
+    "regression_added": true,
+    "regression_notes": "Added executePrompt dispatch, cancellation, provider-missing, and provider-unavailable tests in src/commands/__tests__/commands.test.ts."
   },
   "handoff": {
-    "summary": "Completed A1 prompt specification by replacing scaffold placeholders with concrete objective, requirements, scope, acceptance criteria, and verification guidance for executePrompt wiring.",
+    "summary": "Wired workpackManager.executePrompt command to ExecutionOrchestrator.executeOne() with progress reporting, OutputChannel logging, cancellation via AbortController, and tree refresh on completion.",
     "next_steps": [
-      "Implement the runtime executePrompt wiring in src/commands/register-commands.ts.",
-      "Add/adjust unit tests for executePrompt behavior.",
-      "Update this output with implementation commit SHA(s) once code changes land."
+      "Proceed to V1 integration gate."
     ],
-    "known_issues": [
-      "Runtime executePrompt wiring remains pending until implementation commits are produced."
-    ]
+    "known_issues": []
   },
   "repos": [
     "WorkpackManager"
   ],
   "execution": {
-    "model": "gpt-5-codex",
+    "model": "claude-opus-4-20250514",
     "tokens_in": 0,
     "tokens_out": 0,
     "duration_ms": 0
@@ -70,9 +72,29 @@
     },
     {
       "repo": "WorkpackManager",
-      "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A1_wire_execute_prompt.json",
-      "action": "created"
+      "file": "src/commands/register-commands.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/commands/__tests__/commands.test.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/agents/orchestrator.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/extension.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "vitest.config.ts",
+      "action": "modified"
     }
   ],
-  "notes": null
+  "notes": "Implementation commit 34295dd shared with A2 and A3; all three wiring tasks were implemented and committed together."
 }

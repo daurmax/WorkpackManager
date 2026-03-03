@@ -61,8 +61,9 @@
   },
   "change_details": [
     {
+      "repo": "WorkpackManager",
       "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A0_bootstrap.json",
-      "summary": "Recorded A0 bootstrap branch setup and baseline verification results."
+      "action": "created"
     }
   ],
   "notes": "requires_workpack dependencies are empty in workpack.meta.json; outputs directory existed and is writable."

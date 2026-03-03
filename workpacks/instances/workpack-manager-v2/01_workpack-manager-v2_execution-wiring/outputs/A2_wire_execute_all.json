@@ -2,7 +2,7 @@
   "schema_version": "1.2",
   "workpack": "01_workpack-manager-v2_execution-wiring",
   "prompt": "A2_wire_execute_all",
-  "component": "execution-wiring",
+  "component": "command-wiring",
   "delivery_mode": "pr",
   "branch": {
     "base": "master",
@@ -12,12 +12,15 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "83b9cc3a55e3252a8b10d07cd2242468f00d9dc0"
+      "83b9cc3",
+      "34295dd"
     ],
     "branch_verified": false
   },
   "changes": {
     "files_modified": [
+      "src/commands/register-commands.ts",
+      "src/commands/__tests__/commands.test.ts",
       "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/prompts/A2_wire_execute_all.md"
     ],
     "files_created": [],
@@ -27,29 +30,23 @@
   "verification": {
     "commands": [
       {
-        "cmd": "git show --name-only --pretty=format:%H 83b9cc3a55e3252a8b10d07cd2242468f00d9dc0",
-        "result": "pass",
-        "notes": "Verified the A2 prompt commit exists and includes only A2_wire_execute_all.md."
-      },
-      {
         "cmd": "npm run build",
-        "result": "not_run",
-        "notes": "No runtime code changes were made in this prompt-delivery step."
+        "result": "pass",
+        "notes": "TypeScript build completed successfully."
       },
       {
         "cmd": "npm run test",
-        "result": "not_run",
-        "notes": "No test-bearing code changes were made in this prompt-delivery step."
+        "result": "pass",
+        "notes": "Vitest: 8 files, 38 tests passed including new executeAll wiring and no-ready-prompts tests."
       }
     ],
-    "regression_added": false,
-    "regression_notes": ""
+    "regression_added": true,
+    "regression_notes": "Added executeAll dispatch with DAG resolution and no-ready-prompts tests in src/commands/__tests__/commands.test.ts."
   },
   "handoff": {
-    "summary": "Completed A2 prompt authoring by replacing template placeholders with concrete executeAll implementation requirements, acceptance criteria, and verification steps.",
+    "summary": "Wired workpackManager.executeAll command to ExecutionOrchestrator.execute() with DAG-resolved ready-prompt resolution, batch progress reporting, OutputChannel logging, cancellation, and tree refresh.",
     "next_steps": [
-      "Implement the command wiring described in A2_wire_execute_all.md.",
-      "Produce code-level A2 changes and update this output if additional commits are created."
+      "Proceed to V1 integration gate."
     ],
     "known_issues": []
   },
@@ -57,7 +54,7 @@
     "WorkpackManager"
   ],
   "execution": {
-    "model": "gpt-5-codex",
+    "model": "claude-opus-4-20250514",
     "tokens_in": 0,
     "tokens_out": 0,
     "duration_ms": 0
@@ -67,7 +64,17 @@
       "repo": "WorkpackManager",
       "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/prompts/A2_wire_execute_all.md",
       "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/commands/register-commands.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/commands/__tests__/commands.test.ts",
+      "action": "modified"
     }
   ],
-  "notes": "Output file committed after the A2 prompt authoring commit to satisfy workpack deliverable tracking."
+  "notes": "Implementation commit 34295dd shared with A1 and A3; all three wiring tasks were implemented and committed together."
 }
