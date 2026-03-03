@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.2",
+  "workpack": "01_workpack-manager-v2_execution-wiring",
+  "prompt": "A4_webview_error_boundary",
+  "component": "webview-error-boundary",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/execution-wiring",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "0375fa5"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "src/views/workpack-detail-panel.ts",
+      "src/views/__tests__/detail-panel.test.ts"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A4_webview_error_boundary.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript build completed successfully."
+      },
+      {
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "Default Vitest suite passed (6 files, 24 tests)."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added malformed-workpack fallback coverage in detail panel tests. This file is currently outside the default Vitest include allowlist."
+  },
+  "handoff": {
+    "summary": "Added an error boundary around WorkpackDetailPanel rendering so malformed workpack data now yields a valid fallback webview and logs diagnostics to a VS Code OutputChannel.",
+    "next_steps": [
+      "Include src/views/__tests__/detail-panel.test.ts in vitest.config.ts once its CommonJS-based vscode mocking harness is migrated for the current Vitest execution model."
+    ],
+    "known_issues": [
+      "src/views/__tests__/detail-panel.test.ts is not executed by npm run test because vitest.config.ts uses an explicit include allowlist that excludes this test file."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/workpack-detail-panel.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/__tests__/detail-panel.test.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A4_webview_error_boundary.json",
+      "action": "created"
+    }
+  ],
+  "notes": null
+}

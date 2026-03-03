@@ -8,6 +8,7 @@ import { getPromptStatusIcon, getWorkpackStatusIcon } from "./status-icons";
 
 const PANEL_VIEW_TYPE = "workpackManager.detailPanel";
 const REFRESH_DEBOUNCE_MS = 200;
+const OUTPUT_CHANNEL_NAME = "Workpack Manager";
 
 export interface WebviewMessage {
   command: "openFile" | "assignAgent" | "executePrompt";
@@ -72,6 +73,7 @@ export class WorkpackDetailPanel {
   private workpack: WorkpackInstance;
   private fileWatcher: vscode.FileSystemWatcher | undefined;
   private refreshTimer: NodeJS.Timeout | undefined;
+  private outputChannel: vscode.OutputChannel | undefined;
   private disposed = false;
   private disposables: vscode.Disposable[] = [];
 
@@ -113,7 +115,7 @@ export class WorkpackDetailPanel {
 
     const panel = vscode.window.createWebviewPanel(
       PANEL_VIEW_TYPE,
-      `Workpack: ${workpack.meta.title}`,
+      `Workpack: ${WorkpackDetailPanel.getWorkpackTitle(workpack)}`,
       vscode.ViewColumn.Active,
       {
         enableScripts: true,
@@ -161,7 +163,7 @@ export class WorkpackDetailPanel {
       this.update();
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      console.warn(`[workpack-detail-panel] Unable to refresh ${this.workpack.meta.id}: ${detail}`);
+      console.warn(`[workpack-detail-panel] Unable to refresh ${this.getWorkpackId(this.workpack)}: ${detail}`);
     }
   }
 
@@ -204,30 +206,31 @@ export class WorkpackDetailPanel {
   }
 
   private update(): void {
-    this.panel.title = `Workpack: ${this.workpack.meta.title}`;
+    this.panel.title = `Workpack: ${WorkpackDetailPanel.getWorkpackTitle(this.workpack)}`;
     this.panel.webview.html = this.getHtmlContent(this.workpack);
   }
 
   private getHtmlContent(workpack: WorkpackInstance): string {
-    const nonce = getNonce();
-    const codiconHref = this.panel.webview
-      .asWebviewUri(
-        vscode.Uri.joinPath(this.extensionUri, "node_modules", "@vscode", "codicons", "dist", "codicon.css"),
-      )
-      .toString();
-    const outputScan = scanOutputs(path.join(workpack.folderPath, "outputs"));
-    const prompts = workpack.meta.prompts;
-    const state = workpack.state;
-    const blockedBy = new Set(state?.blockedBy ?? []);
-    const dependencies = workpack.meta.requiresWorkpack;
+    try {
+      const nonce = getNonce();
+      const codiconHref = this.panel.webview
+        .asWebviewUri(
+          vscode.Uri.joinPath(this.extensionUri, "node_modules", "@vscode", "codicons", "dist", "codicon.css"),
+        )
+        .toString();
+      const outputScan = scanOutputs(path.join(workpack.folderPath, "outputs"));
+      const prompts = workpack.meta.prompts;
+      const state = workpack.state;
+      const blockedBy = new Set(state?.blockedBy ?? []);
+      const dependencies = workpack.meta.requiresWorkpack;
 
-    const promptStatuses = prompts.map((prompt) => state?.promptStatus[prompt.stem]?.status ?? "pending");
-    const completedPromptCount = promptStatuses.filter(
-      (status) => status === "complete" || status === "skipped",
-    ).length;
-    const blockedPromptCount = promptStatuses.filter((status) => status === "blocked").length;
-    const inProgressPromptCount = promptStatuses.filter((status) => status === "in_progress").length;
-    const readyPrompts = state ? getReadyPrompts(workpack.meta, state) : [];
+      const promptStatuses = prompts.map((prompt) => state?.promptStatus[prompt.stem]?.status ?? "pending");
+      const completedPromptCount = promptStatuses.filter(
+        (status) => status === "complete" || status === "skipped",
+      ).length;
+      const blockedPromptCount = promptStatuses.filter((status) => status === "blocked").length;
+      const inProgressPromptCount = promptStatuses.filter((status) => status === "in_progress").length;
+      const readyPrompts = state ? getReadyPrompts(workpack.meta, state) : [];
 
     const dependencyRows = dependencies.length
       ? dependencies
@@ -307,7 +310,7 @@ export class WorkpackDetailPanel {
     const metadataOwners = workpack.meta.owners.length > 0 ? workpack.meta.owners.join(", ") : "None";
     const metadataRepos = workpack.meta.repos.length > 0 ? workpack.meta.repos.join(", ") : "None";
 
-    return `<!DOCTYPE html>
+      return `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -645,6 +648,113 @@ export class WorkpackDetailPanel {
     </script>
   </body>
 </html>`;
+    } catch (error) {
+      this.logRenderError(error, workpack);
+      return this.getFallbackHtmlContent(workpack, error);
+    }
+  }
+
+  private static getWorkpackTitle(workpack: WorkpackInstance): string {
+    const title = (workpack as unknown as { meta?: { title?: unknown } }).meta?.title;
+    if (typeof title !== "string" || title.trim().length === 0) {
+      return "Unknown Workpack";
+    }
+
+    return title;
+  }
+
+  private getWorkpackId(workpack: WorkpackInstance): string {
+    const id = (workpack as unknown as { meta?: { id?: unknown } }).meta?.id;
+    if (typeof id !== "string" || id.trim().length === 0) {
+      return "unknown-workpack";
+    }
+
+    return id;
+  }
+
+  private getOutputChannel(): vscode.OutputChannel {
+    if (!this.outputChannel) {
+      this.outputChannel = vscode.window.createOutputChannel(OUTPUT_CHANNEL_NAME);
+    }
+
+    return this.outputChannel;
+  }
+
+  private logRenderError(error: unknown, workpack: WorkpackInstance): void {
+    const detail = error instanceof Error
+      ? `${error.message}${error.stack ? `\n${error.stack}` : ""}`
+      : String(error);
+    const message = `[workpack-detail-panel] Unable to render details for ${this.getWorkpackId(
+      workpack,
+    )}: ${detail}`;
+
+    this.getOutputChannel().appendLine(message);
+    console.error(message);
+  }
+
+  private getFallbackHtmlContent(workpack: WorkpackInstance, error: unknown): string {
+    const nonce = getNonce();
+    const title = WorkpackDetailPanel.getWorkpackTitle(workpack);
+    const workpackId = this.getWorkpackId(workpack);
+    const detail = error instanceof Error ? error.message : String(error);
+
+    return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src ${this.panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';"
+    />
+    <title>${escapeHtml(title)}</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        background: var(--vscode-editor-background);
+        color: var(--vscode-editor-foreground);
+        font-family: var(--vscode-font-family);
+      }
+
+      .card {
+        border: 1px solid var(--vscode-panel-border);
+        border-radius: 8px;
+        padding: 12px;
+        background: var(--vscode-sideBar-background);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+
+      p {
+        margin: 0 0 8px;
+      }
+
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: var(--vscode-errorForeground);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>Unable to render workpack details</h1>
+      <p>Workpack: <code>${escapeHtml(workpackId)}</code></p>
+      <p>This workpack contains malformed data. Check the <code>${escapeHtml(
+        OUTPUT_CHANNEL_NAME,
+      )}</code> output channel for full diagnostics.</p>
+      <pre>${escapeHtml(detail)}</pre>
+    </main>
+    <script nonce="${nonce}">
+      // Keep script block to satisfy CSP nonce consistency in webview snapshots.
+    </script>
+  </body>
+</html>`;
   }
 
   public dispose(): void {
@@ -666,6 +776,8 @@ export class WorkpackDetailPanel {
 
     this.fileWatcher?.dispose();
     this.fileWatcher = undefined;
+    this.outputChannel?.dispose();
+    this.outputChannel = undefined;
 
     const disposables = this.disposables;
     this.disposables = [];

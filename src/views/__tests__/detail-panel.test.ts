@@ -10,6 +10,21 @@ interface MockDisposable {
   dispose(): void;
 }
 
+class MockOutputChannel implements MockDisposable {
+  public readonly lines: string[] = [];
+  public disposed = false;
+
+  constructor(public readonly name: string) {}
+
+  appendLine(value: string): void {
+    this.lines.push(value);
+  }
+
+  dispose(): void {
+    this.disposed = true;
+  }
+}
+
 class MockUri {
   constructor(public readonly fsPath: string) {}
 
@@ -176,6 +191,7 @@ interface MockVscodeContext {
   extensionUri: MockUri;
   createdPanels: MockWebviewPanel[];
   createdWatchers: MockFileSystemWatcher[];
+  outputChannels: MockOutputChannel[];
   openTextDocumentCalls: MockUri[];
   showTextDocumentCalls: unknown[];
   executeCommandCalls: Array<unknown[]>;
@@ -185,6 +201,7 @@ interface MockVscodeContext {
 function createMockVscodeContext(): MockVscodeContext {
   const createdPanels: MockWebviewPanel[] = [];
   const createdWatchers: MockFileSystemWatcher[] = [];
+  const outputChannels: MockOutputChannel[] = [];
   const openTextDocumentCalls: MockUri[] = [];
   const showTextDocumentCalls: unknown[] = [];
   const executeCommandCalls: Array<unknown[]> = [];
@@ -228,6 +245,11 @@ function createMockVscodeContext(): MockVscodeContext {
       showTextDocument: async (document: unknown) => {
         showTextDocumentCalls.push(document);
       },
+      createOutputChannel: (name: string) => {
+        const channel = new MockOutputChannel(name);
+        outputChannels.push(channel);
+        return channel;
+      },
     },
   };
 
@@ -235,6 +257,7 @@ function createMockVscodeContext(): MockVscodeContext {
     extensionUri,
     createdPanels,
     createdWatchers,
+    outputChannels,
     openTextDocumentCalls,
     showTextDocumentCalls,
     executeCommandCalls,
@@ -395,6 +418,34 @@ describe("workpack detail panel", () => {
       assert.equal(html.includes(">In Progress<"), true);
       assert.equal(html.includes("badge--complete"), true);
 
+      panelInstance.dispose();
+    });
+  });
+
+  it("renders fallback html and logs to output channel for malformed data", async () => {
+    await withMockedVscode(async ({ WorkpackDetailPanel, context }) => {
+      const workpack = createWorkpackFixture();
+      const malformedWorkpack = {
+        ...workpack,
+        meta: {
+          ...workpack.meta,
+          prompts: null as unknown as typeof workpack.meta.prompts,
+        },
+      } as WorkpackInstance;
+
+      assert.doesNotThrow(() => {
+        WorkpackDetailPanel.createOrShow(context.extensionUri, malformedWorkpack);
+      });
+
+      const panel = context.createdPanels[0];
+      assert.equal(panel?.webview.html.includes("Unable to render workpack details"), true);
+      assert.equal(context.outputChannels.length, 1);
+      assert.equal(
+        context.outputChannels[0]?.lines.some((line) => line.includes("Unable to render details for")),
+        true,
+      );
+
+      const panelInstance = WorkpackDetailPanel.currentPanel as { dispose(): void };
       panelInstance.dispose();
     });
   });
