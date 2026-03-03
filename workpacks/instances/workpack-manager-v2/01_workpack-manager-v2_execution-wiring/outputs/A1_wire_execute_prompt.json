@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.2",
+  "workpack": "01_workpack-manager-v2_execution-wiring",
+  "prompt": "A1_wire_execute_prompt",
+  "component": "execution-command-prompt-wiring",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/execution-wiring",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "0375fa5"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/prompts/A1_wire_execute_prompt.md"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A1_wire_execute_prompt.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "not_run",
+        "notes": "Not run in this prompt; artifact documents A1 prompt-definition updates only."
+      },
+      {
+        "cmd": "npm run test -- src/commands/__tests__/commands.test.ts",
+        "result": "not_run",
+        "notes": "Not run in this prompt; no runtime command wiring was implemented in this step."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No product code changes; this prompt finalized the A1 implementation brief."
+  },
+  "handoff": {
+    "summary": "Completed A1 prompt specification by replacing scaffold placeholders with concrete objective, requirements, scope, acceptance criteria, and verification guidance for executePrompt wiring.",
+    "next_steps": [
+      "Implement the runtime executePrompt wiring in src/commands/register-commands.ts.",
+      "Add/adjust unit tests for executePrompt behavior.",
+      "Update this output with implementation commit SHA(s) once code changes land."
+    ],
+    "known_issues": [
+      "Runtime executePrompt wiring remains pending until implementation commits are produced."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/prompts/A1_wire_execute_prompt.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A1_wire_execute_prompt.json",
+      "action": "created"
+    }
+  ],
+  "notes": null
+}
