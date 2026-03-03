@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.2",
+  "workpack": "01_workpack-manager-v2_execution-wiring",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/execution-wiring",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A0_bootstrap.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript build completed successfully."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "ESLint completed with 33 warnings, 0 errors."
+      },
+      {
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "Vitest: 6 files passed, 24 tests passed."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Bootstrap completed and workspace is ready.",
+    "next_steps": [
+      "Start dependent A-series prompts"
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A0_bootstrap.json",
+      "summary": "Recorded A0 bootstrap branch setup and baseline verification results."
+    }
+  ],
+  "notes": "requires_workpack dependencies are empty in workpack.meta.json; outputs directory existed and is writable."
+}
