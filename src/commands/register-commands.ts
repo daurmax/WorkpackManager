@@ -1,11 +1,13 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import type * as vscode from "vscode";
-import { AssignmentModel } from "../agents/assignment";
+import { AssignmentModel, loadWorkpackState } from "../agents/assignment";
+import { ExecutionOrchestrator, type ExecutionSummary } from "../agents/orchestrator";
 import type { ProviderRegistry } from "../agents/registry";
-import type { AgentProvider } from "../agents/types";
+import type { AgentProvider, PromptResult } from "../agents/types";
 import type { WorkpackCategory, WorkpackInstance } from "../models";
 import { discoverWorkpacks } from "../parser/workpack-discoverer";
+import { parseWorkpackInstance } from "../parser/workpack-parser";
 
 const TEMPLATE_DIRECTORY = path.join("workpacks", "_template");
 const INSTANCES_DIRECTORY = path.join("workpacks", "instances");
@@ -28,6 +30,9 @@ const CATEGORY_OPTIONS: Array<{ category: WorkpackCategory; detail: string }> = 
   { category: "perf", detail: "Performance and efficiency improvements." },
   { category: "security", detail: "Security hardening or vulnerability fixes." }
 ];
+const EXECUTION_OUTPUT_CHANNEL_NAME = "Workpack Manager Execution";
+const ORCHESTRATOR_TIMEOUT_MS = 300_000;
+const EXECUTE_ALL_MAX_PARALLEL = 4;
 
 export const WORKPACK_MANAGER_COMMANDS = {
   createWorkpack: "workpackManager.createWorkpack",
@@ -51,6 +56,12 @@ interface CommandTreeNode {
   promptStem?: string;
 }
 
+interface OutputChannelLike {
+  appendLine(value: string): void;
+  show(preserveFocus?: boolean): void;
+  dispose(): void;
+}
+
 interface VscodeLike {
   commands: Pick<typeof import("vscode").commands, "registerCommand">;
   window: Pick<
@@ -62,9 +73,12 @@ interface VscodeLike {
     | "showErrorMessage"
     | "showTextDocument"
     | "createTerminal"
+    | "withProgress"
+    | "createOutputChannel"
   >;
   workspace: Pick<typeof import("vscode").workspace, "workspaceFolders" | "openTextDocument">;
   Uri: Pick<typeof import("vscode").Uri, "file">;
+  ProgressLocation: Pick<typeof import("vscode").ProgressLocation, "Notification">;
 }
 
 interface TreeRefresher {
@@ -212,6 +226,45 @@ function getWorkspaceFolderPaths(vscodeApi: VscodeLike): string[] {
 
 function escapeForShell(value: string): string {
   return value.replace(/"/g, '\\"');
+}
+
+function toErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
+function formatPromptResultLine(promptStem: string, result: PromptResult): string {
+  const status = result.success ? "completed" : "failed";
+  const details = result.error ? `${result.summary} (${result.error})` : result.summary;
+  return `  - ${promptStem}: ${status} - ${details}`;
+}
+
+async function getAvailableProviders(registry: ProviderRegistry): Promise<AgentProvider[]> {
+  const providers = registry.listAll();
+  if (providers.length === 0) {
+    return [];
+  }
+
+  const availability = await Promise.all(
+    providers.map(async (provider) => {
+      try {
+        return {
+          provider,
+          available: await provider.isAvailable()
+        };
+      } catch {
+        return {
+          provider,
+          available: false
+        };
+      }
+    })
+  );
+
+  return availability.filter((entry) => entry.available).map((entry) => entry.provider);
 }
 
 function deriveWorkpackFolderFromNode(node?: CommandTreeNode): string | undefined {
@@ -443,6 +496,51 @@ async function runLintCommand(
   terminal.sendText(`python "${escapeForShell(lintScriptPath)}" "${escapeForShell(workpackFolderPath)}"`);
 }
 
+async function runWithExecutionProgress(
+  vscodeApi: VscodeLike,
+  title: string,
+  initialMessage: string,
+  outputChannel: OutputChannelLike,
+  execute: (signal: AbortSignal) => Promise<ExecutionSummary>
+): Promise<{ summary: ExecutionSummary; wasCancelled: boolean }> {
+  const abortController = new AbortController();
+  let wasCancelled = false;
+
+  const summary = await vscodeApi.window.withProgress<ExecutionSummary>(
+    {
+      location: vscodeApi.ProgressLocation.Notification,
+      title,
+      cancellable: true
+    },
+    async (progress, token) => {
+      progress.report({ message: initialMessage });
+
+      const cancellationListener = token.onCancellationRequested(() => {
+        wasCancelled = true;
+        outputChannel.appendLine("[execution] Cancellation requested.");
+        abortController.abort();
+        progress.report({ message: "Cancelling execution..." });
+      });
+
+      try {
+        const executionSummary = await execute(abortController.signal);
+        progress.report({
+          increment: 100,
+          message: `Completed: ${executionSummary.completed}, Failed: ${executionSummary.failed}, Skipped: ${executionSummary.skipped}`
+        });
+        return executionSummary;
+      } finally {
+        cancellationListener.dispose();
+      }
+    }
+  );
+
+  return {
+    summary,
+    wasCancelled
+  };
+}
+
 export async function scaffoldWorkpackFromTemplate(
   request: ScaffoldWorkpackRequest
 ): Promise<ScaffoldWorkpackResult> {
@@ -525,6 +623,32 @@ export function registerCommands(
   const { vscodeApi, treeProvider, providerRegistry } = options;
   const discoverFn = options.discoverWorkpacksFn ?? discoverWorkpacks;
   const scaffoldFn = options.scaffoldWorkpackFn ?? scaffoldWorkpackFromTemplate;
+  let executionOutputChannel: OutputChannelLike | undefined;
+
+  const getExecutionOutputChannel = (): OutputChannelLike => {
+    if (!executionOutputChannel) {
+      executionOutputChannel = vscodeApi.window.createOutputChannel(EXECUTION_OUTPUT_CHANNEL_NAME);
+      context.subscriptions.push(executionOutputChannel as unknown as vscode.Disposable);
+    }
+
+    return executionOutputChannel;
+  };
+
+  const logExecutionSummary = (
+    outputChannel: OutputChannelLike,
+    mode: "single" | "all",
+    summary: ExecutionSummary
+  ): void => {
+    outputChannel.appendLine(
+      `[execution] Finished ${mode === "single" ? "executePrompt" : "executeAll"}: total=${summary.total}, completed=${summary.completed}, failed=${summary.failed}, skipped=${summary.skipped}`
+    );
+
+    for (const [promptStem, result] of Object.entries(summary.results).sort(([left], [right]) =>
+      left.localeCompare(right)
+    )) {
+      outputChannel.appendLine(formatPromptResultLine(promptStem, result));
+    }
+  };
 
   const register = <TArgs extends unknown[]>(
     commandId: string,
@@ -797,30 +921,194 @@ export function registerCommands(
   });
 
   register(WORKPACK_MANAGER_COMMANDS.executePrompt, async (node?: CommandTreeNode) => {
-    const promptTarget = await resolvePromptTarget(vscodeApi, node, discoverFn);
-    if (!promptTarget) {
-      return;
-    }
+    const outputChannel = getExecutionOutputChannel();
+    try {
+      const promptTarget = await resolvePromptTarget(vscodeApi, node, discoverFn);
+      if (!promptTarget) {
+        return;
+      }
 
-    await vscodeApi.window.showInformationMessage(
-      `Execute Prompt is registered for ${promptTarget.promptStem}. Runtime execution wiring is pending.`
-    );
+      if (!providerRegistry) {
+        const message = "Provider registry is not configured. Prompt execution is unavailable.";
+        outputChannel.appendLine(`[execution] ${message}`);
+        await vscodeApi.window.showErrorMessage(message);
+        return;
+      }
+
+      if (providerRegistry.listAll().length === 0) {
+        const message = "No agent providers are registered. Configure providers before execution.";
+        outputChannel.appendLine(`[execution] ${message}`);
+        await vscodeApi.window.showErrorMessage(message);
+        return;
+      }
+
+      const availableProviders = await getAvailableProviders(providerRegistry);
+      if (availableProviders.length === 0) {
+        const message =
+          "No configured providers are currently available. Check provider credentials and retry.";
+        outputChannel.appendLine(`[execution] ${message}`);
+        await vscodeApi.window.showErrorMessage(message);
+        return;
+      }
+
+      const workpack = await parseWorkpackInstance(promptTarget.folderPath);
+      const statePath = path.join(promptTarget.folderPath, WORKPACK_FILES.state);
+      outputChannel.show(true);
+      outputChannel.appendLine(
+        `[execution] Starting executePrompt for ${promptTarget.promptStem} in ${workpack.meta.id}.`
+      );
+
+      const { summary, wasCancelled } = await runWithExecutionProgress(
+        vscodeApi,
+        `Execute Prompt: ${promptTarget.promptStem}`,
+        "Dispatching prompt...",
+        outputChannel,
+        async (signal) => {
+          const assignment = new AssignmentModel(statePath, providerRegistry);
+          const orchestrator = new ExecutionOrchestrator(providerRegistry, assignment, {
+            maxParallel: 1,
+            continueOnError: false,
+            timeoutMs: ORCHESTRATOR_TIMEOUT_MS,
+            signal
+          });
+
+          return orchestrator.executeOne(workpack.meta, statePath, promptTarget.promptStem);
+        }
+      );
+
+      logExecutionSummary(outputChannel, "single", summary);
+
+      const selectedPromptResult = summary.results[promptTarget.promptStem];
+      if (wasCancelled) {
+        await vscodeApi.window.showWarningMessage(
+          `Execution cancelled for ${promptTarget.promptStem}.`
+        );
+        return;
+      }
+
+      if (selectedPromptResult?.success) {
+        await vscodeApi.window.showInformationMessage(
+          `Prompt ${promptTarget.promptStem} completed successfully.`
+        );
+        return;
+      }
+
+      const failureDetail = selectedPromptResult?.error ?? selectedPromptResult?.summary ?? "Unknown error.";
+      await vscodeApi.window.showErrorMessage(
+        `Prompt ${promptTarget.promptStem} failed: ${failureDetail}`
+      );
+    } catch (error) {
+      const message = toErrorMessage(error);
+      outputChannel.appendLine(`[execution] executePrompt failed: ${message}`);
+      await vscodeApi.window.showErrorMessage(`Unable to execute prompt: ${message}`);
+    } finally {
+      treeProvider?.refresh();
+    }
   });
 
   register(WORKPACK_MANAGER_COMMANDS.executeAll, async (node?: CommandTreeNode) => {
-    const folderPath = await resolveWorkpackFolderPath(
-      vscodeApi,
-      node,
-      discoverFn,
-      "Select the workpack to execute."
-    );
-    if (!folderPath) {
-      return;
-    }
+    const outputChannel = getExecutionOutputChannel();
+    try {
+      const folderPath = await resolveWorkpackFolderPath(
+        vscodeApi,
+        node,
+        discoverFn,
+        "Select the workpack to execute."
+      );
+      if (!folderPath) {
+        return;
+      }
 
-    await vscodeApi.window.showInformationMessage(
-      `Execute All is registered for ${path.basename(folderPath)}. Runtime execution wiring is pending.`
-    );
+      if (!providerRegistry) {
+        const message = "Provider registry is not configured. Batch execution is unavailable.";
+        outputChannel.appendLine(`[execution] ${message}`);
+        await vscodeApi.window.showErrorMessage(message);
+        return;
+      }
+
+      if (providerRegistry.listAll().length === 0) {
+        const message = "No agent providers are registered. Configure providers before execution.";
+        outputChannel.appendLine(`[execution] ${message}`);
+        await vscodeApi.window.showErrorMessage(message);
+        return;
+      }
+
+      const availableProviders = await getAvailableProviders(providerRegistry);
+      if (availableProviders.length === 0) {
+        const message =
+          "No configured providers are currently available. Check provider credentials and retry.";
+        outputChannel.appendLine(`[execution] ${message}`);
+        await vscodeApi.window.showErrorMessage(message);
+        return;
+      }
+
+      const workpack = await parseWorkpackInstance(folderPath);
+      const statePath = path.join(folderPath, WORKPACK_FILES.state);
+      const state = workpack.state ?? (await loadWorkpackState(statePath, workpack.meta.id));
+      const preflightOrchestrator = new ExecutionOrchestrator(
+        providerRegistry,
+        new AssignmentModel(statePath, providerRegistry),
+        {
+          maxParallel: EXECUTE_ALL_MAX_PARALLEL,
+          continueOnError: false,
+          timeoutMs: ORCHESTRATOR_TIMEOUT_MS
+        }
+      );
+      const readyPrompts = preflightOrchestrator.getReadyPrompts(workpack.meta, state);
+      if (readyPrompts.length === 0) {
+        const message = `No ready prompts to execute for ${workpack.meta.id}.`;
+        outputChannel.appendLine(`[execution] ${message}`);
+        await vscodeApi.window.showInformationMessage(message);
+        return;
+      }
+
+      outputChannel.show(true);
+      outputChannel.appendLine(
+        `[execution] Starting executeAll for ${workpack.meta.id}. Ready prompts: ${readyPrompts.join(", ")}`
+      );
+
+      const { summary, wasCancelled } = await runWithExecutionProgress(
+        vscodeApi,
+        `Execute All: ${workpack.meta.id}`,
+        `Dispatching ${readyPrompts.length} ready prompt(s)...`,
+        outputChannel,
+        async (signal) => {
+          const assignment = new AssignmentModel(statePath, providerRegistry);
+          const orchestrator = new ExecutionOrchestrator(providerRegistry, assignment, {
+            maxParallel: EXECUTE_ALL_MAX_PARALLEL,
+            continueOnError: false,
+            timeoutMs: ORCHESTRATOR_TIMEOUT_MS,
+            signal
+          });
+
+          return orchestrator.execute(workpack.meta, statePath);
+        }
+      );
+
+      logExecutionSummary(outputChannel, "all", summary);
+
+      if (wasCancelled) {
+        await vscodeApi.window.showWarningMessage(`Execution cancelled for ${workpack.meta.id}.`);
+        return;
+      }
+
+      if (summary.failed > 0) {
+        await vscodeApi.window.showWarningMessage(
+          `Execution completed with failures for ${workpack.meta.id}: ${summary.failed} failed, ${summary.completed} completed, ${summary.skipped} skipped.`
+        );
+        return;
+      }
+
+      await vscodeApi.window.showInformationMessage(
+        `Execution completed for ${workpack.meta.id}: ${summary.completed} completed, ${summary.skipped} skipped.`
+      );
+    } catch (error) {
+      const message = toErrorMessage(error);
+      outputChannel.appendLine(`[execution] executeAll failed: ${message}`);
+      await vscodeApi.window.showErrorMessage(`Unable to execute all prompts: ${message}`);
+    } finally {
+      treeProvider?.refresh();
+    }
   });
 
   register(WORKPACK_MANAGER_COMMANDS.refreshTree, async () => {

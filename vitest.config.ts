@@ -13,7 +13,9 @@ export default defineConfig({
       "src/parser/__tests__/parser.test.ts",
       "src/state/__tests__/state.test.ts",
       "src/agents/__tests__/registry.test.ts",
+      "src/agents/__tests__/copilot-provider.test.ts",
       "src/views/__tests__/tree-provider.test.ts",
+      "src/commands/__tests__/commands.test.ts",
       "src/__mocks__/__tests__/vscode-mock.test.ts"
     ],
     exclude: ["**/node_modules/**"],

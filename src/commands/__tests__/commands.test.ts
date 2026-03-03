@@ -10,9 +10,18 @@ import { registerCommands, WORKPACK_MANAGER_COMMANDS } from "../register-command
 
 type CommandCallback = (...args: unknown[]) => unknown | Promise<unknown>;
 
-interface CommandRegistration {
-  id: string;
-  callback: CommandCallback;
+interface MockDisposable {
+  dispose(): void;
+}
+
+interface MockCancellationToken {
+  isCancellationRequested: boolean;
+  onCancellationRequested(listener: () => void): MockDisposable;
+}
+
+interface MockOutputChannel {
+  name: string;
+  lines: string[];
 }
 
 interface MockVscode {
@@ -24,6 +33,8 @@ interface MockVscode {
   readonly warningMessages: string[];
   readonly errorMessages: string[];
   readonly terminalCommands: string[];
+  readonly outputChannels: MockOutputChannel[];
+  readonly progressTitles: string[];
   readonly api: Parameters<typeof registerCommands>[1]["vscodeApi"];
 }
 
@@ -68,6 +79,8 @@ function createMockVscode(workspaceFolderPaths: string[]): MockVscode {
   const warningMessages: string[] = [];
   const errorMessages: string[] = [];
   const terminalCommands: string[] = [];
+  const outputChannels: MockOutputChannel[] = [];
+  const progressTitles: string[] = [];
 
   const api = {
     commands: {
@@ -113,6 +126,58 @@ function createMockVscode(workspaceFolderPaths: string[]): MockVscode {
             terminalCommands.push(commandLine);
           }
         };
+      },
+      createOutputChannel(name: string): { appendLine(value: string): void; show(): void; dispose(): void } {
+        const channel: MockOutputChannel = {
+          name,
+          lines: []
+        };
+        outputChannels.push(channel);
+
+        return {
+          appendLine(value: string): void {
+            channel.lines.push(value);
+          },
+          show(): void {
+            // No-op in tests.
+          },
+          dispose(): void {
+            // No-op in tests.
+          }
+        };
+      },
+      async withProgress(
+        options: { title?: string },
+        task: (
+          progress: { report(value: { message?: string; increment?: number }): void },
+          token: MockCancellationToken
+        ) => Promise<unknown>
+      ): Promise<unknown> {
+        if (options.title) {
+          progressTitles.push(options.title);
+        }
+
+        const listeners = new Set<() => void>();
+        const token: MockCancellationToken = {
+          isCancellationRequested: false,
+          onCancellationRequested(listener: () => void): MockDisposable {
+            listeners.add(listener);
+            return {
+              dispose(): void {
+                listeners.delete(listener);
+              }
+            };
+          }
+        };
+
+        return task(
+          {
+            report(): void {
+              // No-op in tests.
+            }
+          },
+          token
+        );
       }
     },
     workspace: {
@@ -128,6 +193,9 @@ function createMockVscode(workspaceFolderPaths: string[]): MockVscode {
       file(filePath: string): { fsPath: string } {
         return { fsPath: path.resolve(filePath) };
       }
+    },
+    ProgressLocation: {
+      Notification: 15
     }
   } as unknown as Parameters<typeof registerCommands>[1]["vscodeApi"];
 
@@ -140,6 +208,8 @@ function createMockVscode(workspaceFolderPaths: string[]): MockVscode {
     warningMessages,
     errorMessages,
     terminalCommands,
+    outputChannels,
+    progressTitles,
     api
   };
 }
@@ -157,6 +227,109 @@ function getRegisteredCommand(
   const callback = commandMap.get(commandId);
   assert.ok(callback, `Expected command '${commandId}' to be registered.`);
   return callback;
+}
+
+async function createExecutionWorkpackFixture(
+  workspaceRoot: string,
+  workpackId: string,
+  promptStems: Array<{ stem: string; dependsOn?: string[] }>
+): Promise<{
+  folderPath: string;
+  statePath: string;
+  instance: WorkpackInstance;
+}> {
+  const folderPath = path.join(workspaceRoot, "workpacks", "instances", workpackId);
+  const promptsPath = path.join(folderPath, "prompts");
+  const outputsPath = path.join(folderPath, "outputs");
+  await mkdir(promptsPath, { recursive: true });
+  await mkdir(outputsPath, { recursive: true });
+
+  for (const prompt of promptStems) {
+    await writeFile(path.join(promptsPath, `${prompt.stem}.md`), `# ${prompt.stem}\n`, "utf8");
+  }
+
+  const metaPayload = {
+    id: workpackId,
+    title: "Execution Test",
+    summary: "Execution wiring tests",
+    protocol_version: "3.0.0",
+    workpack_version: "1.0.0",
+    category: "feature",
+    created_at: "2026-03-03",
+    requires_workpack: [],
+    tags: [],
+    owners: [],
+    repos: ["WorkpackManager"],
+    delivery_mode: "pr",
+    target_branch: "master",
+    prompts: promptStems.map((prompt) => ({
+      stem: prompt.stem,
+      agent_role: `Run ${prompt.stem}`,
+      depends_on: prompt.dependsOn ?? [],
+      repos: ["WorkpackManager"],
+      estimated_effort: "S"
+    })),
+    group: "workpack-manager-v2"
+  };
+  await writeFile(path.join(folderPath, "workpack.meta.json"), JSON.stringify(metaPayload, null, 2), "utf8");
+  await writeFile(path.join(folderPath, "00_request.md"), "# request\n", "utf8");
+  await writeFile(path.join(folderPath, "01_plan.md"), "# plan\n", "utf8");
+  await writeFile(path.join(folderPath, "99_status.md"), "# status\n", "utf8");
+
+  const statePath = path.join(folderPath, "workpack.state.json");
+  const statePayload = {
+    workpack_id: workpackId,
+    overall_status: "not_started",
+    last_updated: "2026-03-03T00:00:00Z",
+    prompt_status: Object.fromEntries(
+      promptStems.map((prompt) => [prompt.stem, { status: "pending" }])
+    ),
+    agent_assignments: {},
+    blocked_by: [],
+    execution_log: []
+  };
+  await writeFile(statePath, JSON.stringify(statePayload, null, 2), "utf8");
+
+  const instance: WorkpackInstance = {
+    folderPath,
+    protocolVersion: "3.0.0",
+    discoverySource: "auto",
+    meta: {
+      id: workpackId,
+      title: "Execution Test",
+      summary: "Execution wiring tests",
+      protocolVersion: "3.0.0",
+      workpackVersion: "1.0.0",
+      category: "feature",
+      createdAt: "2026-03-03",
+      requiresWorkpack: [],
+      tags: [],
+      owners: [],
+      repos: ["WorkpackManager"],
+      deliveryMode: "pr",
+      targetBranch: "master",
+      prompts: promptStems.map((prompt) => ({
+        stem: prompt.stem,
+        agentRole: `Run ${prompt.stem}`,
+        dependsOn: prompt.dependsOn ?? [],
+        repos: ["WorkpackManager"],
+        estimatedEffort: "S"
+      }))
+    },
+    state: {
+      workpackId,
+      overallStatus: "not_started",
+      lastUpdated: "2026-03-03T00:00:00Z",
+      promptStatus: Object.fromEntries(
+        promptStems.map((prompt) => [prompt.stem, { status: "pending" as const }])
+      ),
+      agentAssignments: {},
+      blockedBy: [],
+      executionLog: []
+    }
+  };
+
+  return { folderPath, statePath, instance };
 }
 
 afterEach(async () => {
@@ -365,6 +538,180 @@ describe("commands", () => {
     assert.deepEqual(lintedPaths, [workpackFolder]);
     assert.equal(mock.terminalCommands.length, 1);
     assert.equal(mock.terminalCommands[0].includes("workpack_lint.py"), true);
+  });
+
+  it("executePrompt shows an error when provider registry is not configured", async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-execute-prompt-no-registry-"));
+    tempFolders.push(workspaceRoot);
+
+    const fixture = await createExecutionWorkpackFixture(workspaceRoot, "wp-execute-prompt", [
+      { stem: "A1_wire_execute_prompt" }
+    ]);
+    const mock = createMockVscode([workspaceRoot]);
+    const context = createMockContext();
+
+    registerCommands(context, {
+      vscodeApi: mock.api,
+      discoverWorkpacksFn: async () => [fixture.instance]
+    });
+
+    const executePromptCommand = getRegisteredCommand(
+      mock.commandMap,
+      WORKPACK_MANAGER_COMMANDS.executePrompt
+    );
+    await executePromptCommand({
+      contextValue: "prompt",
+      workpackId: fixture.instance.meta.id,
+      folderPath: fixture.folderPath,
+      promptStem: "A1_wire_execute_prompt"
+    });
+
+    assert.equal(mock.errorMessages.length, 1);
+    assert.match(mock.errorMessages[0], /Provider registry is not configured/i);
+  });
+
+  it("executePrompt dispatches selected prompt and writes execution logs", async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-execute-prompt-success-"));
+    tempFolders.push(workspaceRoot);
+
+    const fixture = await createExecutionWorkpackFixture(workspaceRoot, "wp-execute-prompt", [
+      { stem: "A0_bootstrap" },
+      { stem: "A1_wire_execute_prompt", dependsOn: ["A0_bootstrap"] }
+    ]);
+    const providerRegistry = new ProviderRegistry();
+    providerRegistry.register(createMockProvider("codex"));
+
+    const mock = createMockVscode([workspaceRoot]);
+    let refreshCount = 0;
+    const context = createMockContext();
+    registerCommands(context, {
+      vscodeApi: mock.api,
+      providerRegistry,
+      treeProvider: {
+        refresh(): void {
+          refreshCount += 1;
+        }
+      },
+      discoverWorkpacksFn: async () => [fixture.instance]
+    });
+
+    const executePromptCommand = getRegisteredCommand(
+      mock.commandMap,
+      WORKPACK_MANAGER_COMMANDS.executePrompt
+    );
+    await executePromptCommand({
+      contextValue: "prompt",
+      workpackId: fixture.instance.meta.id,
+      folderPath: fixture.folderPath,
+      promptStem: "A1_wire_execute_prompt"
+    });
+
+    const statePayload = JSON.parse(await readFile(fixture.statePath, "utf8")) as {
+      prompt_status: Record<string, { status: string }>;
+    };
+
+    assert.equal(statePayload.prompt_status.A1_wire_execute_prompt.status, "complete");
+    assert.ok(refreshCount >= 1);
+    assert.equal(mock.outputChannels.length >= 1, true);
+    assert.equal(
+      mock.outputChannels[0].lines.some((line) =>
+        line.includes("Starting executePrompt for A1_wire_execute_prompt")
+      ),
+      true
+    );
+    assert.equal(
+      mock.outputChannels[0].lines.some((line) => line.includes("A1_wire_execute_prompt: completed")),
+      true
+    );
+    assert.equal(mock.progressTitles.includes("Execute Prompt: A1_wire_execute_prompt"), true);
+  });
+
+  it("executeAll dispatches ready prompts and updates state", async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-execute-all-success-"));
+    tempFolders.push(workspaceRoot);
+
+    const fixture = await createExecutionWorkpackFixture(workspaceRoot, "wp-execute-all", [
+      { stem: "A0_bootstrap" },
+      { stem: "A1_wire_execute_prompt", dependsOn: ["A0_bootstrap"] }
+    ]);
+    const providerRegistry = new ProviderRegistry();
+    providerRegistry.register(createMockProvider("codex"));
+
+    const mock = createMockVscode([workspaceRoot]);
+    let refreshCount = 0;
+    const context = createMockContext();
+    registerCommands(context, {
+      vscodeApi: mock.api,
+      providerRegistry,
+      treeProvider: {
+        refresh(): void {
+          refreshCount += 1;
+        }
+      },
+      discoverWorkpacksFn: async () => [fixture.instance]
+    });
+
+    const executeAllCommand = getRegisteredCommand(mock.commandMap, WORKPACK_MANAGER_COMMANDS.executeAll);
+    await executeAllCommand({
+      contextValue: "workpack",
+      workpackId: fixture.instance.meta.id,
+      folderPath: fixture.folderPath
+    });
+
+    const statePayload = JSON.parse(await readFile(fixture.statePath, "utf8")) as {
+      prompt_status: Record<string, { status: string }>;
+    };
+
+    assert.equal(statePayload.prompt_status.A0_bootstrap.status, "complete");
+    assert.equal(statePayload.prompt_status.A1_wire_execute_prompt.status, "complete");
+    assert.ok(refreshCount >= 1);
+    assert.equal(mock.progressTitles.includes(`Execute All: ${fixture.instance.meta.id}`), true);
+  });
+
+  it("executeAll returns info when no prompts are ready", async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-execute-all-no-ready-"));
+    tempFolders.push(workspaceRoot);
+
+    const fixture = await createExecutionWorkpackFixture(workspaceRoot, "wp-execute-all-none", [
+      { stem: "A0_bootstrap" }
+    ]);
+
+    const statePayload = JSON.parse(await readFile(fixture.statePath, "utf8")) as {
+      prompt_status: Record<string, { status: string }>;
+    };
+    statePayload.prompt_status.A0_bootstrap.status = "complete";
+    await writeFile(fixture.statePath, JSON.stringify(statePayload, null, 2), "utf8");
+
+    const providerRegistry = new ProviderRegistry();
+    providerRegistry.register(createMockProvider("codex"));
+    const mock = createMockVscode([workspaceRoot]);
+    const context = createMockContext();
+
+    registerCommands(context, {
+      vscodeApi: mock.api,
+      providerRegistry,
+      discoverWorkpacksFn: async () => [
+        {
+          ...fixture.instance,
+          state: {
+            ...fixture.instance.state!,
+            promptStatus: {
+              A0_bootstrap: { status: "complete" }
+            },
+            overallStatus: "complete"
+          }
+        }
+      ]
+    });
+
+    const executeAllCommand = getRegisteredCommand(mock.commandMap, WORKPACK_MANAGER_COMMANDS.executeAll);
+    await executeAllCommand({
+      contextValue: "workpack",
+      workpackId: fixture.instance.meta.id,
+      folderPath: fixture.folderPath
+    });
+
+    assert.equal(mock.infoMessages.some((message) => message.includes("No ready prompts")), true);
   });
 
   it("package.json contains expected context menu when clauses", async () => {

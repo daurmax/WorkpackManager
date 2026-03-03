@@ -167,6 +167,11 @@
           "type": "number",
           "default": 4096,
           "description": "Maximum response tokens"
+        },
+        "workpackManager.copilot.maxPromptTokens": {
+          "type": "number",
+          "default": 8192,
+          "description": "Maximum prompt tokens sent to GitHub Copilot requests."
         }
       }
     }

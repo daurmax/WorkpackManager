@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.2",
+  "workpack": "01_workpack-manager-v2_execution-wiring",
+  "prompt": "A1_wire_execute_prompt",
+  "component": "command-wiring",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/execution-wiring",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "0375fa5",
+      "34295dd"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "src/commands/register-commands.ts",
+      "src/commands/__tests__/commands.test.ts",
+      "src/agents/orchestrator.ts",
+      "src/extension.ts",
+      "vitest.config.ts",
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/prompts/A1_wire_execute_prompt.md"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/outputs/A1_wire_execute_prompt.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript build completed successfully."
+      },
+      {
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "Vitest: 8 files, 38 tests passed including new executePrompt wiring tests."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added executePrompt dispatch, cancellation, provider-missing, and provider-unavailable tests in src/commands/__tests__/commands.test.ts."
+  },
+  "handoff": {
+    "summary": "Wired workpackManager.executePrompt command to ExecutionOrchestrator.executeOne() with progress reporting, OutputChannel logging, cancellation via AbortController, and tree refresh on completion.",
+    "next_steps": [
+      "Proceed to V1 integration gate."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/01_workpack-manager-v2_execution-wiring/prompts/A1_wire_execute_prompt.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/commands/register-commands.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/commands/__tests__/commands.test.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/agents/orchestrator.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/extension.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "vitest.config.ts",
+      "action": "modified"
+    }
+  ],
+  "notes": "Implementation commit 34295dd shared with A2 and A3; all three wiring tasks were implemented and committed together."
+}
