@@ -30,9 +30,10 @@ This repository now uses a workspace monorepo layout:
 
 ```text
 .
+├── src/            # VS Code extension source (canonical location)
 ├── packages/
 │   ├── protocol/   # npm package: @workpack/protocol
-│   └── extension/  # VS Code extension package scaffold
+│   └── mcp-server/ # MCP server package
 ├── workpacks/      # Protocol assets, instances, templates, tools
 └── ...
 ```
@@ -44,7 +45,8 @@ Important path guarantee: existing paths under `workpacks/` are unchanged so cur
 ## Distribution Overview
 
 - `packages/protocol/` is the publish target for `@workpack/protocol`.
-- `packages/extension/` is reserved for the VS Code extension package scaffold.
+- `packages/mcp-server/` contains the MCP server package.
+- The VS Code extension code and manifest are rooted at repository top-level (`src/`, `package.json`, `tsconfig.json`).
 - Python tooling remains in `workpacks/tools/` and is not relocated into Node packages.
 
 Root workspace setup:
@@ -53,7 +55,7 @@ Root workspace setup:
 pnpm install
 ```
 
-The protocol package contents, init CLI, and extension scaffold are implemented in follow-up prompts (`A2`, `A3`, `A4`).
+`packages/extension/` was removed because it duplicated a minimal stub while the production extension lives at root. This avoids ambiguity about the canonical extension source path.
 
 ## Project Status
 
@@ -86,7 +88,7 @@ See `workpacks/WORKPACK_META_SCHEMA.json`, `workpacks/WORKPACK_STATE_SCHEMA.json
 git clone <repo-url> WorkpackManager
 cd WorkpackManager
 
-# Install extension dependencies (when extension scaffold exists)
+# Install extension dependencies
 npm install
 
 # Run workpack linter
