@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-manager-v2_extension-consolidation",
+  "prompt": "A3_clean_merged_branches",
+  "component": "branch-cleanup",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/extension-consolidation-v2",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "dd9b0c1188567546242623640c359db05113b35a"
+    ],
+    "branch_verified": false,
+    "cleaned_local_branches": [
+      "feature/add-mit-license",
+      "feature/agent-documentation",
+      "feature/execution-wiring",
+      "feature/extension-agent-integration",
+      "feature/extension-core-architecture",
+      "feature/extension-ux",
+      "feature/extension-validation-quality",
+      "feature/human-documentation",
+      "feature/npm-distribution",
+      "feature/project-config",
+      "feature/protocol-v3.0",
+      "feature/verification-hardening",
+      "feature/workpack-manager-v2-planning",
+      "feature/workpack-protocol-evolution",
+      "feature/workpack-protocol-v2.2.1",
+      "feature/workpack-protocol-v6"
+    ],
+    "cleaned_remote_branches": [
+      "feature/add-mit-license",
+      "feature/agent-documentation",
+      "feature/execution-wiring",
+      "feature/extension-agent-integration",
+      "feature/extension-core-architecture",
+      "feature/extension-ux",
+      "feature/extension-validation-quality",
+      "feature/human-documentation",
+      "feature/npm-distribution",
+      "feature/project-config",
+      "feature/protocol-v3.0",
+      "feature/verification-hardening",
+      "feature/workpack-manager-v2-planning",
+      "feature/workpack-protocol-evolution",
+      "feature/workpack-protocol-v2.2.1",
+      "feature/workpack-protocol-v6"
+    ]
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/outputs/A3_clean_merged_branches.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "git fetch --prune",
+        "result": "pass",
+        "notes": "Fetched latest refs and pruned deleted remotes before and after cleanup."
+      },
+      {
+        "cmd": "git branch --merged master --format='%(refname:short)'",
+        "result": "pass",
+        "notes": "No merged local feature/* branches remain (count=0)."
+      },
+      {
+        "cmd": "git branch -r --merged origin/master --format='%(refname:short)'",
+        "result": "pass",
+        "notes": "No merged remote origin/feature/* branches remain (count=0)."
+      },
+      {
+        "cmd": "git branch -a --format='%(refname:short)'",
+        "result": "pass",
+        "notes": "Only active branches remain: feature/extension-consolidation-v2, master, and backup/* branches."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No source code changes; repository hygiene task only."
+  },
+  "handoff": {
+    "summary": "Deleted 16 merged feature branches locally and on origin while preserving master, the current work branch, and backup branches.",
+    "next_steps": [
+      "Proceed with A1_resolve_extension_scaffold and A2_extract_ajv_cache in parallel.",
+      "Run V1_integration_meta after A1/A2/A3 outputs are complete."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/outputs/A3_clean_merged_branches.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Branch cleanup intentionally scoped to merged feature/* branches only. backup/* branches were retained."
+}

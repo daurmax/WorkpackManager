@@ -1,8 +1,7 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import type { AnySchema, ErrorObject, ValidateFunction } from "ajv";
-import Ajv2020 from "ajv/dist/2020";
-import addFormats from "ajv-formats";
+import type { ErrorObject } from "ajv";
+import { SchemaValidatorCache } from "../utils/schema-validator-cache";
 
 const META_FILE = "workpack.meta.json";
 const STATE_FILE = "workpack.state.json";
@@ -12,7 +11,6 @@ const STATUS_FILE = "99_status.md";
 const PROMPTS_DIR = "prompts";
 const META_SCHEMA_FILE = "WORKPACK_META_SCHEMA.json";
 const STATE_SCHEMA_FILE = "WORKPACK_STATE_SCHEMA.json";
-const WORKPACKS_DIR = "workpacks";
 const DEFAULT_PROTOCOL_VERSION = "2.0.0";
 const DEFAULT_WORKPACK_VERSION = "1.0.0";
 const DEFAULT_CATEGORY = "feature";
@@ -72,12 +70,10 @@ export interface MigrationResult {
 }
 
 export class ProtocolMigrator {
-  private readonly ajv: Ajv2020;
-  private readonly validators = new Map<string, ValidateFunction<unknown>>();
+  private readonly schemaValidatorCache: SchemaValidatorCache;
 
   public constructor() {
-    this.ajv = new Ajv2020({ allErrors: true, strict: false });
-    addFormats(this.ajv);
+    this.schemaValidatorCache = new SchemaValidatorCache();
   }
 
   public async migrate(workpackPath: string, options: MigrationOptions): Promise<MigrationResult> {
@@ -218,8 +214,8 @@ export class ProtocolMigrator {
   ): Promise<string[]> {
     const warnings: string[] = [];
     const [metaValidator, stateValidator] = await Promise.all([
-      this.getSchemaValidator(workpackPath, META_SCHEMA_FILE),
-      this.getSchemaValidator(workpackPath, STATE_SCHEMA_FILE)
+      this.schemaValidatorCache.getValidator(workpackPath, META_SCHEMA_FILE),
+      this.schemaValidatorCache.getValidator(workpackPath, STATE_SCHEMA_FILE)
     ]);
 
     if (metaValidator && !metaValidator(meta)) {
@@ -704,31 +700,6 @@ export class ProtocolMigrator {
     }
   }
 
-  private async getSchemaValidator(
-    workpackPath: string,
-    schemaFileName: string
-  ): Promise<ValidateFunction<unknown> | null> {
-    const schemaPath = await this.resolveSchemaPath(workpackPath, schemaFileName);
-    if (!schemaPath) {
-      return null;
-    }
-
-    const cached = this.validators.get(schemaPath);
-    if (cached) {
-      return cached;
-    }
-
-    try {
-      const schemaRaw = await fs.readFile(schemaPath, "utf8");
-      const schema = JSON.parse(schemaRaw) as AnySchema;
-      const validator = this.ajv.compile(schema);
-      this.validators.set(schemaPath, validator);
-      return validator;
-    } catch {
-      return null;
-    }
-  }
-
   private formatSchemaErrors(errors: ErrorObject[] | null | undefined): string {
     if (!errors || errors.length === 0) {
       return "unknown validation error";
@@ -738,24 +709,6 @@ export class ProtocolMigrator {
       .slice(0, 5)
       .map((error) => `${error.instancePath || "/"} ${error.message ?? "is invalid"}`)
       .join("; ");
-  }
-
-  private async resolveSchemaPath(folderPath: string, schemaFileName: string): Promise<string | null> {
-    let currentPath = path.resolve(folderPath);
-
-    while (true) {
-      const candidatePath = path.join(currentPath, WORKPACKS_DIR, schemaFileName);
-      if (await this.pathExists(candidatePath)) {
-        return candidatePath;
-      }
-
-      const parentPath = path.dirname(currentPath);
-      if (parentPath === currentPath) {
-        return null;
-      }
-
-      currentPath = parentPath;
-    }
   }
 
   private async findLegacyWorkpackFolders(instancesPath: string): Promise<string[]> {

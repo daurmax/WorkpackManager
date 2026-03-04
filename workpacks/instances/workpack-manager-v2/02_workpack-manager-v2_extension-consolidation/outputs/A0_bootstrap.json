@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-manager-v2_extension-consolidation",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/extension-consolidation-v2",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "2ce950203fe0b62e0c37c3f1ac7794fc1207a203"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/outputs/A0_bootstrap.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "tsc -p . completed successfully"
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "eslint completed with 33 warnings and 0 errors"
+      },
+      {
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "vitest run passed: 8 files, 38 tests"
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Bootstrap completed and workspace is ready.",
+    "next_steps": [
+      "Start dependent A-series prompts"
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/outputs/A0_bootstrap.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Confirmed requires_workpack 01_workpack-manager-v2_execution-wiring is completed. outputs/ directory exists and is writable."
+}

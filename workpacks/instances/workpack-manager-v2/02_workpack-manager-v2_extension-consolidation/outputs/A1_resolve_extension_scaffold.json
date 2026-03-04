@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-manager-v2_extension-consolidation",
+  "prompt": "A1_resolve_extension_scaffold",
+  "component": "extension-scaffold",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/extension-consolidation-v2",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "d74f79563a5ee8b6947794f8fef5377035da613e"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "README.md",
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/prompts/A1_resolve_extension_scaffold.md"
+    ],
+    "files_created": [],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "git ls-files \"packages/extension/**\"",
+        "result": "pass",
+        "notes": "No tracked files remain under packages/extension."
+      },
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript build completed successfully after scaffold removal."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Removed the tracked packages/extension scaffold and documented root-level extension ownership.",
+    "next_steps": [
+      "Complete A2_extract_ajv_cache and A3_clean_merged_branches.",
+      "Run V1_integration_meta after all A-series outputs are committed."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "README.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/prompts/A1_resolve_extension_scaffold.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/extension/.gitkeep",
+      "action": "deleted"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/extension/.vscodeignore",
+      "action": "deleted"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/extension/package.json",
+      "action": "deleted"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/extension/src/extension.ts",
+      "action": "deleted"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/extension/tsconfig.json",
+      "action": "deleted"
+    }
+  ],
+  "notes": "Untracked local leftovers under packages/extension are not part of repository history."
+}
