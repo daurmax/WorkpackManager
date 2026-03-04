@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-manager-v2_test-coverage-hardening",
+  "prompt": "A1_state_module_coverage",
+  "component": "state-module-tests",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/test-coverage-hardening",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "a201af40a0985b7a0d927a669e63dbe5dd7c5a26"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "src/state/__tests__/state.test.ts"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_test-coverage-hardening/outputs/A1_state_module_coverage.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "10 test files and 67 tests passed after adding state coverage tests."
+      },
+      {
+        "cmd": "npm run test:coverage",
+        "result": "pass",
+        "notes": "state/output-scanner.ts reached 100% statements and 100% branches."
+      },
+      {
+        "cmd": "npm run test:coverage",
+        "result": "pass",
+        "notes": "state/reconciliation-engine.ts reached 98.63% statements and 94.82% branches."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Expanded state module tests to cover reconciliation status consistency and output scan error paths.",
+    "next_steps": [
+      "Proceed with A2_parser_coverage and A3_views_coverage prompts.",
+      "Run V1_integration_meta after all A-series prompt outputs are generated."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/state/__tests__/state.test.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_test-coverage-hardening/outputs/A1_state_module_coverage.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Unrelated workspace changes were intentionally excluded from this prompt commit."
+}
