@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-manager-v2_extension-consolidation",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/extension-consolidation-v2",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "2ce950203fe0b62e0c37c3f1ac7794fc1207a203",
+      "d74f79563a5ee8b6947794f8fef5377035da613e",
+      "b488036414ef97b932a59668944a1d003ea26af7",
+      "dd9b0c1188567546242623640c359db05113b35a",
+      "e217538fffe45d5ba2da184da79b56c647fb7662",
+      "d26bfb50adeaa71f17eeb1e26c549a4f679c4b6e"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/outputs/R1_retrospective.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [],
+    "regression_added": false,
+    "regression_notes": "Retrospective is a documentation-only prompt; no code changes."
+  },
+  "handoff": {
+    "summary": "Retrospective completed. Workpack delivered all 6 acceptance criteria with zero B-series rework. V1 gate flagged 3 output bookkeeping issues which were resolved in a single fix commit before merge.",
+    "next_steps": [
+      "Merge feature/extension-consolidation-v2 into master.",
+      "Apply action items to future workpack templates."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-6",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/outputs/R1_retrospective.json",
+      "action": "created"
+    }
+  ],
+  "notes": "No code changes in this prompt. Retrospective captures process outcomes only."
+}
