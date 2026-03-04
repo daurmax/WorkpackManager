@@ -63,8 +63,9 @@
   },
   "change_details": [
     {
+      "repo": "WorkpackManager",
       "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/outputs/A0_bootstrap.json",
-      "summary": "Recorded bootstrap branch setup, dependency validation, and baseline verification results."
+      "action": "created"
     }
   ],
   "notes": "Confirmed requires_workpack 01_workpack-manager-v2_execution-wiring is completed. outputs/ directory exists and is writable."

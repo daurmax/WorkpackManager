@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "workpack": "02_workpack-manager-v2_extension-consolidation",
   "prompt": "A2_extract_ajv_cache",
   "component": "schema-validation",
@@ -11,6 +11,9 @@
   },
   "artifacts": {
     "pr_url": "",
+    "commit_shas": [
+      "b488036414ef97b932a59668944a1d003ea26af7"
+    ],
     "branch_verified": false
   },
   "changes": {
