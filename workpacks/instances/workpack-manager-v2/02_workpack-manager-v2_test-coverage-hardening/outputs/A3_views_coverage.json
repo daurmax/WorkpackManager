@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-manager-v2_test-coverage-hardening",
+  "prompt": "A3_views_coverage",
+  "component": "views-coverage",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/test-coverage-hardening",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "7fdc3cc02e1752b9027199d087faeb719f8e4001"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "src/views/__tests__/status-icons.test.ts",
+      "vitest.config.ts"
+    ],
+    "files_created": [
+      "src/views/__tests__/workpack-tree-item.test.ts",
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_test-coverage-hardening/outputs/A3_views_coverage.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "Vitest: 10 files, 46 tests passed."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "No errors; 31 pre-existing repository warnings."
+      },
+      {
+        "cmd": "npm run test:coverage",
+        "result": "pass",
+        "notes": "Coverage: src/views/status-icons.ts and src/views/workpack-tree-item.ts are both 100% statements/branches/functions/lines."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added tests for status-icon fallback branches and all workpack tree item kind/icon/context paths."
+  },
+  "handoff": {
+    "summary": "Implemented view-layer coverage hardening by activating focused status icon tests and adding exhaustive WorkpackTreeItem unit tests.",
+    "next_steps": [
+      "Proceed to A4_integration_tests.",
+      "Complete remaining parser/state coverage tasks to push overall statements above 80%."
+    ],
+    "known_issues": [
+      "Existing parser-related fixture warnings continue to appear in stderr during command tests; tests still pass."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/__tests__/status-icons.test.ts",
+      "action": "modified",
+      "lines_added": 42,
+      "lines_removed": 267
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/__tests__/workpack-tree-item.test.ts",
+      "action": "created",
+      "lines_added": 165,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "vitest.config.ts",
+      "action": "modified",
+      "lines_added": 2,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_test-coverage-hardening/outputs/A3_views_coverage.json",
+      "action": "created"
+    }
+  ],
+  "notes": "A0_bootstrap.json was already present as an untracked artifact and was not modified by A3 implementation."
+}
