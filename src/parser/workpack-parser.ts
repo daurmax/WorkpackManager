@@ -1,8 +1,6 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import type { AnySchema, ErrorObject, ValidateFunction } from "ajv";
-import Ajv2020 from "ajv/dist/2020";
-import addFormats from "ajv-formats";
+import type { ErrorObject, ValidateFunction } from "ajv";
 import type {
   DeliveryMode,
   DiscoveredProtocolVersion,
@@ -17,12 +15,12 @@ import type {
   WorkpackProtocolVersion,
   WorkpackState
 } from "../models";
+import { SchemaValidatorCache } from "../utils/schema-validator-cache";
 
 const META_FILE = "workpack.meta.json";
 const STATE_FILE = "workpack.state.json";
 const REQUEST_FILE = "00_request.md";
 const PLAN_FILE = "01_plan.md";
-const WORKPACKS_DIR = "workpacks";
 const META_SCHEMA_FILE = "WORKPACK_META_SCHEMA.json";
 const STATE_SCHEMA_FILE = "WORKPACK_STATE_SCHEMA.json";
 const DEFAULT_SCHEMA_PROTOCOL_VERSION: WorkpackProtocolVersion = "2.0.0";
@@ -60,10 +58,7 @@ const EXECUTION_EVENT_VALUES = new Set([
   "abandoned"
 ]);
 const EFFORT_VALUES: EffortEstimate[] = ["XS", "S", "M", "L", "XL"];
-const ajv = new Ajv2020({ allErrors: true, strict: false });
-const schemaValidatorCache = new Map<string, ValidateFunction<unknown>>();
-const schemaValidatorPromiseCache = new Map<string, Promise<ValidateFunction<unknown> | null>>();
-addFormats(ajv);
+const schemaValidatorCache = new SchemaValidatorCache({ onWarning: warn });
 
 interface MarkdownFallbackMeta extends Partial<WorkpackMeta> {
   __legacyDetected?: boolean;
@@ -108,33 +103,6 @@ function isSemverProtocolVersion(value: string): value is WorkpackProtocolVersio
   return SEMVER_PROTOCOL_PATTERN.test(value);
 }
 
-async function pathExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function resolveSchemaPath(folderPath: string, schemaFileName: string): Promise<string | null> {
-  let currentPath = path.resolve(folderPath);
-
-  while (true) {
-    const candidatePath = path.join(currentPath, WORKPACKS_DIR, schemaFileName);
-    if (await pathExists(candidatePath)) {
-      return candidatePath;
-    }
-
-    const parentPath = path.dirname(currentPath);
-    if (parentPath === currentPath) {
-      return null;
-    }
-
-    currentPath = parentPath;
-  }
-}
-
 function formatSchemaErrors(errors: ErrorObject[] | null | undefined): string {
   if (!errors || errors.length === 0) {
     return "unknown schema violation";
@@ -154,57 +122,7 @@ async function getSchemaValidator(
   folderPath: string,
   schemaFileName: string
 ): Promise<ValidateFunction<unknown> | null> {
-  const schemaPath = await resolveSchemaPath(folderPath, schemaFileName);
-  if (!schemaPath) {
-    warn(`Unable to locate ${schemaFileName} while parsing ${folderPath}`);
-    return null;
-  }
-
-  const cachedValidator = schemaValidatorCache.get(schemaPath);
-  if (cachedValidator) {
-    return cachedValidator;
-  }
-
-  const inFlightValidator = schemaValidatorPromiseCache.get(schemaPath);
-  if (inFlightValidator) {
-    return inFlightValidator;
-  }
-
-  const loadValidatorPromise = (async (): Promise<ValidateFunction<unknown> | null> => {
-    const rawSchema = await readJsonFile(schemaPath);
-    if (rawSchema === null) {
-      warn(`Unable to load schema file ${schemaPath}`);
-      return null;
-    }
-
-    try {
-      const validator = ajv.compile(rawSchema as AnySchema);
-      schemaValidatorCache.set(schemaPath, validator);
-      return validator;
-    } catch (error) {
-      const existingBySchemaId =
-        isRecord(rawSchema) && typeof rawSchema.$id === "string"
-          ? ajv.getSchema(rawSchema.$id)
-          : null;
-
-      if (existingBySchemaId) {
-        const validator = existingBySchemaId;
-        schemaValidatorCache.set(schemaPath, validator);
-        return validator;
-      }
-
-      warn(`Unable to compile schema ${schemaPath}`, error);
-      return null;
-    }
-  })();
-
-  schemaValidatorPromiseCache.set(schemaPath, loadValidatorPromise);
-
-  try {
-    return await loadValidatorPromise;
-  } finally {
-    schemaValidatorPromiseCache.delete(schemaPath);
-  }
+  return schemaValidatorCache.getValidator(folderPath, schemaFileName);
 }
 
 async function validatePayloadAgainstSchema(

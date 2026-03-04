@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.1",
+  "workpack": "02_workpack-manager-v2_extension-consolidation",
+  "prompt": "A2_extract_ajv_cache",
+  "component": "schema-validation",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/extension-consolidation-v2",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "src/parser/workpack-parser.ts",
+      "src/validation/lint-rules.ts",
+      "src/validation/migration.ts"
+    ],
+    "files_created": [
+      "src/utils/schema-validator-cache.ts",
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/outputs/A2_extract_ajv_cache.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "tsc -p . completed successfully"
+      },
+      {
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "vitest run passed: 8 files, 38 tests"
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "eslint completed with 33 warnings and 0 errors"
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Refactor only; no behavioral changes intended."
+  },
+  "handoff": {
+    "summary": "Extracted shared AJV schema validator caching into a reusable utility and adopted it in parser, lint rules, and migration codepaths.",
+    "next_steps": [
+      "Run V1_integration_meta after remaining A-series prompts complete"
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/utils/schema-validator-cache.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/parser/workpack-parser.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/validation/lint-rules.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/validation/migration.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_extension-consolidation/outputs/A2_extract_ajv_cache.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Per user request, unrelated workspace files were left untouched."
+}

@@ -1,9 +1,8 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import type { AnySchema, ErrorObject, ValidateFunction } from "ajv";
-import Ajv2020 from "ajv/dist/2020";
-import addFormats from "ajv-formats";
+import type { ErrorObject, ValidateFunction } from "ajv";
 import type { WorkpackMeta, WorkpackState } from "../models";
+import { SchemaValidatorCache } from "../utils/schema-validator-cache";
 
 const META_FILE = "workpack.meta.json";
 const STATE_FILE = "workpack.state.json";
@@ -19,10 +18,7 @@ const PROMPT_STEM_PATTERN = /^[A-Z][A-Za-z0-9]*(?:_[a-z0-9][a-z0-9_]*)+$/;
 const FOLDER_STANDALONE_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 const FOLDER_GROUPED_PATTERN = /^\d{2}_[a-z0-9](?:[a-z0-9-]*[a-z0-9])?_[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 
-const ajv = new Ajv2020({ allErrors: true, strict: false });
-addFormats(ajv);
-
-const schemaValidatorCache = new Map<string, ValidateFunction<unknown>>();
+const schemaValidatorCache = new SchemaValidatorCache();
 
 export interface LintDiagnostic {
   ruleId: string;
@@ -231,37 +227,7 @@ async function findWorkpacksRoot(folderPath: string): Promise<string | null> {
 }
 
 async function getSchemaValidator(workpackPath: string, schemaName: string): Promise<ValidateFunction<unknown> | null> {
-  const workpacksRoot = await findWorkpacksRoot(workpackPath);
-  if (!workpacksRoot) {
-    return null;
-  }
-
-  const schemaPath = path.join(workpacksRoot, schemaName);
-  const cached = schemaValidatorCache.get(schemaPath);
-  if (cached) {
-    return cached;
-  }
-
-  const schemaRaw = await readJson(schemaPath);
-  if (!schemaRaw.exists || !schemaRaw.value) {
-    return null;
-  }
-
-  try {
-    const validator = ajv.compile(schemaRaw.value as AnySchema);
-    schemaValidatorCache.set(schemaPath, validator);
-    return validator;
-  } catch {
-    if (isRecord(schemaRaw.value) && typeof schemaRaw.value.$id === "string") {
-      const existing = ajv.getSchema(schemaRaw.value.$id);
-      if (existing) {
-        schemaValidatorCache.set(schemaPath, existing);
-        return existing;
-      }
-    }
-
-    return null;
-  }
+  return schemaValidatorCache.getValidator(workpackPath, schemaName);
 }
 
 async function listPromptMarkdownFiles(workpackPath: string): Promise<Map<string, string>> {
