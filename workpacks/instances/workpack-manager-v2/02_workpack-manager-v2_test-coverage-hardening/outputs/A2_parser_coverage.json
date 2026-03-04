@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.1",
+  "workpack": "02_workpack-manager-v2_test-coverage-hardening",
+  "prompt": "A2_parser_coverage",
+  "component": "parser",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/test-coverage-hardening",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "src/parser/__tests__/parser.test.ts"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_test-coverage-hardening/outputs/A2_parser_coverage.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npx vitest run src/parser/__tests__/parser.test.ts",
+        "result": "pass",
+        "notes": "21 parser tests passed."
+      },
+      {
+        "cmd": "npm run test:coverage",
+        "result": "pass",
+        "notes": "workpack-parser.ts reached 98.52% statements and 97.78% branches."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Expanded parser unit tests to cover schema validation, legacy markdown fallback, and map-level edge branches.",
+    "next_steps": [
+      "Run A4_integration_tests after A1 and A3 outputs are finalized."
+    ],
+    "known_issues": [
+      "Repository has unrelated in-progress changes outside this prompt scope."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/parser/__tests__/parser.test.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_test-coverage-hardening/outputs/A2_parser_coverage.json",
+      "action": "created"
+    }
+  ],
+  "notes": "A2 parser coverage target satisfied for workpack-parser.ts."
+}
