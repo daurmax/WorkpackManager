@@ -12,20 +12,16 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "c00691d85fbb45d6bd3951f8b5defa76dd506661"
+      "ac3acd63ff7e7ebb6fbe8cc1f0eba4f4b84302d7"
     ],
     "branch_verified": false
   },
   "changes": {
     "files_modified": [
-      "outputs/A0_bootstrap.json",
-      "outputs/A2_npm_publish_protocol.json",
-      "outputs/A4_readme_marketplace.json",
+      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/V1_integration_meta.json",
       "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/workpack.state.json"
     ],
-    "files_created": [
-      "outputs/V1_integration_meta.json"
-    ],
+    "files_created": [],
     "contracts_changed": [],
     "breaking_change": false
   },
@@ -54,40 +50,54 @@
       {
         "cmd": "cd packages/protocol && npm pack --dry-run",
         "result": "pass",
-        "notes": "Tarball includes schemas, templates, bin, tools (37 files, 68.2 KB)."
+        "notes": "Tarball correctly includes schemas, templates, bin, tools (37 files, 68.2 KB)."
       },
       {
-        "cmd": "git log --oneline feature/marketplace-publishing | grep 98eb2b7",
+        "cmd": "Test-Path .github/workflows/release.yml",
+        "result": "fail",
+        "notes": "release.yml does NOT exist. AC5(b) unsatisfied — no tag-push workflow for VSIX + npm release."
+      },
+      {
+        "cmd": "git log --oneline feature/marketplace-publishing | grep 91fe190",
         "result": "pass",
-        "notes": "A0 SHA corrected from 98eb2b7 to 91fe190; now verified on branch."
+        "notes": "A0 SHA 91fe190 verified on branch. Git files: outputs/A0_bootstrap.json. Matches change_details."
       },
       {
         "cmd": "git log --oneline feature/marketplace-publishing | grep dff99fe",
         "result": "pass",
-        "notes": "A1 SHA dff99fe verified on branch; file list matches change_details."
+        "notes": "A1 SHA dff99fe verified on branch. Git files: .vscodeignore, package-lock.json, package.json, resources/icon.png. Matches change_details."
       },
       {
         "cmd": "git log --oneline feature/marketplace-publishing | grep 584fde7",
         "result": "pass",
-        "notes": "A2 SHA corrected from 91fe190 to 584fde7; now verified on branch."
+        "notes": "A2 SHA 584fde7 verified. Git files: outputs/A2_npm_publish_protocol.json, packages/protocol/README.md, packages/protocol/package.json. Matches change_details."
+      },
+      {
+        "cmd": "git show --stat ab16540af73008c86845149bd26de0362b6a8aaa",
+        "result": "fail",
+        "notes": "A3 SHA ab16540 verified on branch BUT change_details claims A3_ci_release_pipeline.json was in this commit — it was not. That file was created in ac3acd6. Also only prompt spec was written, not actual release.yml."
       },
       {
         "cmd": "git log --oneline feature/marketplace-publishing | grep 0fa103b",
         "result": "pass",
-        "notes": "A4 SHA 0fa103b verified. Second SHA c00691d added for outputs/A4_readme_marketplace.json."
+        "notes": "A4 SHA 0fa103b verified. Git files: CHANGELOG.md, README.md. Second SHA c00691d covers outputs/A4_readme_marketplace.json. Combined match OK."
       }
     ],
     "regression_added": false,
     "regression_notes": "No regressions; all 85 existing tests pass."
   },
   "handoff": {
-    "summary": "V1 integration gate executed. Result: FAIL — not merge-ready. A3_ci_release_pipeline was never executed (no release.yml), blocking AC5(b). Artifact integrity issues in A0, A2, A4 have been remediated in this commit.",
+    "summary": "V1 integration gate re-run. Result: FAIL — not merge-ready. A3_ci_release_pipeline output exists but only records writing the prompt specification, not the actual workflow implementation. release.yml is missing, blocking AC5(b). A3 change_details has a commit/file mismatch.",
     "next_steps": [
-      "Execute A3_ci_release_pipeline: create .github/workflows/release.yml for tag-based VSIX + npm publish.",
-      "Re-run V1 integration gate after A3 is complete."
+      "Implement A3_ci_release_pipeline: create .github/workflows/release.yml for tag-based VSIX + npm publish.",
+      "Fix A3 output: correct commit_shas to full 40-char SHA, fix change_details to match actual commit content.",
+      "Fix ci.yml: change branch targets from 'main' to 'master' (or rename default branch).",
+      "Update workpack.state.json to mark A3 complete after implementation.",
+      "Re-run V1 integration gate."
     ],
     "known_issues": [
-      "ci.yml targets 'main' branch but repo default is 'master' — may need alignment."
+      "ci.yml targets 'main' branch but repo default is 'master'.",
+      "A3 output uses short SHA ab16540 instead of full ab16540af73008c86845149bd26de0362b6a8aaa."
     ]
   },
   "repos": [
@@ -102,22 +112,7 @@
   "change_details": [
     {
       "repo": "WorkpackManager",
-      "file": "outputs/V1_integration_meta.json",
-      "action": "created"
-    },
-    {
-      "repo": "WorkpackManager",
-      "file": "outputs/A0_bootstrap.json",
-      "action": "modified"
-    },
-    {
-      "repo": "WorkpackManager",
-      "file": "outputs/A2_npm_publish_protocol.json",
-      "action": "modified"
-    },
-    {
-      "repo": "WorkpackManager",
-      "file": "outputs/A4_readme_marketplace.json",
+      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/V1_integration_meta.json",
       "action": "modified"
     },
     {
@@ -126,5 +121,5 @@
       "action": "modified"
     }
   ],
-  "notes": "V1 gate: FAIL. 1 blocking issue remains (A3 not executed — no release.yml). 4 artifact integrity issues resolved in this commit. AC1-AC4, AC6-AC8 pass; AC5 partial fail (ci.yml present but release.yml missing)."
+  "notes": "V1 gate iteration 2: FAIL. 3 blocking issues: (1) release.yml missing — AC5(b) unsatisfied, (2) A3 change_details declares A3_ci_release_pipeline.json in SHA ab16540 but file was created in ac3acd6, (3) ci.yml targets 'main' not 'master'. AC1 pass, AC2 pass, AC3 pass, AC4 pass, AC5 partial fail, AC6 pass, AC7 pass, AC8 pass."
 }

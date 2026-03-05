@@ -1,7 +1,7 @@
 {
   "workpack_id": "03_workpack-manager-v2_marketplace-publishing",
   "overall_status": "in_progress",
-  "last_updated": "2026-03-05T17:30:00Z",
+  "last_updated": "2026-03-05T17:45:00Z",
   "prompt_status": {
     "A0_bootstrap": {
       "status": "complete",
@@ -97,6 +97,13 @@
       "prompt_stem": "V1_integration_meta",
       "agent": "claude-opus-4-20250514",
       "notes": "V1 integration gate started; blocked_by cleared (test-coverage-hardening merged on master)"
+    },
+    {
+      "timestamp": "2026-03-05T17:45:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "V1_integration_meta",
+      "agent": "claude-opus-4-20250514",
+      "notes": "V1 gate iteration 2 — FAIL: AC5(b) release.yml missing, A3 change_details/SHA mismatch. 7/8 ACs pass."
     }
   ],
   "notes": null
