@@ -14,6 +14,7 @@ export default defineConfig({
       "src/state/__tests__/state.test.ts",
       "src/agents/__tests__/registry.test.ts",
       "src/agents/__tests__/copilot-provider.test.ts",
+      "src/__tests__/extension.integration.test.ts",
       "src/views/__tests__/tree-provider.test.ts",
       "src/views/__tests__/status-icons.test.ts",
       "src/views/__tests__/workpack-tree-item.test.ts",
