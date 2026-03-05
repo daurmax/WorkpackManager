@@ -2,9 +2,9 @@
 
 ## Overall Status
 
-🔴 Not Started
+🟠 Blocked
 
-Last Updated: 2026-03-03
+Last Updated: 2026-03-05
 
 ## Checklist
 
@@ -14,14 +14,14 @@ Last Updated: 2026-03-03
 - [x] `01_plan.md` complete
 - [x] `workpack.meta.json` complete
 - [x] `workpack.state.json` initialized
-- [ ] Prompt files created
+- [x] Prompt files created
 - [x] `outputs/` folder present
-- [ ] YAML front-matter in prompt files
+- [x] YAML front-matter in prompt files
 
 ### Implementation Progress (A-series)
 
-- [ ] A0_bootstrap completed
-- [ ] A1_vsix_packaging completed
+- [x] A0_bootstrap completed
+- [x] A1_vsix_packaging completed
 - [ ] A2_npm_publish_protocol completed
 - [ ] A3_ci_release_pipeline completed
 - [ ] A4_readme_marketplace completed
@@ -42,8 +42,8 @@ No B-series prompts yet.
 
 | Prompt | Output JSON Path | Status |
 |--------|------------------|--------|
-| A0_bootstrap | `outputs/A0_bootstrap.json` | Not Created |
-| A1_vsix_packaging | `outputs/A1_vsix_packaging.json` | Not Created |
+| A0_bootstrap | `outputs/A0_bootstrap.json` | Created |
+| A1_vsix_packaging | `outputs/A1_vsix_packaging.json` | Created |
 | A2_npm_publish_protocol | `outputs/A2_npm_publish_protocol.json` | Not Created |
 | A3_ci_release_pipeline | `outputs/A3_ci_release_pipeline.json` | Not Created |
 | A4_readme_marketplace | `outputs/A4_readme_marketplace.json` | Not Created |

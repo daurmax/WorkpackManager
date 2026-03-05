@@ -1,13 +1,19 @@
 {
   "workpack_id": "03_workpack-manager-v2_marketplace-publishing",
-  "overall_status": "not_started",
-  "last_updated": "2026-03-03T15:38:09Z",
+  "overall_status": "blocked",
+  "last_updated": "2026-03-05T15:27:15Z",
   "prompt_status": {
     "A0_bootstrap": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "completed_at": "2026-03-05T12:00:00Z"
     },
     "A1_vsix_packaging": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-03-05T14:40:00Z",
+      "completed_at": "2026-03-05T15:27:15Z",
+      "output_validated": true
     },
     "A2_npm_publish_protocol": {
       "status": "pending"
@@ -26,7 +32,9 @@
     }
   },
   "agent_assignments": {},
-  "blocked_by": [],
+  "blocked_by": [
+    "02_workpack-manager-v2_test-coverage-hardening"
+  ],
   "execution_log": [
     {
       "timestamp": "2026-03-03T15:38:09Z",
@@ -34,6 +42,34 @@
       "prompt_stem": null,
       "agent": null,
       "notes": "Workpack scaffold created"
+    },
+    {
+      "timestamp": "2026-03-05T14:40:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A1_vsix_packaging",
+      "agent": "codex",
+      "notes": "Started VSIX packaging configuration and marketplace metadata updates"
+    },
+    {
+      "timestamp": "2026-03-05T15:27:15Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A0_bootstrap",
+      "agent": "codex",
+      "notes": "Backfilled status from existing outputs/A0_bootstrap.json artifact"
+    },
+    {
+      "timestamp": "2026-03-05T15:27:15Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A1_vsix_packaging",
+      "agent": "codex",
+      "notes": "VSIX packaging, .vscodeignore, marketplace metadata, and icon asset completed"
+    },
+    {
+      "timestamp": "2026-03-05T15:27:15Z",
+      "event": "blocked",
+      "prompt_stem": null,
+      "agent": "codex",
+      "notes": "Blocked by unresolved requires_workpack dependency 02_workpack-manager-v2_test-coverage-hardening"
     }
   ],
   "notes": null
