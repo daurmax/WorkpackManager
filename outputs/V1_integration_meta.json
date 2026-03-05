@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-manager-v2_marketplace-publishing",
+  "prompt": "V1_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/marketplace-publishing",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "c00691d85fbb45d6bd3951f8b5defa76dd506661"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "outputs/V1_integration_meta.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript build completed with zero errors."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "0 errors, 34 warnings (stylistic only)."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "11 test files, 85 tests passed."
+      },
+      {
+        "cmd": "npm run package:vsix",
+        "result": "pass",
+        "notes": "Produced workpack-manager-0.0.1.vsix (244 files, 276.45 KB)."
+      },
+      {
+        "cmd": "cd packages/protocol && npm pack --dry-run",
+        "result": "pass",
+        "notes": "Tarball includes schemas, templates, bin, tools (37 files, 68.2 KB)."
+      },
+      {
+        "cmd": "git log --oneline feature/marketplace-publishing | grep 98eb2b7",
+        "result": "fail",
+        "notes": "A0 claims SHA 98eb2b7 but this is the master merge commit, not a feature branch commit. Actual A0 commit is 91fe190."
+      },
+      {
+        "cmd": "git log --oneline feature/marketplace-publishing | grep dff99fe",
+        "result": "pass",
+        "notes": "A1 SHA dff99fe verified on branch; file list matches change_details."
+      },
+      {
+        "cmd": "git log --oneline feature/marketplace-publishing | grep 91fe190",
+        "result": "fail",
+        "notes": "A2 claims SHA 91fe190 but this commit is chore(marketplace-publishing/A0_bootstrap). Actual A2 commit is 584fde7."
+      },
+      {
+        "cmd": "git log --oneline feature/marketplace-publishing | grep 0fa103b",
+        "result": "pass",
+        "notes": "A4 SHA 0fa103b present on branch. However, outputs/A4_readme_marketplace.json was committed separately in c00691d, not in the claimed SHA."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No regressions; all 85 existing tests pass."
+  },
+  "handoff": {
+    "summary": "V1 integration gate executed. Result: FAIL — not merge-ready. A3_ci_release_pipeline was never executed (no output JSON, no release.yml), blocking AC5(b). Multiple output artifact integrity issues found in A0 and A2.",
+    "next_steps": [
+      "Execute A3_ci_release_pipeline: create .github/workflows/release.yml for tag-based VSIX + npm publish.",
+      "Fix A0_bootstrap.json: change_details uses {file, type, summary} — must be {repo, file, action} per schema additionalProperties:false.",
+      "Fix A0_bootstrap.json: commit_shas claims 98eb2b7 (master merge) — correct to 91fe190.",
+      "Fix A2_npm_publish_protocol.json: commit_shas claims 91fe190 (A0 recording commit) — correct to 584fde7.",
+      "Fix A4_readme_marketplace.json: change_details lists outputs/A4_readme_marketplace.json in commit 0fa103b but it was committed in c00691d — either amend or add both SHAs.",
+      "Update workpack.state.json: A2 and A4 should be marked complete (currently pending despite having outputs).",
+      "Re-run V1 integration gate after all fixes."
+    ],
+    "known_issues": [
+      "ci.yml targets 'main' branch but repo default is 'master' — may need alignment.",
+      "Cross-workpack dependency 02_workpack-manager-v2_test-coverage-hardening blocklist in workpack.state.json should be cleared (it is merged on master)."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "outputs/V1_integration_meta.json",
+      "action": "created"
+    }
+  ],
+  "notes": "V1 gate: FAIL. 5 blocking issues identified. See handoff.next_steps for remediation. Acceptance criteria: AC1 pass, AC2 pass, AC3 pass, AC4 pass, AC5 FAIL (release.yml missing — A3 not done), AC6 pass, AC7 pass, AC8 pass."
+}
