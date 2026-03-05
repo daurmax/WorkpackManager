@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-manager-v2_test-coverage-hardening",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/test-coverage-hardening",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "7fdc3cc02e1752b9027199d087faeb719f8e4001"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_test-coverage-hardening/outputs/A0_bootstrap.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript compilation succeeded."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "No errors; 33 existing warnings in repository baseline."
+      },
+      {
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "8 test files, 38 tests passed."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Bootstrap completed: dependency confirmed, branch prepared, baseline checks passed, outputs directory writable.",
+    "next_steps": [
+      "Start dependent A-series prompts"
+    ],
+    "known_issues": [
+      "ESLint baseline has existing warnings (no errors)."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [],
+  "notes": "requires_workpack '01_workpack-manager-v2_execution-wiring' verified as completed in its workpack.state.json."
+}

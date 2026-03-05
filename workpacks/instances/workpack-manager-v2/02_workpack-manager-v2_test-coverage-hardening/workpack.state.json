@@ -1,25 +1,25 @@
 {
   "workpack_id": "02_workpack-manager-v2_test-coverage-hardening",
-  "overall_status": "not_started",
-  "last_updated": "2026-03-03T15:38:04Z",
+  "overall_status": "in_progress",
+  "last_updated": "2026-03-05T11:30:00Z",
   "prompt_status": {
     "A0_bootstrap": {
-      "status": "pending"
+      "status": "completed"
     },
     "A1_state_module_coverage": {
-      "status": "pending"
+      "status": "completed"
     },
     "A2_parser_coverage": {
-      "status": "pending"
+      "status": "completed"
     },
     "A3_views_coverage": {
-      "status": "pending"
+      "status": "completed"
     },
     "A4_integration_tests": {
-      "status": "pending"
+      "status": "completed"
     },
     "V1_integration_meta": {
-      "status": "pending"
+      "status": "in_progress"
     },
     "R1_retrospective": {
       "status": "pending"
@@ -34,6 +34,48 @@
       "prompt_stem": null,
       "agent": null,
       "notes": "Workpack scaffold created"
+    },
+    {
+      "timestamp": "2026-03-04T17:39:23Z",
+      "event": "completed",
+      "prompt_stem": "A0_bootstrap",
+      "agent": null,
+      "notes": "Bootstrap verified, baseline branch ready"
+    },
+    {
+      "timestamp": "2026-03-04T18:12:46Z",
+      "event": "completed",
+      "prompt_stem": "A1_state_module_coverage",
+      "agent": null,
+      "notes": "State module coverage hardened"
+    },
+    {
+      "timestamp": "2026-03-04T18:13:50Z",
+      "event": "completed",
+      "prompt_stem": "A2_parser_coverage",
+      "agent": null,
+      "notes": "Parser coverage hardened"
+    },
+    {
+      "timestamp": "2026-03-04T18:13:09Z",
+      "event": "completed",
+      "prompt_stem": "A3_views_coverage",
+      "agent": null,
+      "notes": "Views coverage hardened"
+    },
+    {
+      "timestamp": "2026-03-05T12:06:21Z",
+      "event": "completed",
+      "prompt_stem": "A4_integration_tests",
+      "agent": null,
+      "notes": "Integration lifecycle tests added"
+    },
+    {
+      "timestamp": "2026-03-05T11:30:00Z",
+      "event": "started",
+      "prompt_stem": "V1_integration_meta",
+      "agent": null,
+      "notes": "V1 integration gate in progress"
     }
   ],
   "notes": null

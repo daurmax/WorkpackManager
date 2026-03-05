@@ -14,7 +14,10 @@ export default defineConfig({
       "src/state/__tests__/state.test.ts",
       "src/agents/__tests__/registry.test.ts",
       "src/agents/__tests__/copilot-provider.test.ts",
+      "src/__tests__/extension.integration.test.ts",
       "src/views/__tests__/tree-provider.test.ts",
+      "src/views/__tests__/status-icons.test.ts",
+      "src/views/__tests__/workpack-tree-item.test.ts",
       "src/commands/__tests__/commands.test.ts",
       "src/__mocks__/__tests__/vscode-mock.test.ts"
     ],
@@ -34,10 +37,10 @@ export default defineConfig({
       ],
       exclude: ["src/**/__tests__/**", "src/**/*.d.ts", "src/test/**"],
       thresholds: {
-        lines: 60,
-        functions: 60,
-        branches: 60,
-        statements: 60
+        lines: 80,
+        functions: 75,
+        branches: 75,
+        statements: 80
       }
     },
     environment: "node"

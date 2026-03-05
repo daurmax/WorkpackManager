@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.2",
+  "workpack": "02_workpack-manager-v2_test-coverage-hardening",
+  "prompt": "A4_integration_tests",
+  "component": "extension-lifecycle-integration-tests",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/test-coverage-hardening",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "dfc695a352cf0b06f4b0814978643fd14551725b"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "vitest.config.ts"
+    ],
+    "files_created": [
+      "src/__tests__/extension.integration.test.ts",
+      "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_test-coverage-hardening/outputs/A4_integration_tests.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run test -- src/__tests__/extension.integration.test.ts",
+        "result": "pass",
+        "notes": "2/2 extension activation integration tests passed."
+      },
+      {
+        "cmd": "npm run test",
+        "result": "pass",
+        "notes": "11 test files and 85 tests passed with integration suite included."
+      },
+      {
+        "cmd": "npm run test:coverage",
+        "result": "pass",
+        "notes": "Coverage remained above target: All files 95.65% statements, 97.7% branches."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added extension lifecycle integration tests that validate activation wiring, command registration handoff, tree provider startup mode, and lint diagnostics callback behavior."
+  },
+  "handoff": {
+    "summary": "Implemented A4 integration coverage with a dedicated extension activation lifecycle test suite and included it in Vitest execution.",
+    "next_steps": [
+      "Proceed to V1_integration_meta to validate final acceptance criteria and thresholds.",
+      "Optionally add real @vscode/test-electron runtime smoke tests if extension-host execution coverage is desired beyond mocked integration."
+    ],
+    "known_issues": [
+      "Existing parser schema-path warnings in command tests remain unchanged and non-blocking."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/__tests__/extension.integration.test.ts",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "vitest.config.ts",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/02_workpack-manager-v2_test-coverage-hardening/outputs/A4_integration_tests.json",
+      "action": "created"
+    }
+  ],
+  "notes": "No production logic changes were required for A4; tests only."
+}
