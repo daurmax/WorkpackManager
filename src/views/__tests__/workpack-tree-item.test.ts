@@ -4,6 +4,10 @@ import * as vscode from "vscode";
 import { describe, it } from "vitest";
 import { TreeItemKind, WorkpackTreeItem } from "../workpack-tree-item";
 
+function iconId(item: WorkpackTreeItem): string | undefined {
+  return (item.iconPath as vscode.ThemeIcon | undefined)?.id;
+}
+
 describe("workpack-tree-item", () => {
   it("maps each tree item kind to expected context values and icons", () => {
     const workpack = new WorkpackTreeItem(
@@ -16,7 +20,7 @@ describe("workpack-tree-item", () => {
       "complete"
     );
     assert.equal(workpack.contextValue, "workpack");
-    assert.equal(workpack.iconPath?.id, "check");
+    assert.equal(iconId(workpack), "check");
 
     const sectionIcons: Array<{ section: "request" | "plan" | "prompts" | "outputs" | "status"; iconId: string }> = [
       { section: "request", iconId: "file-text" },
@@ -36,7 +40,7 @@ describe("workpack-tree-item", () => {
         sectionIcon.section
       );
       assert.equal(section.contextValue, `section.${sectionIcon.section}`);
-      assert.equal(section.iconPath?.id, sectionIcon.iconId);
+      assert.equal(iconId(section), sectionIcon.iconId);
     }
 
     const sectionWithoutName = new WorkpackTreeItem(
@@ -46,7 +50,7 @@ describe("workpack-tree-item", () => {
       vscode.TreeItemCollapsibleState.Collapsed
     );
     assert.equal(sectionWithoutName.contextValue, "section.generic");
-    assert.equal(sectionWithoutName.iconPath?.id, "folder");
+    assert.equal(iconId(sectionWithoutName), "folder");
 
     const prompt = new WorkpackTreeItem(
       TreeItemKind.PromptFile,
@@ -58,7 +62,7 @@ describe("workpack-tree-item", () => {
       "blocked"
     );
     assert.equal(prompt.contextValue, "prompt");
-    assert.equal(prompt.iconPath?.id, "error");
+    assert.equal(iconId(prompt), "error");
 
     const output = new WorkpackTreeItem(
       TreeItemKind.OutputFile,
@@ -69,7 +73,7 @@ describe("workpack-tree-item", () => {
       "outputs"
     );
     assert.equal(output.contextValue, "output");
-    assert.equal(output.iconPath?.id, "output");
+    assert.equal(iconId(output), "output");
 
     const status = new WorkpackTreeItem(
       TreeItemKind.StatusFile,
@@ -80,7 +84,7 @@ describe("workpack-tree-item", () => {
       "status"
     );
     assert.equal(status.contextValue, "statusFile");
-    assert.equal(status.iconPath?.id, "pulse");
+    assert.equal(iconId(status), "pulse");
 
     const state = new WorkpackTreeItem(
       TreeItemKind.StateFile,
@@ -91,7 +95,7 @@ describe("workpack-tree-item", () => {
       "status"
     );
     assert.equal(state.contextValue, "stateFile");
-    assert.equal(state.iconPath?.id, "symbol-key");
+    assert.equal(iconId(state), "symbol-key");
 
     const meta = new WorkpackTreeItem(
       TreeItemKind.MetaFile,
@@ -100,7 +104,7 @@ describe("workpack-tree-item", () => {
       vscode.TreeItemCollapsibleState.None
     );
     assert.equal(meta.contextValue, "metaFile");
-    assert.equal(meta.iconPath?.id, "json");
+    assert.equal(iconId(meta), "json");
   });
 
   it("falls back to unknown or pending icons for mismatched statuses", () => {
@@ -113,7 +117,7 @@ describe("workpack-tree-item", () => {
       undefined,
       "pending"
     );
-    assert.equal(workpackWithPromptStatus.iconPath?.id, "question");
+    assert.equal(iconId(workpackWithPromptStatus), "question");
 
     const promptWithWorkpackStatus = new WorkpackTreeItem(
       TreeItemKind.PromptFile,
@@ -124,7 +128,7 @@ describe("workpack-tree-item", () => {
       "prompts",
       "review"
     );
-    assert.equal(promptWithWorkpackStatus.iconPath?.id, "circle-outline");
+    assert.equal(iconId(promptWithWorkpackStatus), "circle-outline");
   });
 
   it("handles markdown, json, and generic file icon resolution paths", () => {
@@ -136,7 +140,7 @@ describe("workpack-tree-item", () => {
       undefined,
       "plan"
     );
-    assert.equal(markdown.iconPath?.id, "markdown");
+    assert.equal(iconId(markdown), "markdown");
 
     const genericFile = new WorkpackTreeItem(
       999 as TreeItemKind,
@@ -146,7 +150,7 @@ describe("workpack-tree-item", () => {
       undefined,
       "outputs"
     );
-    assert.equal(genericFile.iconPath?.id, "file");
+    assert.equal(iconId(genericFile), "file");
     assert.equal(genericFile.contextValue, "metaFile");
   });
 

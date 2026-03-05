@@ -124,7 +124,7 @@ describe("extension activation integration", () => {
     assert.deepEqual(optionsArg, { watchFileSystem: true });
 
     assert.equal(createTreeViewMock.mock.calls.length, 1);
-    const [viewId, treeViewOptions] = createTreeViewMock.mock.calls[0] as [
+    const [viewId, treeViewOptions] = createTreeViewMock.mock.calls[0] as unknown as [
       string,
       { treeDataProvider: unknown; showCollapseAll: boolean }
     ];

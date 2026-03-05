@@ -156,6 +156,7 @@ describe("output scanner", () => {
     });
 
     const parseSpy = vi.spyOn(JSON, "parse").mockImplementation((): unknown => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw "non-error-throwable";
     });
 

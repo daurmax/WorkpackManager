@@ -37,10 +37,10 @@ export default defineConfig({
       ],
       exclude: ["src/**/__tests__/**", "src/**/*.d.ts", "src/test/**"],
       thresholds: {
-        lines: 60,
-        functions: 60,
-        branches: 60,
-        statements: 60
+        lines: 80,
+        functions: 75,
+        branches: 75,
+        statements: 80
       }
     },
     environment: "node"

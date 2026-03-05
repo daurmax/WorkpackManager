@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "workpack": "02_workpack-manager-v2_test-coverage-hardening",
   "prompt": "A4_integration_tests",
   "component": "extension-lifecycle-integration-tests",
@@ -11,7 +11,9 @@
   },
   "artifacts": {
     "pr_url": "",
-    "commit_shas": [],
+    "commit_shas": [
+      "dfc695a352cf0b06f4b0814978643fd14551725b"
+    ],
     "branch_verified": false
   },
   "changes": {
