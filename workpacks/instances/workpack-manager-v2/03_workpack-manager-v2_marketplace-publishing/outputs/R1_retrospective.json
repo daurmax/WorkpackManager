@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-manager-v2_marketplace-publishing",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/marketplace-publishing",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "91fe1907da2453aecdc855c83e36f17b0427e03e",
+      "dff99fe25a387f5cd7449a5b60491ccc71b7b6f6",
+      "584fde78675f6e1eacca48551d7bfd2609f607ce",
+      "898557b1318458e3a090bdf9f4f9afd3c92954e8",
+      "0fa103b95af5a4048e93396426d169765e5f9f35",
+      "c00691d85fbb45d6bd3951f8b5defa76dd506661",
+      "794d14cc0a419980575df3243ffbda1b38b7f94b"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/R1_retrospective.md",
+      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/R1_retrospective.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [],
+    "regression_added": false,
+    "regression_notes": "Retrospective is a documentation-only prompt; no code changes."
+  },
+  "handoff": {
+    "summary": "Retrospective completed. Workpack delivered all 8 acceptance criteria with zero B-series rework. V1 gate caught one major gap (missing release.yml from A3) which was resolved in a single rework cycle. 14 commits, ~2h37m wall time, 3 agents used.",
+    "next_steps": [
+      "Merge feature/marketplace-publishing into master.",
+      "Apply action items (enforce A-series implementation verification, automate status.md, standardize CI branch names) to protocol templates."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-6",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/R1_retrospective.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/R1_retrospective.json",
+      "action": "created"
+    }
+  ],
+  "notes": "No code changes in this prompt. Retrospective captures process outcomes only."
+}
