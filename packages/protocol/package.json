@@ -2,7 +2,17 @@
   "name": "@workpack/protocol",
   "version": "0.1.0",
   "description": "Workpack protocol schemas, templates, and agent documentation",
+  "private": false,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daurmax/WorkpackManager.git",
+    "directory": "packages/protocol"
+  },
+  "bugs": {
+    "url": "https://github.com/daurmax/WorkpackManager/issues"
+  },
+  "homepage": "https://github.com/daurmax/WorkpackManager/tree/master/packages/protocol#readme",
   "exports": {
     "./schemas/*": "./schemas/*.json",
     "./templates/*": "./templates/*",
@@ -27,5 +37,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

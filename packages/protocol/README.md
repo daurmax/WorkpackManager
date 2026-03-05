@@ -8,6 +8,7 @@ It includes:
 - Template workpack scaffold (`templates/`)
 - Agent documentation (`agent-docs/`)
 - Python tooling scripts as distributable assets (`tools/`)
+- CLI entrypoint (`workpack-init`)
 
 ## Installation
 
@@ -35,4 +36,24 @@ Copy template and documentation assets from:
 
 ## CLI
 
-The package reserves `workpack-init` as a CLI entrypoint. The full implementation is completed in prompt `A3_init_command`.
+Initialize protocol assets in a repository:
+
+```bash
+npx @workpack/protocol init --dir workpacks
+```
+
+Or use the installed bin directly:
+
+```bash
+workpack-init --dir workpacks
+```
+
+## Publish Verification
+
+Before publishing, run:
+
+```bash
+npm pack --dry-run
+```
+
+The tarball should include `schemas/`, `templates/`, `agent-docs/`, `bin/`, and `tools/`.

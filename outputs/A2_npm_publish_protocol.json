@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-manager-v2_marketplace-publishing",
+  "prompt": "A2_npm_publish_protocol",
+  "component": "protocol-npm-publish",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/marketplace-publishing",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "91fe1907da2453aecdc855c83e36f17b0427e03e"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "packages/protocol/package.json",
+      "packages/protocol/README.md"
+    ],
+    "files_created": [
+      "outputs/A2_npm_publish_protocol.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "node -e \"const p=require('./packages/protocol/package.json'); console.log(JSON.stringify({name:p.name, private:p.private, files:p.files, bin:p.bin, publishConfig:p.publishConfig}, null, 2));\"",
+        "result": "pass",
+        "notes": "Confirmed @workpack/protocol manifest is publishable with private:false, files/bin map, and public publishConfig."
+      },
+      {
+        "cmd": "cd packages/protocol && npm pack --dry-run",
+        "result": "pass",
+        "notes": "Dry-run tarball includes schemas, templates, agent-docs, bin/init.js, and tools assets."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No runtime behavior changes; packaging metadata and documentation only."
+  },
+  "handoff": {
+    "summary": "Hardened @workpack/protocol npm publish readiness by setting explicit publish metadata and adding publish verification guidance.",
+    "next_steps": [
+      "Proceed to A3_ci_release_pipeline to wire tag-based npm publish and VSIX release workflows."
+    ],
+    "known_issues": [
+      "Unrelated workspace changes exist in package.json, package-lock.json, .vscodeignore, and resources/icon.png and were intentionally excluded from this commit."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/package.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "packages/protocol/README.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "outputs/A2_npm_publish_protocol.json",
+      "action": "created"
+    }
+  ],
+  "notes": "A2 implementation limited to protocol npm publish readiness and output artifact generation."
+}
