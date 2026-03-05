@@ -1,0 +1,33 @@
+# Source and tests
+src/**
+**/*.ts
+**/*.tsx
+**/*.map
+**/*.test.*
+out/test/**
+out/**/__tests__/**
+out/**/__mocks__/**
+out/**/*.test.js
+out/**/*.test.js.map
+
+# Development-only folders
+.github/**
+.vscode/**
+coverage/**
+docs/**
+outputs/**
+packages/**
+workpacks/**
+.pytest_cache/**
+
+# Development-only files
+.gitignore
+.vscode-test.mjs
+eslint.config.cjs
+pnpm-workspace.yaml
+tsconfig.json
+vitest.config.ts
+
+# Local build artifacts
+*.vsix
+*.log
