@@ -12,7 +12,8 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "0fa103b95af5a4048e93396426d169765e5f9f35"
+      "0fa103b95af5a4048e93396426d169765e5f9f35",
+      "c00691d85fbb45d6bd3951f8b5defa76dd506661"
     ],
     "branch_verified": false
   },

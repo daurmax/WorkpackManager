@@ -12,7 +12,7 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "98eb2b7843b07de5503421bb2d93f42fc0737975"
+      "91fe1907da2453aecdc855c83e36f17b0427e03e"
     ],
     "branch_verified": false
   },
@@ -66,9 +66,9 @@
   },
   "change_details": [
     {
+      "repo": "WorkpackManager",
       "file": "outputs/A0_bootstrap.json",
-      "type": "create",
-      "summary": "Recorded A0 bootstrap branch setup, dependency status, and baseline verification results."
+      "action": "created"
     }
   ],
   "notes": "All local bootstrap prerequisites are complete except unresolved requires_workpack completion gate."

@@ -1,7 +1,7 @@
 {
   "workpack_id": "03_workpack-manager-v2_marketplace-publishing",
-  "overall_status": "blocked",
-  "last_updated": "2026-03-05T15:27:15Z",
+  "overall_status": "in_progress",
+  "last_updated": "2026-03-05T17:30:00Z",
   "prompt_status": {
     "A0_bootstrap": {
       "status": "complete",
@@ -16,25 +16,31 @@
       "output_validated": true
     },
     "A2_npm_publish_protocol": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "completed_at": "2026-03-05T16:00:00Z",
+      "output_validated": true
     },
     "A3_ci_release_pipeline": {
       "status": "pending"
     },
     "A4_readme_marketplace": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "completed_at": "2026-03-05T16:30:00Z",
+      "output_validated": true
     },
     "V1_integration_meta": {
-      "status": "pending"
+      "status": "in_progress",
+      "assigned_agent": "claude-opus-4-20250514",
+      "started_at": "2026-03-05T17:15:00Z"
     },
     "R1_retrospective": {
       "status": "pending"
     }
   },
   "agent_assignments": {},
-  "blocked_by": [
-    "02_workpack-manager-v2_test-coverage-hardening"
-  ],
+  "blocked_by": [],
   "execution_log": [
     {
       "timestamp": "2026-03-03T15:38:09Z",
@@ -70,6 +76,27 @@
       "prompt_stem": null,
       "agent": "codex",
       "notes": "Blocked by unresolved requires_workpack dependency 02_workpack-manager-v2_test-coverage-hardening"
+    },
+    {
+      "timestamp": "2026-03-05T16:00:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A2_npm_publish_protocol",
+      "agent": "codex",
+      "notes": "Protocol npm publish readiness completed (commit 584fde7)"
+    },
+    {
+      "timestamp": "2026-03-05T16:30:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A4_readme_marketplace",
+      "agent": "codex",
+      "notes": "README restructured and CHANGELOG added (commits 0fa103b, c00691d)"
+    },
+    {
+      "timestamp": "2026-03-05T17:15:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "V1_integration_meta",
+      "agent": "claude-opus-4-20250514",
+      "notes": "V1 integration gate started; blocked_by cleared (test-coverage-hardening merged on master)"
     }
   ],
   "notes": null

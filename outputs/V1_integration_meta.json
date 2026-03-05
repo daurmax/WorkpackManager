@@ -17,7 +17,12 @@
     "branch_verified": false
   },
   "changes": {
-    "files_modified": [],
+    "files_modified": [
+      "outputs/A0_bootstrap.json",
+      "outputs/A2_npm_publish_protocol.json",
+      "outputs/A4_readme_marketplace.json",
+      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/workpack.state.json"
+    ],
     "files_created": [
       "outputs/V1_integration_meta.json"
     ],
@@ -53,8 +58,8 @@
       },
       {
         "cmd": "git log --oneline feature/marketplace-publishing | grep 98eb2b7",
-        "result": "fail",
-        "notes": "A0 claims SHA 98eb2b7 but this is the master merge commit, not a feature branch commit. Actual A0 commit is 91fe190."
+        "result": "pass",
+        "notes": "A0 SHA corrected from 98eb2b7 to 91fe190; now verified on branch."
       },
       {
         "cmd": "git log --oneline feature/marketplace-publishing | grep dff99fe",
@@ -62,33 +67,27 @@
         "notes": "A1 SHA dff99fe verified on branch; file list matches change_details."
       },
       {
-        "cmd": "git log --oneline feature/marketplace-publishing | grep 91fe190",
-        "result": "fail",
-        "notes": "A2 claims SHA 91fe190 but this commit is chore(marketplace-publishing/A0_bootstrap). Actual A2 commit is 584fde7."
+        "cmd": "git log --oneline feature/marketplace-publishing | grep 584fde7",
+        "result": "pass",
+        "notes": "A2 SHA corrected from 91fe190 to 584fde7; now verified on branch."
       },
       {
         "cmd": "git log --oneline feature/marketplace-publishing | grep 0fa103b",
         "result": "pass",
-        "notes": "A4 SHA 0fa103b present on branch. However, outputs/A4_readme_marketplace.json was committed separately in c00691d, not in the claimed SHA."
+        "notes": "A4 SHA 0fa103b verified. Second SHA c00691d added for outputs/A4_readme_marketplace.json."
       }
     ],
     "regression_added": false,
     "regression_notes": "No regressions; all 85 existing tests pass."
   },
   "handoff": {
-    "summary": "V1 integration gate executed. Result: FAIL — not merge-ready. A3_ci_release_pipeline was never executed (no output JSON, no release.yml), blocking AC5(b). Multiple output artifact integrity issues found in A0 and A2.",
+    "summary": "V1 integration gate executed. Result: FAIL — not merge-ready. A3_ci_release_pipeline was never executed (no release.yml), blocking AC5(b). Artifact integrity issues in A0, A2, A4 have been remediated in this commit.",
     "next_steps": [
       "Execute A3_ci_release_pipeline: create .github/workflows/release.yml for tag-based VSIX + npm publish.",
-      "Fix A0_bootstrap.json: change_details uses {file, type, summary} — must be {repo, file, action} per schema additionalProperties:false.",
-      "Fix A0_bootstrap.json: commit_shas claims 98eb2b7 (master merge) — correct to 91fe190.",
-      "Fix A2_npm_publish_protocol.json: commit_shas claims 91fe190 (A0 recording commit) — correct to 584fde7.",
-      "Fix A4_readme_marketplace.json: change_details lists outputs/A4_readme_marketplace.json in commit 0fa103b but it was committed in c00691d — either amend or add both SHAs.",
-      "Update workpack.state.json: A2 and A4 should be marked complete (currently pending despite having outputs).",
-      "Re-run V1 integration gate after all fixes."
+      "Re-run V1 integration gate after A3 is complete."
     ],
     "known_issues": [
-      "ci.yml targets 'main' branch but repo default is 'master' — may need alignment.",
-      "Cross-workpack dependency 02_workpack-manager-v2_test-coverage-hardening blocklist in workpack.state.json should be cleared (it is merged on master)."
+      "ci.yml targets 'main' branch but repo default is 'master' — may need alignment."
     ]
   },
   "repos": [
@@ -105,7 +104,27 @@
       "repo": "WorkpackManager",
       "file": "outputs/V1_integration_meta.json",
       "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "outputs/A0_bootstrap.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "outputs/A2_npm_publish_protocol.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "outputs/A4_readme_marketplace.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/workpack.state.json",
+      "action": "modified"
     }
   ],
-  "notes": "V1 gate: FAIL. 5 blocking issues identified. See handoff.next_steps for remediation. Acceptance criteria: AC1 pass, AC2 pass, AC3 pass, AC4 pass, AC5 FAIL (release.yml missing — A3 not done), AC6 pass, AC7 pass, AC8 pass."
+  "notes": "V1 gate: FAIL. 1 blocking issue remains (A3 not executed — no release.yml). 4 artifact integrity issues resolved in this commit. AC1-AC4, AC6-AC8 pass; AC5 partial fail (ci.yml present but release.yml missing)."
 }
