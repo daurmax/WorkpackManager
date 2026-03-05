@@ -12,9 +12,9 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "ac3acd63ff7e7ebb6fbe8cc1f0eba4f4b84302d7"
+      "794d14cc0a419980575df3243ffbda1b38b7f94b"
     ],
-    "branch_verified": false
+    "branch_verified": true
   },
   "changes": {
     "files_modified": [
@@ -45,60 +45,84 @@
       {
         "cmd": "npm run package:vsix",
         "result": "pass",
-        "notes": "Produced workpack-manager-0.0.1.vsix (244 files, 276.45 KB)."
+        "notes": "Produced workpack-manager-0.0.1.vsix (244 files, 276.45 KB). AC1 satisfied."
       },
       {
-        "cmd": "cd packages/protocol && npm pack --dry-run",
+        "cmd": "npm --prefix packages/protocol pack --dry-run",
         "result": "pass",
-        "notes": "Tarball correctly includes schemas, templates, bin, tools (37 files, 68.2 KB)."
+        "notes": "Protocol tarball contains 529 files. AC4 satisfied."
       },
       {
-        "cmd": "Test-Path .github/workflows/release.yml",
-        "result": "fail",
-        "notes": "release.yml does NOT exist. AC5(b) unsatisfied — no tag-push workflow for VSIX + npm release."
-      },
-      {
-        "cmd": "git log --oneline feature/marketplace-publishing | grep 91fe190",
+        "cmd": "Test-Path .github/workflows/ci.yml; Test-Path .github/workflows/release.yml",
         "result": "pass",
-        "notes": "A0 SHA 91fe190 verified on branch. Git files: outputs/A0_bootstrap.json. Matches change_details."
+        "notes": "Both CI and release workflows exist. AC5(a) and AC5(b) satisfied."
       },
       {
-        "cmd": "git log --oneline feature/marketplace-publishing | grep dff99fe",
+        "cmd": "Select-String -Path '.vscodeignore' -Pattern 'src/|tests/|coverage|workpacks'",
         "result": "pass",
-        "notes": "A1 SHA dff99fe verified on branch. Git files: .vscodeignore, package-lock.json, package.json, resources/icon.png. Matches change_details."
+        "notes": ".vscodeignore excludes src/, tests (via **/*.ts, *.test.*), coverage/, workpacks/. AC2 satisfied."
       },
       {
-        "cmd": "git log --oneline feature/marketplace-publishing | grep 584fde7",
+        "cmd": "node -e \"const p=require('./package.json'); console.log(p.publisher, p.icon, p.categories, !!p.galleryBanner, !!p.repository, !!p.bugs)\"",
         "result": "pass",
-        "notes": "A2 SHA 584fde7 verified. Git files: outputs/A2_npm_publish_protocol.json, packages/protocol/README.md, packages/protocol/package.json. Matches change_details."
+        "notes": "package.json has publisher=daurmax, icon, categories, galleryBanner, repository, bugs. AC3 satisfied."
       },
       {
-        "cmd": "git show --stat ab16540af73008c86845149bd26de0362b6a8aaa",
-        "result": "fail",
-        "notes": "A3 SHA ab16540 verified on branch BUT change_details claims A3_ci_release_pipeline.json was in this commit — it was not. That file was created in ac3acd6. Also only prompt spec was written, not actual release.yml."
-      },
-      {
-        "cmd": "git log --oneline feature/marketplace-publishing | grep 0fa103b",
+        "cmd": "Select-String -Path 'README.md' -Pattern '^## (Features|Quick Start|Commands|Settings|Contributing)'",
         "result": "pass",
-        "notes": "A4 SHA 0fa103b verified. Git files: CHANGELOG.md, README.md. Second SHA c00691d covers outputs/A4_readme_marketplace.json. Combined match OK."
+        "notes": "All 5 required marketplace README sections present. AC6 satisfied."
+      },
+      {
+        "cmd": "Select-String -Path 'CHANGELOG.md' -Pattern '^## \\[Unreleased\\]|^## \\[0\\.'",
+        "result": "pass",
+        "notes": "CHANGELOG has ## [Unreleased] and ## [0.0.1] - 2026-03-05 entries. AC7 satisfied."
+      },
+      {
+        "cmd": "Test-Path resources/icon.png",
+        "result": "pass",
+        "notes": "resources/icon.png exists. AC8 satisfied."
+      },
+      {
+        "cmd": "git log --oneline feature/marketplace-publishing | grep -E '91fe190|dff99fe|584fde7|898557b|0fa103b|c00691d'",
+        "result": "pass",
+        "notes": "All 6 commit SHAs confirmed on branch: 91fe190 (A0), dff99fe (A1), 584fde7 (A2), 898557b (A3), 0fa103b (A4-docs), c00691d (A4-output)."
+      },
+      {
+        "cmd": "git show --stat 91fe190",
+        "result": "pass",
+        "notes": "A0: outputs/A0_bootstrap.json. Matches change_details."
+      },
+      {
+        "cmd": "git show --stat dff99fe",
+        "result": "pass",
+        "notes": "A1: .vscodeignore, package-lock.json, package.json, resources/icon.png. Matches change_details."
+      },
+      {
+        "cmd": "git show --stat 584fde7",
+        "result": "pass",
+        "notes": "A2: outputs/A2_npm_publish_protocol.json, packages/protocol/README.md, packages/protocol/package.json. Matches change_details."
+      },
+      {
+        "cmd": "git show --stat 898557b",
+        "result": "pass",
+        "notes": "A3: .github/workflows/ci.yml, .github/workflows/release.yml, .github/workflows/workpack-verify.yml. Matches change_details."
+      },
+      {
+        "cmd": "git show --stat 0fa103b && git show --stat c00691d",
+        "result": "pass",
+        "notes": "A4: 0fa103b has CHANGELOG.md + README.md; c00691d has outputs/A4_readme_marketplace.json. Combined matches change_details."
       }
     ],
     "regression_added": false,
     "regression_notes": "No regressions; all 85 existing tests pass."
   },
   "handoff": {
-    "summary": "V1 integration gate re-run. Result: FAIL — not merge-ready. A3_ci_release_pipeline output exists but only records writing the prompt specification, not the actual workflow implementation. release.yml is missing, blocking AC5(b). A3 change_details has a commit/file mismatch.",
+    "summary": "V1 integration gate iteration 3. Result: PASS — merge-ready. All 8 acceptance criteria satisfied. All 6 commit SHAs verified on feature/marketplace-publishing. All change_details cross-references match git commit contents. Build, lint, test, VSIX packaging, and protocol pack all pass.",
     "next_steps": [
-      "Implement A3_ci_release_pipeline: create .github/workflows/release.yml for tag-based VSIX + npm publish.",
-      "Fix A3 output: correct commit_shas to full 40-char SHA, fix change_details to match actual commit content.",
-      "Fix ci.yml: change branch targets from 'main' to 'master' (or rename default branch).",
-      "Update workpack.state.json to mark A3 complete after implementation.",
-      "Re-run V1 integration gate."
+      "Merge feature/marketplace-publishing into master via PR.",
+      "Proceed to R1_retrospective."
     ],
-    "known_issues": [
-      "ci.yml targets 'main' branch but repo default is 'master'.",
-      "A3 output uses short SHA ab16540 instead of full ab16540af73008c86845149bd26de0362b6a8aaa."
-    ]
+    "known_issues": []
   },
   "repos": [
     "WorkpackManager"
@@ -121,5 +145,5 @@
       "action": "modified"
     }
   ],
-  "notes": "V1 gate iteration 2: FAIL. 3 blocking issues: (1) release.yml missing — AC5(b) unsatisfied, (2) A3 change_details declares A3_ci_release_pipeline.json in SHA ab16540 but file was created in ac3acd6, (3) ci.yml targets 'main' not 'master'. AC1 pass, AC2 pass, AC3 pass, AC4 pass, AC5 partial fail, AC6 pass, AC7 pass, AC8 pass."
+  "notes": "V1 gate iteration 3: PASS. All 8 ACs verified. AC1 (VSIX), AC2 (.vscodeignore), AC3 (package.json metadata), AC4 (npm pack), AC5 (ci.yml + release.yml), AC6 (README sections), AC7 (CHANGELOG), AC8 (icon). Branch verified true."
 }
