@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-manager-v2_marketplace-publishing",
+  "prompt": "A3_ci_release_pipeline",
+  "component": "ci-release-pipeline",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/marketplace-publishing",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "ab16540"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/prompts/A3_ci_release_pipeline.md"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/A3_ci_release_pipeline.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "python -c \"import json; from workpacks.tools.verify_prompt_style import check_required_sections, check_yaml_frontmatter; p='workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/prompts/A3_ci_release_pipeline.md'; findings=check_required_sections(p)+check_yaml_frontmatter(p); print(json.dumps(findings, indent=2)); raise SystemExit(1 if findings else 0)\"",
+        "result": "pass",
+        "notes": "Prompt style checks passed with zero findings for required sections and front-matter."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Prompt/specification artifact only; no runtime workflow files were changed in this step."
+  },
+  "handoff": {
+    "summary": "Completed the A3 CI release pipeline prompt specification with concrete objective, requirements, acceptance criteria, verification, and handoff schema.",
+    "next_steps": [
+      "Implement workflow changes described in the A3 prompt.",
+      "Run V1_integration_meta after A3 execution is complete."
+    ],
+    "known_issues": [
+      "A3 prompt status in workpack.state.json remains pending until implementation prompt execution is recorded."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/prompts/A3_ci_release_pipeline.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/A3_ci_release_pipeline.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Output file written in the workpack-local outputs directory as requested."
+}
