@@ -1,7 +1,7 @@
 {
   "workpack_id": "03_workpack-manager-v2_marketplace-publishing",
   "overall_status": "in_progress",
-  "last_updated": "2026-03-05T17:45:00Z",
+  "last_updated": "2026-03-05T17:50:00Z",
   "prompt_status": {
     "A0_bootstrap": {
       "status": "complete",
@@ -22,7 +22,10 @@
       "output_validated": true
     },
     "A3_ci_release_pipeline": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "claude-opus-4-20250514",
+      "completed_at": "2026-03-05T17:48:00Z",
+      "output_validated": true
     },
     "A4_readme_marketplace": {
       "status": "complete",
@@ -103,8 +106,13 @@
       "event": "prompt_completed",
       "prompt_stem": "V1_integration_meta",
       "agent": "claude-opus-4-20250514",
-      "notes": "V1 gate iteration 2 — FAIL: AC5(b) release.yml missing, A3 change_details/SHA mismatch. 7/8 ACs pass."
-    }
+      "notes": "V1 gate iteration 2 — FAIL: AC5(b) release.yml missing, A3 change_details/SHA mismatch. 7/8 ACs pass."    },
+    {
+      "timestamp": "2026-03-05T17:48:00Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A3_ci_release_pipeline",
+      "agent": "claude-opus-4-20250514",
+      "notes": "Created release.yml, fixed ci.yml/workpack-verify.yml branch targets, added VSIX/protocol pack checks to CI (commit 898557b)"    }
   ],
   "notes": null
 }

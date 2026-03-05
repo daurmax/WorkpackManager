@@ -12,16 +12,17 @@
   "artifacts": {
     "pr_url": "",
     "commit_shas": [
-      "ab16540"
+      "898557b1318458e3a090bdf9f4f9afd3c92954e8"
     ],
-    "branch_verified": false
+    "branch_verified": true
   },
   "changes": {
     "files_modified": [
-      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/prompts/A3_ci_release_pipeline.md"
+      ".github/workflows/ci.yml",
+      ".github/workflows/workpack-verify.yml"
     ],
     "files_created": [
-      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/A3_ci_release_pipeline.json"
+      ".github/workflows/release.yml"
     ],
     "contracts_changed": [],
     "breaking_change": false
@@ -29,29 +30,46 @@
   "verification": {
     "commands": [
       {
-        "cmd": "python -c \"import json; from workpacks.tools.verify_prompt_style import check_required_sections, check_yaml_frontmatter; p='workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/prompts/A3_ci_release_pipeline.md'; findings=check_required_sections(p)+check_yaml_frontmatter(p); print(json.dumps(findings, indent=2)); raise SystemExit(1 if findings else 0)\"",
+        "cmd": "npm run build",
         "result": "pass",
-        "notes": "Prompt style checks passed with zero findings for required sections and front-matter."
+        "notes": "TypeScript build completed with zero errors."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "0 errors, 34 warnings (stylistic only)."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "11 test files, 85 tests passed."
+      },
+      {
+        "cmd": "npm run package:vsix",
+        "result": "pass",
+        "notes": "Produced workpack-manager-0.0.1.vsix (244 files, 276.45 KB)."
+      },
+      {
+        "cmd": "npm --prefix packages/protocol pack --dry-run",
+        "result": "pass",
+        "notes": "Protocol tarball contains 529 files."
       }
     ],
     "regression_added": false,
-    "regression_notes": "Prompt/specification artifact only; no runtime workflow files were changed in this step."
+    "regression_notes": "No regressions; all 85 existing tests pass."
   },
   "handoff": {
-    "summary": "Completed the A3 CI release pipeline prompt specification with concrete objective, requirements, acceptance criteria, verification, and handoff schema.",
+    "summary": "CI and release workflows implemented with secret-gated publish paths for VSIX and protocol release. ci.yml and workpack-verify.yml branch targets corrected from main to master. release.yml triggers on v* tags and workflow_dispatch with manual publish toggles for first-release safety.",
     "next_steps": [
-      "Implement workflow changes described in the A3 prompt.",
-      "Run V1_integration_meta after A3 execution is complete."
+      "Run V1_integration_meta to verify merge readiness."
     ],
-    "known_issues": [
-      "A3 prompt status in workpack.state.json remains pending until implementation prompt execution is recorded."
-    ]
+    "known_issues": []
   },
   "repos": [
     "WorkpackManager"
   ],
   "execution": {
-    "model": "gpt-5-codex",
+    "model": "claude-opus-4-20250514",
     "tokens_in": 0,
     "tokens_out": 0,
     "duration_ms": 0
@@ -59,14 +77,19 @@
   "change_details": [
     {
       "repo": "WorkpackManager",
-      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/prompts/A3_ci_release_pipeline.md",
+      "file": ".github/workflows/ci.yml",
       "action": "modified"
     },
     {
       "repo": "WorkpackManager",
-      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/A3_ci_release_pipeline.json",
+      "file": ".github/workflows/release.yml",
       "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": ".github/workflows/workpack-verify.yml",
+      "action": "modified"
     }
   ],
-  "notes": "Output file written in the workpack-local outputs directory as requested."
+  "notes": "Replaces prior A3 output which only recorded prompt specification. This version reflects actual workflow implementation."
 }
