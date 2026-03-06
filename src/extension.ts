@@ -4,9 +4,8 @@ import { registerCommands } from "./commands";
 import { WorkpackDiagnosticProvider } from "./validation";
 import { DiscovererWorkpackParser, WorkpackTreeProvider } from "./views";
 
-function getPrimaryWorkspacePath(): string | null {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  return workspaceFolder ? workspaceFolder.uri.fsPath : null;
+function getAllWorkspacePaths(): string[] {
+  return (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
 }
 
 function createProviderRegistry(): ProviderRegistry {
@@ -34,9 +33,9 @@ function createProviderRegistry(): ProviderRegistry {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-  const workspacePath = getPrimaryWorkspacePath() ?? "";
-  const treeProvider = new WorkpackTreeProvider(new DiscovererWorkpackParser(), workspacePath, {
-    watchFileSystem: workspacePath.length > 0
+  const workspacePaths = getAllWorkspacePaths();
+  const treeProvider = new WorkpackTreeProvider(new DiscovererWorkpackParser(), workspacePaths, {
+    watchFileSystem: workspacePaths.length > 0
   });
   const diagnosticProvider = new WorkpackDiagnosticProvider();
   const providerRegistry = createProviderRegistry();

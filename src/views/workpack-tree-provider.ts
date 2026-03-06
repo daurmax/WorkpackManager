@@ -230,17 +230,29 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
 
   constructor(
     private readonly parser: WorkpackParser,
-    private readonly workspacePath: string,
+    private readonly workspacePaths: readonly string[],
     options: WorkpackTreeProviderOptions = {}
   ) {
     this.watcherFactory = options.watcherFactory ?? ((pattern) => vscode.workspace.createFileSystemWatcher(pattern));
 
-    if ((options.watchFileSystem ?? true) && workspacePath.trim().length > 0) {
-      const watcher = this.watcherFactory(new vscode.RelativePattern(workspacePath, "workpacks/instances/**"));
-      watcher.onDidCreate(() => this.refresh(), this, this.disposables);
-      watcher.onDidChange(() => this.refresh(), this, this.disposables);
-      watcher.onDidDelete(() => this.refresh(), this, this.disposables);
-      this.disposables.push(watcher);
+    if (options.watchFileSystem ?? true) {
+      for (const wsPath of workspacePaths) {
+        if (wsPath.trim().length === 0) {
+          continue;
+        }
+        // Watch direct workpacks/instances/ and one level deeper (*/workpacks/instances/)
+        const directWatcher = this.watcherFactory(new vscode.RelativePattern(wsPath, "workpacks/instances/**"));
+        directWatcher.onDidCreate(() => this.refresh(), this, this.disposables);
+        directWatcher.onDidChange(() => this.refresh(), this, this.disposables);
+        directWatcher.onDidDelete(() => this.refresh(), this, this.disposables);
+        this.disposables.push(directWatcher);
+
+        const childWatcher = this.watcherFactory(new vscode.RelativePattern(wsPath, "*/workpacks/instances/**"));
+        childWatcher.onDidCreate(() => this.refresh(), this, this.disposables);
+        childWatcher.onDidChange(() => this.refresh(), this, this.disposables);
+        childWatcher.onDidDelete(() => this.refresh(), this, this.disposables);
+        this.disposables.push(childWatcher);
+      }
     }
   }
 
@@ -289,7 +301,11 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
     await this.ensureLoaded();
 
     if (!element) {
-      return this.getWorkpackItems();
+      return this.getRootItems();
+    }
+
+    if (element.kind === TreeItemKind.Project) {
+      return this.getWorkpackItemsForProject(element.workpackId);
     }
 
     if (element.kind === TreeItemKind.Workpack) {
@@ -318,7 +334,7 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
   }
 
   private async loadInstances(): Promise<void> {
-    if (!this.workspacePath) {
+    if (this.workspacePaths.length === 0) {
       this.instances = [];
       this.instancesById.clear();
       this.isLoaded = true;
@@ -326,7 +342,7 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
     }
 
     try {
-      const discovered = await this.parser.discover([this.workspacePath]);
+      const discovered = await this.parser.discover(this.workspacePaths);
       this.instances = [...discovered];
     } catch (error) {
       warn("Unable to discover workpacks", error);
@@ -341,9 +357,45 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
     this.isLoaded = true;
   }
 
-  private getWorkpackItems(): WorkpackTreeItem[] {
-    return this.instances
-      .filter((instance) => matchesFilter(instance, this.activeFilter))
+  /**
+   * Returns the root-level tree items.
+   * When workpacks are discovered from multiple projects, returns Project nodes.
+   * Otherwise returns Workpack nodes directly (flat list).
+   */
+  private getRootItems(): WorkpackTreeItem[] {
+    const filtered = this.instances.filter((instance) => matchesFilter(instance, this.activeFilter));
+    const projects = new Set(filtered.map((i) => i.sourceProject));
+
+    if (projects.size <= 1) {
+      return this.buildWorkpackItems(filtered);
+    }
+
+    return Array.from(projects)
+      .sort((a, b) => a.localeCompare(b))
+      .map((projectName) => {
+        const projectInstances = filtered.filter((i) => i.sourceProject === projectName);
+        const item = new WorkpackTreeItem(
+          TreeItemKind.Project,
+          projectName,
+          projectName,
+          vscode.TreeItemCollapsibleState.Expanded
+        );
+
+        item.description = `${projectInstances.length} workpack${projectInstances.length === 1 ? "" : "s"}`;
+        return item;
+      });
+  }
+
+  private getWorkpackItemsForProject(projectName: string): WorkpackTreeItem[] {
+    const filtered = this.instances
+      .filter((instance) => instance.sourceProject === projectName)
+      .filter((instance) => matchesFilter(instance, this.activeFilter));
+
+    return this.buildWorkpackItems(filtered);
+  }
+
+  private buildWorkpackItems(filtered: WorkpackInstance[]): WorkpackTreeItem[] {
+    return filtered
       .sort((left, right) => compareInstances(left, right, this.activeSort))
       .map((instance) => {
         const promptCount = instance.meta.prompts.length;

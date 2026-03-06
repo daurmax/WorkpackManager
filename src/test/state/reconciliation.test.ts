@@ -67,6 +67,7 @@ function createFixture(options?: {
     state: options?.state ?? buildState(),
     protocolVersion: "2.0.0",
     discoverySource: "manual",
+    sourceProject: "WorkpackManager",
   };
 }
 

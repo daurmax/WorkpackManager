@@ -26,6 +26,7 @@ function createInstance(folderPath: string): WorkpackInstance {
     folderPath,
     protocolVersion: "2.0.0",
     discoverySource: "auto",
+    sourceProject: "WorkpackManager",
     meta: {
       id: "01_demo_tree-view",
       title: "Demo Tree View",
@@ -102,7 +103,7 @@ describe("workpack tree provider", () => {
   });
 
   it("returns workpack instances as root nodes", async () => {
-    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), workspaceRoot, {
+    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), [workspaceRoot], {
       watchFileSystem: false
     });
 
@@ -114,7 +115,7 @@ describe("workpack tree provider", () => {
   });
 
   it("returns sections as children of a workpack node", async () => {
-    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), workspaceRoot, {
+    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), [workspaceRoot], {
       watchFileSystem: false
     });
 
@@ -127,7 +128,7 @@ describe("workpack tree provider", () => {
   });
 
   it("returns prompt files as children of the Prompts section", async () => {
-    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), workspaceRoot, {
+    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), [workspaceRoot], {
       watchFileSystem: false
     });
 
@@ -146,7 +147,7 @@ describe("workpack tree provider", () => {
   });
 
   it("sets context values for workpack, section, and prompt nodes", async () => {
-    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), workspaceRoot, {
+    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), [workspaceRoot], {
       watchFileSystem: false
     });
 
@@ -162,7 +163,7 @@ describe("workpack tree provider", () => {
   });
 
   it("refresh fires the tree change event", async () => {
-    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), workspaceRoot, {
+    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), [workspaceRoot], {
       watchFileSystem: false
     });
 
@@ -179,11 +180,35 @@ describe("workpack tree provider", () => {
   });
 
   it("returns an empty tree when no workpacks are discovered", async () => {
-    const provider = new WorkpackTreeProvider(new MockParser([]), workspaceRoot, {
+    const provider = new WorkpackTreeProvider(new MockParser([]), [workspaceRoot], {
       watchFileSystem: false
     });
 
     const rootItems = await provider.getChildren();
     assert.deepEqual(rootItems, []);
+  });
+
+  it("groups by project when workpacks come from multiple projects", async () => {
+    const instanceA = { ...createInstance(workpackFolder), sourceProject: "ProjectA" };
+    instanceA.meta = { ...instanceA.meta, id: "wp_A" };
+    const instanceB = { ...createInstance(workpackFolder), sourceProject: "ProjectB" };
+    instanceB.meta = { ...instanceB.meta, id: "wp_B" };
+
+    const provider = new WorkpackTreeProvider(new MockParser([instanceA, instanceB]), [workspaceRoot], {
+      watchFileSystem: false
+    });
+
+    const rootItems = await provider.getChildren();
+
+    assert.equal(rootItems.length, 2);
+    assert.equal(rootItems[0].kind, TreeItemKind.Project);
+    assert.equal(rootItems[0].label, "ProjectA");
+    assert.equal(rootItems[1].kind, TreeItemKind.Project);
+    assert.equal(rootItems[1].label, "ProjectB");
+
+    const projectAChildren = await provider.getChildren(rootItems[0]);
+    assert.equal(projectAChildren.length, 1);
+    assert.equal(projectAChildren[0].kind, TreeItemKind.Workpack);
+    assert.equal(projectAChildren[0].label, "wp_A");
   });
 });

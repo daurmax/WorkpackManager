@@ -41,4 +41,10 @@ export interface WorkpackInstance {
    * Whether this instance came from workspace scan or manual registration.
    */
   discoverySource: DiscoverySource;
+
+  /**
+   * Display name of the project (repo folder) this workpack was discovered in.
+   * Used to group workpacks by project in the tree view.
+   */
+  sourceProject: string;
 }

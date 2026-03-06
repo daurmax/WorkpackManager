@@ -4,6 +4,7 @@ import type { PromptStatusValue } from "../models";
 import { getPromptThemeIcon, getWorkpackThemeIcon, type WorkpackStatus } from "./status-icons";
 
 export enum TreeItemKind {
+  Project,
   Workpack,
   Section,
   PromptFile,
@@ -39,6 +40,10 @@ function isPromptStatus(status: TreeItemStatus | undefined): status is PromptSta
 }
 
 function resolveContextValue(kind: TreeItemKind, section?: WorkpackSection): string {
+  if (kind === TreeItemKind.Project) {
+    return "project";
+  }
+
   if (kind === TreeItemKind.Workpack) {
     return "workpack";
   }
@@ -119,6 +124,10 @@ function resolveIcon(
   section: WorkpackSection | undefined,
   status: TreeItemStatus | undefined
 ): vscode.ThemeIcon {
+  if (kind === TreeItemKind.Project) {
+    return new vscode.ThemeIcon("repo");
+  }
+
   if (kind === TreeItemKind.Workpack) {
     return getWorkpackThemeIcon(isWorkpackStatus(status) ? status : "unknown");
   }
