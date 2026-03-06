@@ -317,6 +317,7 @@ function createWorkpackFixture(): WorkpackInstance {
     ),
     protocolVersion: "2.0.0",
     discoverySource: "auto",
+    sourceProject: "WorkpackManager",
     meta: {
       id: "03_workpack-manager_extension-ux",
       group: "workpack-manager",

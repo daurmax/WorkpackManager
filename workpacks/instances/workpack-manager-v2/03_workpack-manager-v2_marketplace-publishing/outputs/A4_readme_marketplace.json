@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-manager-v2_marketplace-publishing",
+  "prompt": "A4_readme_marketplace",
+  "component": "marketplace-documentation",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/marketplace-publishing",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "0fa103b95af5a4048e93396426d169765e5f9f35",
+      "c00691d85fbb45d6bd3951f8b5defa76dd506661"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "README.md"
+    ],
+    "files_created": [
+      "CHANGELOG.md",
+      "outputs/A4_readme_marketplace.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "rg --line-number \"^## (Features|Quick Start|Commands|Settings|Contributing)$\" README.md",
+        "result": "pass",
+        "notes": "Confirmed all required marketplace README section headers are present."
+      },
+      {
+        "cmd": "rg --line-number \"^## \\\\[Unreleased\\\\]|^## \\\\[0\\\\.0\\\\.1\\\\]\" CHANGELOG.md",
+        "result": "pass",
+        "notes": "Confirmed Keep a Changelog entries include Unreleased and 0.0.1 version section."
+      },
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript build completed successfully after documentation changes."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "Documentation-only changes."
+  },
+  "handoff": {
+    "summary": "Restructured README for marketplace publishing and added root CHANGELOG in Keep a Changelog format.",
+    "next_steps": [
+      "Complete A3_ci_release_pipeline to satisfy CI/release automation acceptance criteria.",
+      "Run V1_integration_meta after A3 and A4 outputs are available."
+    ],
+    "known_issues": [
+      "Cross-workpack dependency 02_workpack-manager-v2_test-coverage-hardening is still in progress."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "README.md",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "CHANGELOG.md",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "outputs/A4_readme_marketplace.json",
+      "action": "created"
+    }
+  ],
+  "notes": "Committed only A4-related documentation and handoff artifact files."
+}

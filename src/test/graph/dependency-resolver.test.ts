@@ -68,6 +68,7 @@ function createInstance(meta: WorkpackMeta, state: WorkpackState | null): Workpa
     state,
     protocolVersion: "2.0.0",
     discoverySource: "auto",
+    sourceProject: "WorkpackManager",
   };
 }
 

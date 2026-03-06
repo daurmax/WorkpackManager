@@ -19,10 +19,10 @@ const activationMocks = vi.hoisted(() => {
 
     constructor(
       parser: unknown,
-      workspacePath: string,
+      workspacePaths: readonly string[],
       options: { watchFileSystem: boolean }
     ) {
-      treeProviderCtor(parser, workspacePath, options);
+      treeProviderCtor(parser, workspacePaths, options);
       treeProviderInstances.push(this);
     }
   }
@@ -118,9 +118,9 @@ describe("extension activation integration", () => {
     activate(context as unknown as Parameters<typeof activate>[0]);
 
     assert.equal(activationMocks.treeProviderCtor.mock.calls.length, 1);
-    const [parserArg, workspacePathArg, optionsArg] = activationMocks.treeProviderCtor.mock.calls[0];
+    const [parserArg, workspacePathsArg, optionsArg] = activationMocks.treeProviderCtor.mock.calls[0];
     assert.ok(parserArg instanceof activationMocks.DiscovererWorkpackParser);
-    assert.equal(workspacePathArg, "C:/workspace");
+    assert.deepEqual(workspacePathsArg, ["C:/workspace"]);
     assert.deepEqual(optionsArg, { watchFileSystem: true });
 
     assert.equal(createTreeViewMock.mock.calls.length, 1);
@@ -184,8 +184,8 @@ describe("extension activation integration", () => {
     activate(context as unknown as Parameters<typeof activate>[0]);
 
     assert.equal(activationMocks.treeProviderCtor.mock.calls.length, 1);
-    const [, workspacePathArg, optionsArg] = activationMocks.treeProviderCtor.mock.calls[0];
-    assert.equal(workspacePathArg, "");
+    const [, workspacePathsArg, optionsArg] = activationMocks.treeProviderCtor.mock.calls[0];
+    assert.deepEqual(workspacePathsArg, []);
     assert.deepEqual(optionsArg, { watchFileSystem: false });
   });
 });

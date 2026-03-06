@@ -294,6 +294,7 @@ async function createExecutionWorkpackFixture(
     folderPath,
     protocolVersion: "3.0.0",
     discoverySource: "auto",
+    sourceProject: "WorkpackManager",
     meta: {
       id: workpackId,
       title: "Execution Test",
@@ -426,6 +427,7 @@ describe("commands", () => {
       folderPath: workpackFolder,
       protocolVersion: "2.0.0",
       discoverySource: "auto",
+      sourceProject: "WorkpackManager",
       meta: {
         id: "wp-assign-test",
         title: "Assign Test",

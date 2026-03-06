@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-manager-v2_marketplace-publishing",
+  "prompt": "V1_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/marketplace-publishing",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "794d14cc0a419980575df3243ffbda1b38b7f94b"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/V1_integration_meta.json",
+      "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/workpack.state.json"
+    ],
+    "files_created": [],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript build completed with zero errors."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "0 errors, 34 warnings (stylistic only)."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "11 test files, 85 tests passed."
+      },
+      {
+        "cmd": "npm run package:vsix",
+        "result": "pass",
+        "notes": "Produced workpack-manager-0.0.1.vsix (244 files, 276.45 KB). AC1 satisfied."
+      },
+      {
+        "cmd": "npm --prefix packages/protocol pack --dry-run",
+        "result": "pass",
+        "notes": "Protocol tarball contains 529 files. AC4 satisfied."
+      },
+      {
+        "cmd": "Test-Path .github/workflows/ci.yml; Test-Path .github/workflows/release.yml",
+        "result": "pass",
+        "notes": "Both CI and release workflows exist. AC5(a) and AC5(b) satisfied."
+      },
+      {
+        "cmd": "Select-String -Path '.vscodeignore' -Pattern 'src/|tests/|coverage|workpacks'",
+        "result": "pass",
+        "notes": ".vscodeignore excludes src/, tests (via **/*.ts, *.test.*), coverage/, workpacks/. AC2 satisfied."
+      },
+      {
+        "cmd": "node -e \"const p=require('./package.json'); console.log(p.publisher, p.icon, p.categories, !!p.galleryBanner, !!p.repository, !!p.bugs)\"",
+        "result": "pass",
+        "notes": "package.json has publisher=daurmax, icon, categories, galleryBanner, repository, bugs. AC3 satisfied."
+      },
+      {
+        "cmd": "Select-String -Path 'README.md' -Pattern '^## (Features|Quick Start|Commands|Settings|Contributing)'",
+        "result": "pass",
+        "notes": "All 5 required marketplace README sections present. AC6 satisfied."
+      },
+      {
+        "cmd": "Select-String -Path 'CHANGELOG.md' -Pattern '^## \\[Unreleased\\]|^## \\[0\\.'",
+        "result": "pass",
+        "notes": "CHANGELOG has ## [Unreleased] and ## [0.0.1] - 2026-03-05 entries. AC7 satisfied."
+      },
+      {
+        "cmd": "Test-Path resources/icon.png",
+        "result": "pass",
+        "notes": "resources/icon.png exists. AC8 satisfied."
+      },
+      {
+        "cmd": "git log --oneline feature/marketplace-publishing | grep -E '91fe190|dff99fe|584fde7|898557b|0fa103b|c00691d'",
+        "result": "pass",
+        "notes": "All 6 commit SHAs confirmed on branch: 91fe190 (A0), dff99fe (A1), 584fde7 (A2), 898557b (A3), 0fa103b (A4-docs), c00691d (A4-output)."
+      },
+      {
+        "cmd": "git show --stat 91fe190",
+        "result": "pass",
+        "notes": "A0: outputs/A0_bootstrap.json. Matches change_details."
+      },
+      {
+        "cmd": "git show --stat dff99fe",
+        "result": "pass",
+        "notes": "A1: .vscodeignore, package-lock.json, package.json, resources/icon.png. Matches change_details."
+      },
+      {
+        "cmd": "git show --stat 584fde7",
+        "result": "pass",
+        "notes": "A2: outputs/A2_npm_publish_protocol.json, packages/protocol/README.md, packages/protocol/package.json. Matches change_details."
+      },
+      {
+        "cmd": "git show --stat 898557b",
+        "result": "pass",
+        "notes": "A3: .github/workflows/ci.yml, .github/workflows/release.yml, .github/workflows/workpack-verify.yml. Matches change_details."
+      },
+      {
+        "cmd": "git show --stat 0fa103b && git show --stat c00691d",
+        "result": "pass",
+        "notes": "A4: 0fa103b has CHANGELOG.md + README.md; c00691d has outputs/A4_readme_marketplace.json. Combined matches change_details."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No regressions; all 85 existing tests pass."
+  },
+  "handoff": {
+    "summary": "V1 integration gate iteration 3. Result: PASS — merge-ready. All 8 acceptance criteria satisfied. All 6 commit SHAs verified on feature/marketplace-publishing. All change_details cross-references match git commit contents. Build, lint, test, VSIX packaging, and protocol pack all pass.",
+    "next_steps": [
+      "Merge feature/marketplace-publishing into master via PR.",
+      "Proceed to R1_retrospective."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/outputs/V1_integration_meta.json",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v2/03_workpack-manager-v2_marketplace-publishing/workpack.state.json",
+      "action": "modified"
+    }
+  ],
+  "notes": "V1 gate iteration 3: PASS. All 8 ACs verified. AC1 (VSIX), AC2 (.vscodeignore), AC3 (package.json metadata), AC4 (npm pack), AC5 (ci.yml + release.yml), AC6 (README sections), AC7 (CHANGELOG), AC8 (icon). Branch verified true."
+}

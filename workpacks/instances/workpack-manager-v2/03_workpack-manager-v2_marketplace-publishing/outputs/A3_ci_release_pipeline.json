@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-manager-v2_marketplace-publishing",
+  "prompt": "A3_ci_release_pipeline",
+  "component": "ci-release-pipeline",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/marketplace-publishing",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "898557b1318458e3a090bdf9f4f9afd3c92954e8"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      ".github/workflows/ci.yml",
+      ".github/workflows/workpack-verify.yml"
+    ],
+    "files_created": [
+      ".github/workflows/release.yml"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript build completed with zero errors."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "0 errors, 34 warnings (stylistic only)."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "11 test files, 85 tests passed."
+      },
+      {
+        "cmd": "npm run package:vsix",
+        "result": "pass",
+        "notes": "Produced workpack-manager-0.0.1.vsix (244 files, 276.45 KB)."
+      },
+      {
+        "cmd": "npm --prefix packages/protocol pack --dry-run",
+        "result": "pass",
+        "notes": "Protocol tarball contains 529 files."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": "No regressions; all 85 existing tests pass."
+  },
+  "handoff": {
+    "summary": "CI and release workflows implemented with secret-gated publish paths for VSIX and protocol release. ci.yml and workpack-verify.yml branch targets corrected from main to master. release.yml triggers on v* tags and workflow_dispatch with manual publish toggles for first-release safety.",
+    "next_steps": [
+      "Run V1_integration_meta to verify merge readiness."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-20250514",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": ".github/workflows/ci.yml",
+      "action": "modified"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": ".github/workflows/release.yml",
+      "action": "created"
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": ".github/workflows/workpack-verify.yml",
+      "action": "modified"
+    }
+  ],
+  "notes": "Replaces prior A3 output which only recorded prompt specification. This version reflects actual workflow implementation."
+}

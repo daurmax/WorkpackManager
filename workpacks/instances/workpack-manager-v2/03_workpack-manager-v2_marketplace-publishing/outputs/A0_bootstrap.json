@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.2",
+  "workpack": "03_workpack-manager-v2_marketplace-publishing",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/marketplace-publishing",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "91fe1907da2453aecdc855c83e36f17b0427e03e"
+    ],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [],
+    "files_created": [
+      "outputs/A0_bootstrap.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript build completed successfully."
+      },
+      {
+        "cmd": "npm run lint",
+        "result": "pass",
+        "notes": "Lint completed with warnings only (no errors)."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "Vitest suite passed (11 files, 85 tests)."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Bootstrap baseline completed on feature branch; repository checks pass.",
+    "next_steps": [
+      "Resolve required workpack dependency status.",
+      "Start dependent A-series prompts"
+    ],
+    "known_issues": [
+      "Required workpack 02_workpack-manager-v2_test-coverage-hardening is still in_progress (V1_integration_meta not completed), so cross-workpack dependency gate is not fully satisfied."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "outputs/A0_bootstrap.json",
+      "action": "created"
+    }
+  ],
+  "notes": "All local bootstrap prerequisites are complete except unresolved requires_workpack completion gate."
+}

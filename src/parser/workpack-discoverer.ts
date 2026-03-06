@@ -147,21 +147,22 @@ async function discoverManualFolder(folderPath: string): Promise<string[]> {
 }
 
 function registerCandidate(
-  target: Map<string, { folderPath: string; source: DiscoverySource }>,
+  target: Map<string, { folderPath: string; source: DiscoverySource; sourceProject: string }>,
   folderPath: string,
-  source: DiscoverySource
+  source: DiscoverySource,
+  sourceProject: string
 ): void {
   const resolvedFolder = toAbsolutePath(folderPath);
   const key = toPathKey(resolvedFolder);
 
   const existing = target.get(key);
   if (!existing) {
-    target.set(key, { folderPath: resolvedFolder, source });
+    target.set(key, { folderPath: resolvedFolder, source, sourceProject });
     return;
   }
 
   if (source === "manual") {
-    target.set(key, { folderPath: resolvedFolder, source });
+    target.set(key, { folderPath: resolvedFolder, source, sourceProject });
   }
 }
 
@@ -192,31 +193,58 @@ export function getManualWorkpackFolders(): string[] {
 }
 
 export async function discoverWorkpacks(workspaceFolders: string[]): Promise<WorkpackInstance[]> {
-  const candidates = new Map<string, { folderPath: string; source: DiscoverySource }>();
+  const candidates = new Map<string, { folderPath: string; source: DiscoverySource; sourceProject: string }>();
 
   for (const workspaceFolder of workspaceFolders) {
     const resolvedWorkspace = toAbsolutePath(workspaceFolder);
+    const projectName = path.basename(resolvedWorkspace);
+
+    // Direct: <workspace>/workpacks/instances/
     const instancesPath = path.join(resolvedWorkspace, WORKPACK_INSTANCES_RELATIVE_PATH);
     const discovered = await discoverFromInstancesDirectory(instancesPath);
     for (const folderPath of discovered) {
-      registerCandidate(candidates, folderPath, "auto");
+      registerCandidate(candidates, folderPath, "auto", projectName);
+    }
+
+    // One level deeper: <workspace>/<child-repo>/workpacks/instances/
+    // Supports multi-repo layouts where each subdirectory is a separate project.
+    if (discovered.length === 0) {
+      try {
+        const children = await fs.readdir(resolvedWorkspace, { withFileTypes: true });
+        for (const child of children) {
+          if (!child.isDirectory() || child.name.startsWith(".") || child.name === "node_modules") {
+            continue;
+          }
+          const childInstancesPath = path.join(resolvedWorkspace, child.name, WORKPACK_INSTANCES_RELATIVE_PATH);
+          const childDiscovered = await discoverFromInstancesDirectory(childInstancesPath);
+          for (const folderPath of childDiscovered) {
+            registerCandidate(candidates, folderPath, "auto", child.name);
+          }
+        }
+      } catch {
+        // Workspace folder not readable — skip child scan
+      }
     }
   }
 
   for (const manualFolder of manualFolders.values()) {
     const discovered = await discoverManualFolder(manualFolder);
     for (const folderPath of discovered) {
-      registerCandidate(candidates, folderPath, "manual");
+      // Derive project name from the workpack path: …/<project>/workpacks/instances/…
+      const instancesIdx = folderPath.replace(/\\/g, "/").indexOf("/workpacks/instances/");
+      const projectRoot = instancesIdx !== -1 ? folderPath.substring(0, instancesIdx) : folderPath;
+      registerCandidate(candidates, folderPath, "manual", path.basename(projectRoot));
     }
   }
 
   const parsedInstances = await Promise.all(
-    Array.from(candidates.values()).map(async ({ folderPath, source }) => {
+    Array.from(candidates.values()).map(async ({ folderPath, source, sourceProject }) => {
       try {
         const instance = await parseWorkpackInstance(folderPath);
         return {
           ...instance,
-          discoverySource: source
+          discoverySource: source,
+          sourceProject
         } satisfies WorkpackInstance;
       } catch (error) {
         warn(`Skipping unparseable workpack at ${folderPath}`, error);

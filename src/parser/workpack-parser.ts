@@ -813,7 +813,8 @@ export async function parseWorkpackInstance(folderPath: string): Promise<Workpac
       meta,
       state,
       protocolVersion: meta.protocolVersion,
-      discoverySource: "auto"
+      discoverySource: "auto",
+      sourceProject: ""
     };
   }
 
@@ -830,6 +831,7 @@ export async function parseWorkpackInstance(folderPath: string): Promise<Workpac
     meta: legacyMeta,
     state,
     protocolVersion: discoveredProtocolVersion,
-    discoverySource: "auto"
+    discoverySource: "auto",
+    sourceProject: ""
   };
 }
