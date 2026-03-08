@@ -10,6 +10,28 @@ function iconId(item: WorkpackTreeItem): string | undefined {
 
 describe("workpack-tree-item", () => {
   it("maps each tree item kind to expected context values and icons", () => {
+    const project = new WorkpackTreeItem(
+      TreeItemKind.Project,
+      "ProjectA",
+      "ProjectA",
+      vscode.TreeItemCollapsibleState.Collapsed
+    );
+    assert.equal(project.contextValue, "project");
+    assert.equal(iconId(project), "repo");
+
+    const group = new WorkpackTreeItem(
+      TreeItemKind.Group,
+      "ProjectA",
+      "migration-group",
+      vscode.TreeItemCollapsibleState.Collapsed,
+      undefined,
+      undefined,
+      undefined,
+      ["migration-group"]
+    );
+    assert.equal(group.contextValue, "group");
+    assert.equal(iconId(group), "folder");
+
     const workpack = new WorkpackTreeItem(
       TreeItemKind.Workpack,
       "wp_01",
@@ -165,7 +187,7 @@ describe("workpack-tree-item", () => {
       "request"
     );
 
-    assert.equal(requestFile.id, "wp_04:MetaFile:request:00_request.md:C:/repo/workpacks/instances/demo/00_request.md");
+    assert.equal(requestFile.id, "wp_04:MetaFile:request:00_request.md:C:/repo/workpacks/instances/demo/00_request.md:none");
     assert.equal(requestFile.resourceUri?.fsPath, filePath);
     assert.equal(requestFile.tooltip, `00_request.md\n${filePath}`);
     assert.equal(requestFile.command?.command, "vscode.open");
@@ -178,7 +200,7 @@ describe("workpack-tree-item", () => {
       "wp_04",
       vscode.TreeItemCollapsibleState.Collapsed
     );
-    assert.equal(missingFilePath.id, "wp_04:Workpack:none:wp_04:none");
+    assert.equal(missingFilePath.id, "wp_04:Workpack:none:wp_04:none:none");
     assert.equal(missingFilePath.resourceUri, undefined);
     assert.equal(missingFilePath.command, undefined);
   });

@@ -190,6 +190,36 @@ function compareInstances(left: WorkpackInstance, right: WorkpackInstance, sortB
   return compareByName(left, right);
 }
 
+function normalizeFolderPath(folderPath: string): string {
+  return path.normalize(folderPath).replaceAll("\\", "/");
+}
+
+function getInstanceGroupPath(instance: WorkpackInstance): string[] {
+  const normalizedFolderPath = normalizeFolderPath(instance.folderPath);
+  const marker = "/workpacks/instances/";
+  const markerIndex = normalizedFolderPath.toLowerCase().indexOf(marker);
+
+  if (markerIndex === -1) {
+    return instance.meta.group ? [instance.meta.group] : [];
+  }
+
+  const relativePath = normalizedFolderPath.slice(markerIndex + marker.length);
+  const segments = relativePath.split("/").filter((segment) => segment.length > 0);
+  if (segments.length <= 1) {
+    return instance.meta.group ? [instance.meta.group] : [];
+  }
+
+  return segments.slice(0, -1);
+}
+
+function startsWithSegments(segments: readonly string[], prefix: readonly string[]): boolean {
+  if (prefix.length > segments.length) {
+    return false;
+  }
+
+  return prefix.every((segment, index) => segments[index] === segment);
+}
+
 export interface WorkpackParser {
   discover(workspaceFolders: readonly string[]): Promise<WorkpackInstance[]>;
 }
@@ -305,7 +335,11 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
     }
 
     if (element.kind === TreeItemKind.Project) {
-      return this.getWorkpackItemsForProject(element.workpackId);
+      return this.getScopedItems(element.workpackId, []);
+    }
+
+    if (element.kind === TreeItemKind.Group) {
+      return this.getScopedItems(element.workpackId, element.groupPath ?? []);
     }
 
     if (element.kind === TreeItemKind.Workpack) {
@@ -360,14 +394,15 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
   /**
    * Returns the root-level tree items.
    * When workpacks are discovered from multiple projects, returns Project nodes.
-   * Otherwise returns Workpack nodes directly (flat list).
+   * Otherwise returns the project contents directly.
    */
   private getRootItems(): WorkpackTreeItem[] {
     const filtered = this.instances.filter((instance) => matchesFilter(instance, this.activeFilter));
     const projects = new Set(filtered.map((i) => i.sourceProject));
 
     if (projects.size <= 1) {
-      return this.buildWorkpackItems(filtered);
+      const singleProject = filtered[0]?.sourceProject ?? "";
+      return this.buildScopedItems(filtered, singleProject, []);
     }
 
     return Array.from(projects)
@@ -386,12 +421,66 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
       });
   }
 
-  private getWorkpackItemsForProject(projectName: string): WorkpackTreeItem[] {
+  private getScopedItems(projectName: string, groupPath: readonly string[]): WorkpackTreeItem[] {
     const filtered = this.instances
-      .filter((instance) => instance.sourceProject === projectName)
+      .filter((instance) => projectName.length === 0 || instance.sourceProject === projectName)
       .filter((instance) => matchesFilter(instance, this.activeFilter));
 
-    return this.buildWorkpackItems(filtered);
+    return this.buildScopedItems(filtered, projectName, groupPath);
+  }
+
+  private buildScopedItems(
+    filtered: WorkpackInstance[],
+    projectName: string,
+    groupPath: readonly string[]
+  ): WorkpackTreeItem[] {
+    const directInstances: WorkpackInstance[] = [];
+    const childGroups = new Map<string, WorkpackInstance[]>();
+
+    for (const instance of filtered) {
+      const instanceGroupPath = getInstanceGroupPath(instance);
+      if (!startsWithSegments(instanceGroupPath, groupPath)) {
+        continue;
+      }
+
+      if (instanceGroupPath.length === groupPath.length) {
+        directInstances.push(instance);
+        continue;
+      }
+
+      const nextSegment = instanceGroupPath[groupPath.length];
+      const siblings = childGroups.get(nextSegment) ?? [];
+      siblings.push(instance);
+      childGroups.set(nextSegment, siblings);
+    }
+
+    const groupItems = Array.from(childGroups.entries())
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([groupName, instances]) => {
+        const item = new WorkpackTreeItem(
+          TreeItemKind.Group,
+          projectName,
+          groupName,
+          vscode.TreeItemCollapsibleState.Collapsed,
+          undefined,
+          undefined,
+          undefined,
+          [...groupPath, groupName]
+        );
+
+        item.description = `${instances.length} workpack${instances.length === 1 ? "" : "s"}`;
+        return item;
+      });
+
+    const workpackItems = this.buildWorkpackItems(directInstances);
+
+    if (this.activeSort === "name") {
+      return [...groupItems, ...workpackItems].sort((left, right) =>
+        String(left.label).localeCompare(String(right.label))
+      );
+    }
+
+    return [...groupItems, ...workpackItems];
   }
 
   private buildWorkpackItems(filtered: WorkpackInstance[]): WorkpackTreeItem[] {

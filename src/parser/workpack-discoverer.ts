@@ -65,29 +65,34 @@ async function isGroupFolder(folderPath: string): Promise<boolean> {
   return fileExists(path.join(folderPath, GROUP_META_FILE));
 }
 
-async function discoverFromGroup(groupFolderPath: string): Promise<string[]> {
+async function discoverFromContainer(containerFolderPath: string): Promise<string[]> {
   try {
-    const entries = await fs.readdir(groupFolderPath, { withFileTypes: true });
+    const entries = await fs.readdir(containerFolderPath, { withFileTypes: true });
     const discovered: string[] = [];
 
     for (const entry of entries) {
-      if (!entry.isDirectory()) {
+      if (!entry.isDirectory() || entry.name.startsWith(".")) {
         continue;
       }
 
-      const candidateFolder = path.join(groupFolderPath, entry.name);
-      if (!isWorkpackFolder(candidateFolder)) {
-        continue;
-      }
-
+      const candidateFolder = path.join(containerFolderPath, entry.name);
       if (await looksLikeWorkpackFolder(candidateFolder)) {
-        discovered.push(candidateFolder);
+        if (isWorkpackFolder(candidateFolder)) {
+          discovered.push(candidateFolder);
+        }
+        continue;
       }
+
+      if (entry.name === "node_modules") {
+        continue;
+      }
+
+      discovered.push(...(await discoverFromContainer(candidateFolder)));
     }
 
     return discovered;
   } catch (error) {
-    warn(`Unable to read group folder ${groupFolderPath}`, error);
+    warn(`Unable to read container folder ${containerFolderPath}`, error);
     return [];
   }
 }
@@ -107,18 +112,19 @@ async function discoverFromInstancesDirectory(instancesFolderPath: string): Prom
       }
 
       const candidateFolder = path.join(instancesFolderPath, entry.name);
-      if (await isGroupFolder(candidateFolder)) {
-        discovered.push(...(await discoverFromGroup(candidateFolder)));
-        continue;
-      }
-
-      if (!isWorkpackFolder(candidateFolder)) {
-        continue;
-      }
-
       if (await looksLikeWorkpackFolder(candidateFolder)) {
-        discovered.push(candidateFolder);
+        if (isWorkpackFolder(candidateFolder)) {
+          discovered.push(candidateFolder);
+        }
+        continue;
       }
+
+      if (await isGroupFolder(candidateFolder)) {
+        discovered.push(...(await discoverFromContainer(candidateFolder)));
+        continue;
+      }
+
+      discovered.push(...(await discoverFromContainer(candidateFolder)));
     }
 
     return discovered;
@@ -135,15 +141,11 @@ async function discoverManualFolder(folderPath: string): Promise<string[]> {
     return [];
   }
 
-  if (await isGroupFolder(resolvedFolder)) {
-    return discoverFromGroup(resolvedFolder);
-  }
-
   if (await looksLikeWorkpackFolder(resolvedFolder)) {
     return [resolvedFolder];
   }
 
-  return discoverFromInstancesDirectory(resolvedFolder);
+  return discoverFromContainer(resolvedFolder);
 }
 
 function registerCandidate(

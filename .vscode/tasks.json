@@ -15,6 +15,13 @@
       "label": "npm: watch",
       "isBackground": true,
       "problemMatcher": "$tsc-watch"
+    },
+    {
+      "label": "extension: install local vsix",
+      "type": "shell",
+      "command": "npm run package:vsix && code --install-extension workpack-manager-0.0.1.vsix --force",
+      "group": "build",
+      "problemMatcher": []
     }
   ]
 }

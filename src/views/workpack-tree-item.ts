@@ -5,6 +5,7 @@ import { getPromptThemeIcon, getWorkpackThemeIcon, type WorkpackStatus } from ".
 
 export enum TreeItemKind {
   Project,
+  Group,
   Workpack,
   Section,
   PromptFile,
@@ -42,6 +43,10 @@ function isPromptStatus(status: TreeItemStatus | undefined): status is PromptSta
 function resolveContextValue(kind: TreeItemKind, section?: WorkpackSection): string {
   if (kind === TreeItemKind.Project) {
     return "project";
+  }
+
+  if (kind === TreeItemKind.Group) {
+    return "group";
   }
 
   if (kind === TreeItemKind.Workpack) {
@@ -128,6 +133,10 @@ function resolveIcon(
     return new vscode.ThemeIcon("repo");
   }
 
+  if (kind === TreeItemKind.Group) {
+    return new vscode.ThemeIcon("folder");
+  }
+
   if (kind === TreeItemKind.Workpack) {
     return getWorkpackThemeIcon(isWorkpackStatus(status) ? status : "unknown");
   }
@@ -151,17 +160,27 @@ function normalizeFilePath(filePath: string | undefined): string {
   return path.normalize(filePath).replaceAll("\\", "/");
 }
 
+function normalizeGroupPath(groupPath: readonly string[] | undefined): string {
+  if (!groupPath || groupPath.length === 0) {
+    return "none";
+  }
+
+  return groupPath.join("/");
+}
+
 function buildTreeItemId(
   kind: TreeItemKind,
   workpackId: string,
   label: string,
   filePath: string | undefined,
-  section: WorkpackSection | undefined
+  section: WorkpackSection | undefined,
+  groupPath: readonly string[] | undefined
 ): string {
   const kindPart = TreeItemKind[kind];
   const sectionPart = section ?? "none";
   const filePart = normalizeFilePath(filePath);
-  return `${workpackId}:${kindPart}:${sectionPart}:${label}:${filePart}`;
+  const groupPart = normalizeGroupPath(groupPath);
+  return `${workpackId}:${kindPart}:${sectionPart}:${label}:${filePart}:${groupPart}`;
 }
 
 export class WorkpackTreeItem extends vscode.TreeItem {
@@ -172,11 +191,12 @@ export class WorkpackTreeItem extends vscode.TreeItem {
     collapsibleState: vscode.TreeItemCollapsibleState,
     public readonly filePath?: string,
     public readonly section?: WorkpackSection,
-    public readonly status?: TreeItemStatus
+    public readonly status?: TreeItemStatus,
+    public readonly groupPath?: readonly string[]
   ) {
     super(label, collapsibleState);
 
-    this.id = buildTreeItemId(kind, workpackId, label, filePath, section);
+    this.id = buildTreeItemId(kind, workpackId, label, filePath, section, groupPath);
     this.contextValue = resolveContextValue(kind, section);
     this.iconPath = resolveIcon(kind, section, status);
 

@@ -80,13 +80,7 @@ describe("workpack tree provider", () => {
 
   beforeEach(async () => {
     workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "workpack-tree-provider-"));
-    workpackFolder = path.join(
-      workspaceRoot,
-      "workpacks",
-      "instances",
-      "demo-group",
-      "01_demo_tree-view"
-    );
+    workpackFolder = path.join(workspaceRoot, "workpacks", "instances", "01_demo_tree-view");
 
     await writeFile(path.join(workpackFolder, "00_request.md"));
     await writeFile(path.join(workpackFolder, "01_plan.md"));
@@ -112,6 +106,47 @@ describe("workpack tree provider", () => {
     assert.equal(rootItems.length, 1);
     assert.equal(rootItems[0].kind, TreeItemKind.Workpack);
     assert.equal(rootItems[0].label, "01_demo_tree-view");
+  });
+
+  it("preserves grouped folders inside a single project", async () => {
+    const standalone = createInstance(path.join(workspaceRoot, "workpacks", "instances", "2026-02-23_feature_alignment"));
+    standalone.meta = { ...standalone.meta, id: "2026-02-23_feature_alignment" };
+
+    const groupedA = createInstance(
+      path.join(workspaceRoot, "workpacks", "instances", "furlan-speech-migration", "01_furlan-speech-migration_pre-audit")
+    );
+    groupedA.meta = {
+      ...groupedA.meta,
+      id: "01_furlan-speech-migration_pre-audit",
+      group: "furlan-speech-migration"
+    };
+
+    const groupedB = createInstance(
+      path.join(workspaceRoot, "workpacks", "instances", "furlan-speech-migration", "02_furlan-speech-migration_manifest")
+    );
+    groupedB.meta = {
+      ...groupedB.meta,
+      id: "02_furlan-speech-migration_manifest",
+      group: "furlan-speech-migration"
+    };
+
+    const provider = new WorkpackTreeProvider(new MockParser([standalone, groupedA, groupedB]), [workspaceRoot], {
+      watchFileSystem: false
+    });
+
+    const rootItems = await provider.getChildren();
+
+    assert.equal(rootItems.length, 2);
+    assert.equal(rootItems[0].kind, TreeItemKind.Workpack);
+    assert.equal(rootItems[0].label, "2026-02-23_feature_alignment");
+    assert.equal(rootItems[1].kind, TreeItemKind.Group);
+    assert.equal(rootItems[1].label, "furlan-speech-migration");
+
+    const groupChildren = await provider.getChildren(rootItems[1]);
+    assert.deepEqual(
+      groupChildren.map((item) => item.label),
+      ["01_furlan-speech-migration_pre-audit", "02_furlan-speech-migration_manifest"]
+    );
   });
 
   it("returns sections as children of a workpack node", async () => {
