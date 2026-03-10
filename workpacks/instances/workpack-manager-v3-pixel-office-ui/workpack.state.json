@@ -1,0 +1,43 @@
+{
+  "workpack_id": "workpack-manager-v3-pixel-office-ui",
+  "overall_status": "not_started",
+  "last_updated": "2026-03-10T00:00:00Z",
+  "prompt_status": {
+    "A0_bootstrap": {
+      "status": "pending"
+    },
+    "A1_pixel_room_shell": {
+      "status": "pending"
+    },
+    "A2_agent_animation_runtime": {
+      "status": "pending"
+    },
+    "A3_desk_interactions_chat_preview": {
+      "status": "pending"
+    },
+    "A4_git_diff_side_panel": {
+      "status": "pending"
+    },
+    "A5_visual_polish_and_motion": {
+      "status": "pending"
+    },
+    "V1_integration_meta": {
+      "status": "pending"
+    },
+    "R1_retrospective": {
+      "status": "pending"
+    }
+  },
+  "agent_assignments": {},
+  "blocked_by": [],
+  "execution_log": [
+    {
+      "timestamp": "2026-03-10T00:00:00Z",
+      "event": "created",
+      "prompt_stem": null,
+      "agent": null,
+      "notes": "Workpack scaffold created for the 0.0.3 pixel office UI initiative"
+    }
+  ],
+  "notes": null
+}
