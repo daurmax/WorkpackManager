@@ -3,6 +3,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { promises as fs } from "node:fs";
 import { afterEach, beforeEach, describe, it } from "vitest";
+import { ExecutionRegistry } from "../../agents/execution-registry";
 import type { WorkpackInstance } from "../../models";
 import { TreeItemKind } from "../workpack-tree-item";
 import { WorkpackTreeProvider } from "../workpack-tree-provider";
@@ -181,6 +182,28 @@ describe("workpack tree provider", () => {
     assert.equal(promptItems[1].label, "A1_tree_view.md");
   });
 
+  it("overlays runtime prompt status from the execution registry", async () => {
+    const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), [workspaceRoot], {
+      watchFileSystem: false
+    });
+    const executionRegistry = new ExecutionRegistry();
+    provider.setExecutionRegistry(executionRegistry);
+    executionRegistry.startRun({
+      workpackId: "01_demo_tree-view",
+      promptStem: "A0_bootstrap",
+      providerId: "codex",
+      status: "failed"
+    });
+
+    const [workpackItem] = await provider.getChildren();
+    const sectionItems = await provider.getChildren(workpackItem);
+    const promptsSection = sectionItems.find((item) => item.section === "prompts");
+
+    assert.ok(promptsSection);
+    const promptItems = await provider.getChildren(promptsSection);
+    assert.equal(promptItems[0].description, "Failed · codex");
+  });
+
   it("sets context values for workpack, section, and prompt nodes", async () => {
     const provider = new WorkpackTreeProvider(new MockParser([createInstance(workpackFolder)]), [workspaceRoot], {
       watchFileSystem: false
@@ -194,7 +217,7 @@ describe("workpack tree provider", () => {
 
     assert.equal(workpackItem.contextValue, "workpack");
     assert.equal(promptsSection.contextValue, "section.prompts");
-    assert.equal(promptItems[0].contextValue, "prompt");
+    assert.equal(promptItems[0].contextValue, "prompt.complete");
   });
 
   it("refresh fires the tree change event", async () => {

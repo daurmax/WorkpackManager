@@ -1,6 +1,16 @@
 import * as vscode from "vscode";
 import type { OverallStatus, PromptStatusValue } from "../models";
 
+export type RuntimePromptStatus =
+  | "queued"
+  | "in_progress"
+  | "complete"
+  | "failed"
+  | "cancelled"
+  | "human_input_required";
+
+export type PromptDisplayStatus = PromptStatusValue | RuntimePromptStatus;
+
 export interface StatusIcon {
   codicon: string;
   color: vscode.ThemeColor;
@@ -84,6 +94,33 @@ export const PROMPT_STATUS_ICONS: Record<PromptStatusValue, StatusIcon> = {
   }
 };
 
+export const RUNTIME_PROMPT_STATUS_ICONS: Record<Exclude<RuntimePromptStatus, PromptStatusValue>, StatusIcon> = {
+  queued: {
+    codicon: "clock",
+    color: new vscode.ThemeColor("editorInfo.foreground"),
+    label: "Queued",
+    sortOrder: 1,
+  },
+  failed: {
+    codicon: "error",
+    color: new vscode.ThemeColor("errorForeground"),
+    label: "Failed",
+    sortOrder: 5,
+  },
+  cancelled: {
+    codicon: "debug-stop",
+    color: new vscode.ThemeColor("disabledForeground"),
+    label: "Cancelled",
+    sortOrder: 6,
+  },
+  human_input_required: {
+    codicon: "question",
+    color: new vscode.ThemeColor("editorWarning.foreground"),
+    label: "Needs Input",
+    sortOrder: 4,
+  },
+};
+
 const UNKNOWN_WORKPACK_STATUS_ICON: StatusIcon = {
   codicon: "question",
   color: new vscode.ThemeColor("disabledForeground"),
@@ -99,8 +136,15 @@ export function getWorkpackStatusIcon(status: WorkpackStatus): StatusIcon {
   return WORKPACK_STATUS_ICONS[status] ?? UNKNOWN_WORKPACK_STATUS_ICON;
 }
 
-export function getPromptStatusIcon(status: PromptStatusValue): StatusIcon {
-  return PROMPT_STATUS_ICONS[status] ?? PROMPT_STATUS_ICONS.pending;
+export function getPromptStatusIcon(status: PromptDisplayStatus): StatusIcon {
+  if (status in PROMPT_STATUS_ICONS) {
+    return PROMPT_STATUS_ICONS[status as PromptStatusValue] ?? PROMPT_STATUS_ICONS.pending;
+  }
+
+  return (
+    RUNTIME_PROMPT_STATUS_ICONS[status as Exclude<RuntimePromptStatus, PromptStatusValue>] ??
+    PROMPT_STATUS_ICONS.pending
+  );
 }
 
 export function getWorkpackThemeIcon(status: WorkpackStatus): vscode.ThemeIcon {
@@ -108,7 +152,7 @@ export function getWorkpackThemeIcon(status: WorkpackStatus): vscode.ThemeIcon {
   return new vscode.ThemeIcon(icon.codicon, icon.color);
 }
 
-export function getPromptThemeIcon(status: PromptStatusValue): vscode.ThemeIcon {
+export function getPromptThemeIcon(status: PromptDisplayStatus): vscode.ThemeIcon {
   const icon = getPromptStatusIcon(status);
   return new vscode.ThemeIcon(icon.codicon, icon.color);
 }
@@ -117,6 +161,6 @@ export function getWorkpackStatusSortOrder(status: WorkpackStatus): number {
   return getWorkpackStatusIcon(status).sortOrder;
 }
 
-export function getPromptStatusSortOrder(status: PromptStatusValue): number {
+export function getPromptStatusSortOrder(status: PromptDisplayStatus): number {
   return getPromptStatusIcon(status).sortOrder;
 }

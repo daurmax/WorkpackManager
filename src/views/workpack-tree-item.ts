@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "node:path";
-import type { PromptStatusValue } from "../models";
-import { getPromptThemeIcon, getWorkpackThemeIcon, type WorkpackStatus } from "./status-icons";
+import { getPromptThemeIcon, getWorkpackThemeIcon, type PromptDisplayStatus, type WorkpackStatus } from "./status-icons";
 
 export enum TreeItemKind {
   Project,
@@ -16,7 +15,7 @@ export enum TreeItemKind {
 }
 
 export type WorkpackSection = "request" | "plan" | "prompts" | "outputs" | "status";
-export type TreeItemStatus = WorkpackStatus | PromptStatusValue;
+export type TreeItemStatus = WorkpackStatus | PromptDisplayStatus;
 
 function isWorkpackStatus(status: TreeItemStatus | undefined): status is WorkpackStatus {
   return (
@@ -30,17 +29,61 @@ function isWorkpackStatus(status: TreeItemStatus | undefined): status is Workpac
   );
 }
 
-function isPromptStatus(status: TreeItemStatus | undefined): status is PromptStatusValue {
+function isPromptStatus(status: TreeItemStatus | undefined): status is PromptDisplayStatus {
   return (
     status === "pending" ||
+    status === "queued" ||
     status === "in_progress" ||
     status === "complete" ||
     status === "blocked" ||
-    status === "skipped"
+    status === "skipped" ||
+    status === "failed" ||
+    status === "cancelled" ||
+    status === "human_input_required"
   );
 }
 
-function resolveContextValue(kind: TreeItemKind, section?: WorkpackSection): string {
+function toPromptContextValue(status: PromptDisplayStatus | undefined): string {
+  if (status === "queued") {
+    return "prompt.queued";
+  }
+
+  if (status === "in_progress") {
+    return "prompt.inProgress";
+  }
+
+  if (status === "complete") {
+    return "prompt.complete";
+  }
+
+  if (status === "blocked") {
+    return "prompt.blocked";
+  }
+
+  if (status === "skipped") {
+    return "prompt.skipped";
+  }
+
+  if (status === "failed") {
+    return "prompt.failed";
+  }
+
+  if (status === "cancelled") {
+    return "prompt.cancelled";
+  }
+
+  if (status === "human_input_required") {
+    return "prompt.humanInputRequired";
+  }
+
+  return "prompt.pending";
+}
+
+function resolveContextValue(
+  kind: TreeItemKind,
+  section?: WorkpackSection,
+  status?: TreeItemStatus
+): string {
   if (kind === TreeItemKind.Project) {
     return "project";
   }
@@ -58,7 +101,7 @@ function resolveContextValue(kind: TreeItemKind, section?: WorkpackSection): str
   }
 
   if (kind === TreeItemKind.PromptFile) {
-    return "prompt";
+    return toPromptContextValue(isPromptStatus(status) ? status : undefined);
   }
 
   if (kind === TreeItemKind.OutputFile) {
@@ -197,7 +240,7 @@ export class WorkpackTreeItem extends vscode.TreeItem {
     super(label, collapsibleState);
 
     this.id = buildTreeItemId(kind, workpackId, label, filePath, section, groupPath);
-    this.contextValue = resolveContextValue(kind, section);
+    this.contextValue = resolveContextValue(kind, section, status);
     this.iconPath = resolveIcon(kind, section, status);
 
     if (filePath) {

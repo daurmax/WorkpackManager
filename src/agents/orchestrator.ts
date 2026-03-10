@@ -6,6 +6,7 @@ import {
   loadWorkpackState,
   saveWorkpackStateAtomic,
 } from "./assignment";
+import type { ExecutionRegistry } from "./execution-registry";
 import {
   DagCycleError,
   detectPromptCycle,
@@ -34,6 +35,8 @@ export interface OrchestratorOptions {
   timeoutMs: number;
   /** Optional external cancellation signal for this execution run. */
   signal?: AbortSignal;
+  /** Optional runtime execution registry for live execution state. */
+  executionRegistry?: ExecutionRegistry;
 }
 
 export interface ExecutionSummary {
@@ -376,13 +379,30 @@ export class ExecutionOrchestrator {
     }
 
     const startMs = Date.now();
+    const promptFilePath = path.join(path.dirname(path.resolve(stateFilePath)), "prompts", `${prompt.stem}.md`);
+    const dispatchAbortController = new AbortController();
+    const run = this.resolvedOptions.executionRegistry?.startRun({
+      workpackId: meta.id,
+      promptStem: prompt.stem,
+      folderPath: path.dirname(path.resolve(stateFilePath)),
+      promptFilePath,
+      providerId,
+      status: "in_progress",
+      abortController: dispatchAbortController,
+    });
     const context: PromptDispatchContext = {
       workpackId: meta.id,
       promptStem: prompt.stem,
       repos: prompt.repos,
       dependencyOutputs: this.buildDependencyOutputs(prompt, results),
     };
-    const dispatchResult = await this.dispatchWithTimeout(provider, promptContent, context, prompt.stem);
+    const dispatchResult = await this.dispatchWithTimeout(
+      provider,
+      promptContent,
+      context,
+      prompt.stem,
+      dispatchAbortController
+    );
     const normalizedResult: PromptResult = {
       ...dispatchResult,
       durationMs: dispatchResult.durationMs ?? Date.now() - startMs,
@@ -390,6 +410,14 @@ export class ExecutionOrchestrator {
 
     const completedAt = nowIso();
     if (normalizedResult.success) {
+      if (run) {
+        this.resolvedOptions.executionRegistry?.updateRun(run.runId, {
+          status: "complete",
+          summary: normalizedResult.summary,
+          error: undefined,
+        });
+      }
+
       state.promptStatus[prompt.stem] = {
         ...state.promptStatus[prompt.stem],
         status: "complete",
@@ -406,6 +434,14 @@ export class ExecutionOrchestrator {
         notes: normalizedResult.summary,
       });
     } else {
+      if (run) {
+        this.resolvedOptions.executionRegistry?.updateRun(run.runId, {
+          status: normalizedResult.error === "Execution cancelled." ? "cancelled" : "failed",
+          summary: normalizedResult.summary,
+          error: normalizedResult.error ?? normalizedResult.summary,
+        });
+      }
+
       state.promptStatus[prompt.stem] = {
         ...state.promptStatus[prompt.stem],
         status: "blocked",
@@ -437,7 +473,8 @@ export class ExecutionOrchestrator {
     provider: AgentProvider,
     promptContent: string,
     context: PromptDispatchContext,
-    promptStem: string
+    promptStem: string,
+    dispatchAbortController: AbortController
   ): Promise<PromptResult> {
     type DispatchRaceResult =
       | { kind: "result"; result: PromptResult }
@@ -445,7 +482,6 @@ export class ExecutionOrchestrator {
       | { kind: "timeout" }
       | { kind: "cancelled" };
 
-    const dispatchAbortController = new AbortController();
     let timeoutHandle: NodeJS.Timeout | undefined;
     let abortListener: (() => void) | undefined;
 

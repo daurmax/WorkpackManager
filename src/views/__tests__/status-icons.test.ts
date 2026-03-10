@@ -3,6 +3,7 @@ import { describe, it } from "vitest";
 import type { OverallStatus, PromptStatusValue } from "../../models";
 import {
   PROMPT_STATUS_ICONS,
+  RUNTIME_PROMPT_STATUS_ICONS,
   WORKPACK_STATUS_ICONS,
   getPromptStatusIcon,
   getPromptStatusSortOrder,
@@ -31,6 +32,14 @@ describe("status-icons", () => {
     for (const status of promptStatuses) {
       assert.equal(getPromptStatusIcon(status), PROMPT_STATUS_ICONS[status]);
     }
+
+    assert.equal(getPromptStatusIcon("queued"), RUNTIME_PROMPT_STATUS_ICONS.queued);
+    assert.equal(getPromptStatusIcon("failed"), RUNTIME_PROMPT_STATUS_ICONS.failed);
+    assert.equal(getPromptStatusIcon("cancelled"), RUNTIME_PROMPT_STATUS_ICONS.cancelled);
+    assert.equal(
+      getPromptStatusIcon("human_input_required"),
+      RUNTIME_PROMPT_STATUS_ICONS.human_input_required
+    );
   });
 
   it("uses unknown and pending fallbacks for unsupported statuses", () => {
@@ -55,6 +64,9 @@ describe("status-icons", () => {
     const promptTheme = getPromptThemeIcon("skipped");
     assert.equal(promptTheme.id, "debug-step-over");
     assert.equal(promptTheme.color?.id, "disabledForeground");
+
+    const runtimeTheme = getPromptThemeIcon("queued");
+    assert.equal(runtimeTheme.id, "clock");
   });
 
   it("returns status sort order values from icon metadata", () => {
@@ -64,5 +76,6 @@ describe("status-icons", () => {
 
     assert.equal(getPromptStatusSortOrder("pending"), 0);
     assert.equal(getPromptStatusSortOrder("skipped"), 4);
+    assert.equal(getPromptStatusSortOrder("failed"), 5);
   });
 });

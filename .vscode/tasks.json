@@ -19,7 +19,7 @@
     {
       "label": "extension: install local vsix",
       "type": "shell",
-      "command": "npm run package:vsix && code --install-extension workpack-manager-0.0.1.vsix --force",
+      "command": "npm run install:local-vsix",
       "group": "build",
       "problemMatcher": []
     }

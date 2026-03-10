@@ -81,9 +81,9 @@ describe("workpack-tree-item", () => {
       vscode.TreeItemCollapsibleState.None,
       undefined,
       "prompts",
-      "blocked"
+      "failed"
     );
-    assert.equal(prompt.contextValue, "prompt");
+    assert.equal(prompt.contextValue, "prompt.failed");
     assert.equal(iconId(prompt), "error");
 
     const output = new WorkpackTreeItem(

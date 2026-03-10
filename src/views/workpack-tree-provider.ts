@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 import * as path from "node:path";
 import { promises as fs } from "node:fs";
+import type { AgentRunSnapshot, ExecutionRegistry } from "../agents/execution-registry";
 import type { OverallStatus, PromptStatusValue, WorkpackInstance } from "../models";
 import { discoverWorkpacks } from "../parser/workpack-discoverer";
-import { getPromptStatusIcon, getWorkpackStatusSortOrder } from "./status-icons";
+import { getPromptStatusIcon, getWorkpackStatusSortOrder, type PromptDisplayStatus } from "./status-icons";
 import { TreeItemKind, type WorkpackSection, WorkpackTreeItem } from "./workpack-tree-item";
 
 const REQUEST_FILE = "00_request.md";
@@ -251,6 +252,8 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
   private readonly instancesById = new Map<string, WorkpackInstance>();
   private readonly disposables: vscode.Disposable[] = [];
   private readonly watcherFactory: (pattern: vscode.GlobPattern) => vscode.FileSystemWatcher;
+  private executionRegistry?: ExecutionRegistry;
+  private executionRegistryDisposable?: vscode.Disposable;
 
   private instances: WorkpackInstance[] = [];
   private activeFilter: TreeFilter = {};
@@ -287,12 +290,22 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
   }
 
   dispose(): void {
+    this.executionRegistryDisposable?.dispose();
+
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
 
     this.disposables.length = 0;
     this._onDidChangeTreeData.dispose();
+  }
+
+  setExecutionRegistry(executionRegistry: ExecutionRegistry): void {
+    this.executionRegistryDisposable?.dispose();
+    this.executionRegistry = executionRegistry;
+    this.executionRegistryDisposable = executionRegistry.onDidChangeRuns(() => {
+      this.refresh();
+    });
   }
 
   refresh(): void {
@@ -581,7 +594,8 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
         const promptFileName = `${prompt.stem}.md`;
         const promptFilePath = path.join(instance.folderPath, PROMPTS_DIRECTORY, promptFileName);
         const existingPath = (await fileExists(promptFilePath)) ? promptFilePath : undefined;
-        const status = getPromptStatus(instance, prompt.stem);
+        const runtimeRun = this.executionRegistry?.getLatestRunForPrompt(instance.meta.id, prompt.stem);
+        const status = this.getPromptDisplayStatus(instance, prompt.stem, runtimeRun);
 
         const item = new WorkpackTreeItem(
           TreeItemKind.PromptFile,
@@ -593,7 +607,9 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
           status
         );
 
-        item.description = getPromptStatusIcon(status).label;
+        const statusLabel = getPromptStatusIcon(status).label;
+        item.description = runtimeRun?.providerId ? `${statusLabel} · ${runtimeRun.providerId}` : statusLabel;
+        item.tooltip = this.buildPromptTooltip(promptFileName, existingPath, runtimeRun, statusLabel);
         return item;
       })
     );
@@ -645,5 +661,40 @@ export class WorkpackTreeProvider implements vscode.TreeDataProvider<WorkpackTre
     }
 
     return statusItems;
+  }
+
+  private getPromptDisplayStatus(
+    instance: WorkpackInstance,
+    promptStem: string,
+    runtimeRun?: AgentRunSnapshot
+  ): PromptDisplayStatus {
+    if (runtimeRun) {
+      return runtimeRun.status;
+    }
+
+    return getPromptStatus(instance, promptStem);
+  }
+
+  private buildPromptTooltip(
+    promptFileName: string,
+    existingPath: string | undefined,
+    runtimeRun: AgentRunSnapshot | undefined,
+    statusLabel: string
+  ): string {
+    const lines = [promptFileName, existingPath, `Status: ${statusLabel}`];
+
+    if (runtimeRun?.providerId) {
+      lines.push(`Agent: ${runtimeRun.providerId}`);
+    }
+
+    if (runtimeRun?.error) {
+      lines.push(`Error: ${runtimeRun.error}`);
+    }
+
+    if (runtimeRun?.inputRequest) {
+      lines.push(`Input: ${runtimeRun.inputRequest}`);
+    }
+
+    return lines.filter((line): line is string => typeof line === "string" && line.length > 0).join("\n");
   }
 }

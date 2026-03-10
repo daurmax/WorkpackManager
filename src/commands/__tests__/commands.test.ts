@@ -3,6 +3,7 @@ import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, it } from "vitest";
+import { ExecutionRegistry } from "../../agents/execution-registry";
 import { ProviderRegistry } from "../../agents/registry";
 import type { AgentCapability, AgentProvider, PromptDispatchContext, PromptResult } from "../../agents/types";
 import type { WorkpackInstance } from "../../models";
@@ -628,6 +629,150 @@ describe("commands", () => {
     assert.equal(mock.progressTitles.includes("Execute Prompt: A1_wire_execute_prompt"), true);
   });
 
+  it("stopPromptExecution aborts the active prompt run", async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-stop-prompt-"));
+    tempFolders.push(workspaceRoot);
+
+    const fixture = await createExecutionWorkpackFixture(workspaceRoot, "wp-stop-prompt", [
+      { stem: "A0_bootstrap" }
+    ]);
+    const mock = createMockVscode([workspaceRoot]);
+    const context = createMockContext();
+    const executionRegistry = new ExecutionRegistry();
+    const abortController = new AbortController();
+    const run = executionRegistry.startRun({
+      workpackId: fixture.instance.meta.id,
+      promptStem: "A0_bootstrap",
+      folderPath: fixture.folderPath,
+      promptFilePath: path.join(fixture.folderPath, "prompts", "A0_bootstrap.md"),
+      providerId: "codex",
+      status: "in_progress",
+      abortController
+    });
+
+    registerCommands(context, {
+      vscodeApi: mock.api,
+      executionRegistry,
+      discoverWorkpacksFn: async () => [fixture.instance]
+    });
+
+    const stopCommand = getRegisteredCommand(
+      mock.commandMap,
+      WORKPACK_MANAGER_COMMANDS.stopPromptExecution
+    );
+    await stopCommand({
+      contextValue: "activeAgent",
+      workpackId: fixture.instance.meta.id,
+      folderPath: fixture.folderPath,
+      promptStem: "A0_bootstrap",
+      runId: run.runId
+    });
+
+    assert.equal(abortController.signal.aborted, true);
+    assert.equal(mock.infoMessages.includes("Stop requested for the selected prompt."), true);
+  });
+
+  it("retryPrompt reruns the selected prompt", async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-retry-prompt-"));
+    tempFolders.push(workspaceRoot);
+
+    const fixture = await createExecutionWorkpackFixture(workspaceRoot, "wp-retry-prompt", [
+      { stem: "A0_bootstrap" }
+    ]);
+    const statePayload = JSON.parse(await readFile(fixture.statePath, "utf8")) as {
+      prompt_status: Record<string, { status: string }>;
+    };
+    statePayload.prompt_status.A0_bootstrap.status = "blocked";
+    await writeFile(fixture.statePath, JSON.stringify(statePayload, null, 2), "utf8");
+
+    const providerRegistry = new ProviderRegistry();
+    providerRegistry.register(createMockProvider("codex"));
+
+    const mock = createMockVscode([workspaceRoot]);
+    const context = createMockContext();
+    registerCommands(context, {
+      vscodeApi: mock.api,
+      providerRegistry,
+      discoverWorkpacksFn: async () => [
+        {
+          ...fixture.instance,
+          state: {
+            ...fixture.instance.state!,
+            promptStatus: {
+              A0_bootstrap: { status: "blocked" }
+            }
+          }
+        }
+      ]
+    });
+
+    const retryCommand = getRegisteredCommand(
+      mock.commandMap,
+      WORKPACK_MANAGER_COMMANDS.retryPrompt
+    );
+    await retryCommand({
+      contextValue: "prompt",
+      workpackId: fixture.instance.meta.id,
+      folderPath: fixture.folderPath,
+      promptStem: "A0_bootstrap"
+    });
+
+    const updatedState = JSON.parse(await readFile(fixture.statePath, "utf8")) as {
+      prompt_status: Record<string, { status: string }>;
+    };
+
+    assert.equal(updatedState.prompt_status.A0_bootstrap.status, "complete");
+    assert.equal(mock.progressTitles.includes("Retry Prompt: A0_bootstrap"), true);
+  });
+
+  it("provideAgentInput submits user input to waiting runs", async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-provide-input-"));
+    tempFolders.push(workspaceRoot);
+
+    const fixture = await createExecutionWorkpackFixture(workspaceRoot, "wp-provide-input", [
+      { stem: "A0_bootstrap" }
+    ]);
+    const mock = createMockVscode([workspaceRoot]);
+    mock.inputBoxQueue.push("approve and continue");
+    const context = createMockContext();
+    const executionRegistry = new ExecutionRegistry();
+    let receivedInput: string | undefined;
+    const run = executionRegistry.startRun({
+      workpackId: fixture.instance.meta.id,
+      promptStem: "A0_bootstrap",
+      folderPath: fixture.folderPath,
+      promptFilePath: path.join(fixture.folderPath, "prompts", "A0_bootstrap.md"),
+      providerId: "codex",
+      status: "human_input_required",
+      inputRequest: "Need approval",
+      humanInputHandler: async (input) => {
+        receivedInput = input;
+      }
+    });
+
+    registerCommands(context, {
+      vscodeApi: mock.api,
+      executionRegistry,
+      discoverWorkpacksFn: async () => [fixture.instance]
+    });
+
+    const provideInputCommand = getRegisteredCommand(
+      mock.commandMap,
+      WORKPACK_MANAGER_COMMANDS.provideAgentInput
+    );
+    await provideInputCommand({
+      contextValue: "activeAgent",
+      workpackId: fixture.instance.meta.id,
+      folderPath: fixture.folderPath,
+      promptStem: "A0_bootstrap",
+      runId: run.runId
+    });
+
+    assert.equal(receivedInput, "approve and continue");
+    assert.equal(executionRegistry.getRun(run.runId)?.status, "queued");
+    assert.equal(mock.infoMessages.includes("Input submitted for A0_bootstrap."), true);
+  });
+
   it("executeAll dispatches ready prompts and updates state", async () => {
     const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-execute-all-success-"));
     tempFolders.push(workspaceRoot);
@@ -743,8 +888,11 @@ describe("commands", () => {
       [WORKPACK_MANAGER_COMMANDS.viewDetails]: "viewItem == workpack",
       [WORKPACK_MANAGER_COMMANDS.lintWorkpack]: "viewItem == workpack",
       [WORKPACK_MANAGER_COMMANDS.executeAll]: "viewItem == workpack",
-      [WORKPACK_MANAGER_COMMANDS.assignAgent]: "viewItem == prompt",
-      [WORKPACK_MANAGER_COMMANDS.executePrompt]: "viewItem == prompt"
+      [WORKPACK_MANAGER_COMMANDS.assignAgent]: "viewItem =~ /^prompt\\./",
+      [WORKPACK_MANAGER_COMMANDS.executePrompt]: "viewItem == prompt.pending",
+      [WORKPACK_MANAGER_COMMANDS.stopPromptExecution]: "viewItem == prompt.queued || viewItem == prompt.inProgress || viewItem == prompt.humanInputRequired || viewItem == activeAgent.queued || viewItem == activeAgent.inProgress || viewItem == activeAgent.humanInputRequired",
+      [WORKPACK_MANAGER_COMMANDS.retryPrompt]: "viewItem == prompt.blocked || viewItem == prompt.failed || viewItem == prompt.cancelled",
+      [WORKPACK_MANAGER_COMMANDS.provideAgentInput]: "viewItem == prompt.humanInputRequired || viewItem == activeAgent.humanInputRequired"
     };
 
     for (const [commandId, whenClause] of Object.entries(expectedWhenByCommand)) {

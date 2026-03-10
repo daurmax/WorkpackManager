@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { CodexProvider, CopilotProvider, ProviderRegistry } from "./agents";
+import { CodexProvider, CopilotProvider, ExecutionRegistry, ProviderRegistry } from "./agents";
 import { registerCommands } from "./commands";
 import { WorkpackDiagnosticProvider } from "./validation";
-import { DiscovererWorkpackParser, WorkpackTreeProvider } from "./views";
+import { ActiveAgentsTreeProvider, DiscovererWorkpackParser, WorkpackTreeProvider } from "./views";
 
 function getAllWorkspacePaths(): string[] {
   return (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
@@ -37,6 +37,9 @@ export function activate(context: vscode.ExtensionContext): void {
   const treeProvider = new WorkpackTreeProvider(new DiscovererWorkpackParser(), workspacePaths, {
     watchFileSystem: workspacePaths.length > 0
   });
+  const executionRegistry = new ExecutionRegistry();
+  treeProvider.setExecutionRegistry(executionRegistry);
+  const activeAgentsProvider = new ActiveAgentsTreeProvider(executionRegistry);
   const diagnosticProvider = new WorkpackDiagnosticProvider();
   const providerRegistry = createProviderRegistry();
 
@@ -44,8 +47,19 @@ export function activate(context: vscode.ExtensionContext): void {
     treeDataProvider: treeProvider,
     showCollapseAll: true
   });
+  const activeAgentsView = vscode.window.createTreeView("workpackManager.activeAgents", {
+    treeDataProvider: activeAgentsProvider,
+    showCollapseAll: false
+  });
 
-  context.subscriptions.push(treeProvider, treeView, diagnosticProvider);
+  context.subscriptions.push(
+    treeProvider,
+    activeAgentsProvider,
+    treeView,
+    activeAgentsView,
+    diagnosticProvider,
+    executionRegistry
+  );
   context.subscriptions.push({
     dispose: () => {
       for (const agentProvider of providerRegistry.listAll()) {
@@ -58,6 +72,8 @@ export function activate(context: vscode.ExtensionContext): void {
     vscodeApi: vscode,
     treeProvider,
     providerRegistry,
+    executionRegistry,
+    extensionUri: context.extensionUri,
     onLintWorkpack: async (workpackFolderPath: string) => {
       await diagnosticProvider.publishDiagnostics(workpackFolderPath);
     }

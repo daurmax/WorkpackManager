@@ -11,7 +11,7 @@ const REFRESH_DEBOUNCE_MS = 200;
 const OUTPUT_CHANNEL_NAME = "Workpack Manager";
 
 export interface WebviewMessage {
-  command: "openFile" | "assignAgent" | "executePrompt";
+  command: "openFile" | "assignAgent" | "executePrompt" | "stopPrompt" | "retryPrompt";
   payload: { filePath?: string; promptStem?: string };
 }
 
@@ -47,7 +47,7 @@ function isWebviewMessage(message: unknown): message is WebviewMessage {
   const candidate = message as Record<string, unknown>;
   const payload = candidate.payload;
 
-  if (!["openFile", "assignAgent", "executePrompt"].includes(String(candidate.command))) {
+  if (!["openFile", "assignAgent", "executePrompt", "stopPrompt", "retryPrompt"].includes(String(candidate.command))) {
     return false;
   }
 
@@ -190,8 +190,12 @@ export class WorkpackDetailPanel {
     if (message.command === "assignAgent" && message.payload.promptStem) {
       await vscode.commands.executeCommand(
         "workpackManager.assignAgent",
-        this.workpack.meta.id,
-        message.payload.promptStem,
+        {
+          contextValue: "prompt",
+          workpackId: this.workpack.meta.id,
+          folderPath: this.workpack.folderPath,
+          promptStem: message.payload.promptStem,
+        },
       );
       return;
     }
@@ -199,8 +203,38 @@ export class WorkpackDetailPanel {
     if (message.command === "executePrompt" && message.payload.promptStem) {
       await vscode.commands.executeCommand(
         "workpackManager.executePrompt",
-        this.workpack.meta.id,
-        message.payload.promptStem,
+        {
+          contextValue: "prompt",
+          workpackId: this.workpack.meta.id,
+          folderPath: this.workpack.folderPath,
+          promptStem: message.payload.promptStem,
+        },
+      );
+      return;
+    }
+
+    if (message.command === "stopPrompt" && message.payload.promptStem) {
+      await vscode.commands.executeCommand(
+        "workpackManager.stopPromptExecution",
+        {
+          contextValue: "prompt",
+          workpackId: this.workpack.meta.id,
+          folderPath: this.workpack.folderPath,
+          promptStem: message.payload.promptStem,
+        },
+      );
+      return;
+    }
+
+    if (message.command === "retryPrompt" && message.payload.promptStem) {
+      await vscode.commands.executeCommand(
+        "workpackManager.retryPrompt",
+        {
+          contextValue: "prompt",
+          workpackId: this.workpack.meta.id,
+          folderPath: this.workpack.folderPath,
+          promptStem: message.payload.promptStem,
+        },
       );
     }
   }
@@ -275,6 +309,12 @@ export class WorkpackDetailPanel {
             <td class="actions-cell">
               <button class="action" data-command="assignAgent" data-prompt-stem="${escapeHtml(prompt.stem)}">Assign</button>
               <button class="action" data-command="executePrompt" data-prompt-stem="${escapeHtml(prompt.stem)}">Run</button>
+              ${status === "in_progress"
+                ? `<button class="action" data-command="stopPrompt" data-prompt-stem="${escapeHtml(prompt.stem)}">Stop</button>`
+                : ""}
+              ${status === "blocked"
+                ? `<button class="action" data-command="retryPrompt" data-prompt-stem="${escapeHtml(prompt.stem)}">Retry</button>`
+                : ""}
             </td>
           </tr>
         `;

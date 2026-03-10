@@ -1,7 +1,8 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import type * as vscode from "vscode";
-import { AssignmentModel, loadWorkpackState } from "../agents/assignment";
+import { AssignmentModel, loadWorkpackState, saveWorkpackStateAtomic } from "../agents/assignment";
+import type { ExecutionRegistry } from "../agents/execution-registry";
 import { ExecutionOrchestrator, type ExecutionSummary } from "../agents/orchestrator";
 import type { ProviderRegistry } from "../agents/registry";
 import type { AgentProvider, PromptResult } from "../agents/types";
@@ -45,6 +46,9 @@ export const WORKPACK_MANAGER_COMMANDS = {
   assignAgent: "workpackManager.assignAgent",
   executePrompt: "workpackManager.executePrompt",
   executeAll: "workpackManager.executeAll",
+  stopPromptExecution: "workpackManager.stopPromptExecution",
+  retryPrompt: "workpackManager.retryPrompt",
+  provideAgentInput: "workpackManager.provideAgentInput",
   refreshTree: "workpackManager.refreshTree"
 } as const;
 
@@ -54,6 +58,7 @@ interface CommandTreeNode {
   folderPath?: string;
   filePath?: string;
   promptStem?: string;
+  runId?: string;
 }
 
 interface OutputChannelLike {
@@ -89,9 +94,11 @@ export interface RegisterCommandsOptions {
   vscodeApi: VscodeLike;
   treeProvider?: TreeRefresher;
   providerRegistry?: ProviderRegistry;
+  executionRegistry?: ExecutionRegistry;
   discoverWorkpacksFn?: (workspaceFolders: string[]) => Promise<WorkpackInstance[]>;
   scaffoldWorkpackFn?: (request: ScaffoldWorkpackRequest) => Promise<ScaffoldWorkpackResult>;
   onLintWorkpack?: (workpackFolderPath: string) => Promise<void>;
+  extensionUri?: vscode.Uri;
 }
 
 export interface ScaffoldWorkpackRequest {
@@ -650,6 +657,85 @@ export function registerCommands(
     }
   };
 
+  const executePromptTarget = async (
+    promptTarget: { folderPath: string; workpackId: string; promptStem: string },
+    titlePrefix: string,
+    startVerb: string
+  ): Promise<void> => {
+    const outputChannel = getExecutionOutputChannel();
+
+    if (!providerRegistry) {
+      const message = "Provider registry is not configured. Prompt execution is unavailable.";
+      outputChannel.appendLine(`[execution] ${message}`);
+      await vscodeApi.window.showErrorMessage(message);
+      return;
+    }
+
+    if (providerRegistry.listAll().length === 0) {
+      const message = "No agent providers are registered. Configure providers before execution.";
+      outputChannel.appendLine(`[execution] ${message}`);
+      await vscodeApi.window.showErrorMessage(message);
+      return;
+    }
+
+    const availableProviders = await getAvailableProviders(providerRegistry);
+    if (availableProviders.length === 0) {
+      const message =
+        "No configured providers are currently available. Check provider credentials and retry.";
+      outputChannel.appendLine(`[execution] ${message}`);
+      await vscodeApi.window.showErrorMessage(message);
+      return;
+    }
+
+    const workpack = await parseWorkpackInstance(promptTarget.folderPath);
+    const statePath = path.join(promptTarget.folderPath, WORKPACK_FILES.state);
+    outputChannel.show(true);
+    outputChannel.appendLine(
+      `[execution] ${startVerb} ${promptTarget.promptStem} in ${workpack.meta.id}.`
+    );
+
+    const { summary, wasCancelled } = await runWithExecutionProgress(
+      vscodeApi,
+      `${titlePrefix}: ${promptTarget.promptStem}`,
+      "Dispatching prompt...",
+      outputChannel,
+      async (signal) => {
+        const assignment = new AssignmentModel(statePath, providerRegistry);
+        const orchestrator = new ExecutionOrchestrator(providerRegistry, assignment, {
+          maxParallel: 1,
+          continueOnError: false,
+          timeoutMs: ORCHESTRATOR_TIMEOUT_MS,
+          signal,
+          executionRegistry: options.executionRegistry
+        });
+
+        return orchestrator.executeOne(workpack.meta, statePath, promptTarget.promptStem);
+      }
+    );
+
+    logExecutionSummary(outputChannel, "single", summary);
+
+    const selectedPromptResult = summary.results[promptTarget.promptStem];
+    if (wasCancelled) {
+      await vscodeApi.window.showWarningMessage(
+        `Execution cancelled for ${promptTarget.promptStem}.`
+      );
+      return;
+    }
+
+    if (selectedPromptResult?.success) {
+      await vscodeApi.window.showInformationMessage(
+        `Prompt ${promptTarget.promptStem} completed successfully.`
+      );
+      return;
+    }
+
+    const failureDetail = selectedPromptResult?.error ?? selectedPromptResult?.summary ?? "Unknown error.";
+    await vscodeApi.window.showErrorMessage(
+      `Prompt ${promptTarget.promptStem} failed: ${failureDetail}`
+    );
+  };
+
   const register = <TArgs extends unknown[]>(
     commandId: string,
     callback: (...args: TArgs) => unknown | Promise<unknown>
@@ -821,7 +907,14 @@ export function registerCommands(
         return;
       }
 
-      await openFileInEditor(vscodeApi, metaPath);
+      if (!options.extensionUri) {
+        await openFileInEditor(vscodeApi, metaPath);
+        return;
+      }
+
+      const workpack = await parseWorkpackInstance(folderPath);
+      const { WorkpackDetailPanel } = await import("../views/workpack-detail-panel");
+      WorkpackDetailPanel.createOrShow(options.extensionUri, workpack);
     } catch (error) {
       await vscodeApi.window.showErrorMessage(
         `Unable to show workpack details: ${error instanceof Error ? error.message : String(error)}`
@@ -921,86 +1014,65 @@ export function registerCommands(
   });
 
   register(WORKPACK_MANAGER_COMMANDS.executePrompt, async (node?: CommandTreeNode) => {
-    const outputChannel = getExecutionOutputChannel();
+    try {
+      const promptTarget = await resolvePromptTarget(vscodeApi, node, discoverFn);
+      if (!promptTarget) {
+        return;
+      }
+      await executePromptTarget(
+        promptTarget,
+        "Execute Prompt",
+        "Starting executePrompt for"
+      );
+    } catch (error) {
+      const message = toErrorMessage(error);
+      getExecutionOutputChannel().appendLine(`[execution] executePrompt failed: ${message}`);
+      await vscodeApi.window.showErrorMessage(`Unable to execute prompt: ${message}`);
+    } finally {
+      treeProvider?.refresh();
+    }
+  });
+
+  register(WORKPACK_MANAGER_COMMANDS.retryPrompt, async (node?: CommandTreeNode) => {
     try {
       const promptTarget = await resolvePromptTarget(vscodeApi, node, discoverFn);
       if (!promptTarget) {
         return;
       }
 
-      if (!providerRegistry) {
-        const message = "Provider registry is not configured. Prompt execution is unavailable.";
-        outputChannel.appendLine(`[execution] ${message}`);
-        await vscodeApi.window.showErrorMessage(message);
-        return;
-      }
-
-      if (providerRegistry.listAll().length === 0) {
-        const message = "No agent providers are registered. Configure providers before execution.";
-        outputChannel.appendLine(`[execution] ${message}`);
-        await vscodeApi.window.showErrorMessage(message);
-        return;
-      }
-
-      const availableProviders = await getAvailableProviders(providerRegistry);
-      if (availableProviders.length === 0) {
-        const message =
-          "No configured providers are currently available. Check provider credentials and retry.";
-        outputChannel.appendLine(`[execution] ${message}`);
-        await vscodeApi.window.showErrorMessage(message);
-        return;
-      }
-
-      const workpack = await parseWorkpackInstance(promptTarget.folderPath);
-      const statePath = path.join(promptTarget.folderPath, WORKPACK_FILES.state);
-      outputChannel.show(true);
-      outputChannel.appendLine(
-        `[execution] Starting executePrompt for ${promptTarget.promptStem} in ${workpack.meta.id}.`
+      const activeRun = options.executionRegistry?.getLatestRunForPrompt(
+        promptTarget.workpackId,
+        promptTarget.promptStem
       );
-
-      const { summary, wasCancelled } = await runWithExecutionProgress(
-        vscodeApi,
-        `Execute Prompt: ${promptTarget.promptStem}`,
-        "Dispatching prompt...",
-        outputChannel,
-        async (signal) => {
-          const assignment = new AssignmentModel(statePath, providerRegistry);
-          const orchestrator = new ExecutionOrchestrator(providerRegistry, assignment, {
-            maxParallel: 1,
-            continueOnError: false,
-            timeoutMs: ORCHESTRATOR_TIMEOUT_MS,
-            signal
-          });
-
-          return orchestrator.executeOne(workpack.meta, statePath, promptTarget.promptStem);
-        }
-      );
-
-      logExecutionSummary(outputChannel, "single", summary);
-
-      const selectedPromptResult = summary.results[promptTarget.promptStem];
-      if (wasCancelled) {
+      if (activeRun && (activeRun.status === "queued" || activeRun.status === "in_progress")) {
         await vscodeApi.window.showWarningMessage(
-          `Execution cancelled for ${promptTarget.promptStem}.`
+          `Prompt ${promptTarget.promptStem} is already running.`
         );
         return;
       }
 
-      if (selectedPromptResult?.success) {
-        await vscodeApi.window.showInformationMessage(
-          `Prompt ${promptTarget.promptStem} completed successfully.`
-        );
-        return;
-      }
+      const statePath = path.join(promptTarget.folderPath, WORKPACK_FILES.state);
+      const state = await loadWorkpackState(statePath, promptTarget.workpackId);
+      const existingPromptState = state.promptStatus[promptTarget.promptStem] ?? { status: "pending" };
+      state.promptStatus[promptTarget.promptStem] = {
+        ...existingPromptState,
+        status: "pending",
+        completedAt: null,
+        blockedReason: null,
+        outputValidated: false
+      };
+      state.lastUpdated = nowIso();
+      await saveWorkpackStateAtomic(statePath, state);
 
-      const failureDetail = selectedPromptResult?.error ?? selectedPromptResult?.summary ?? "Unknown error.";
-      await vscodeApi.window.showErrorMessage(
-        `Prompt ${promptTarget.promptStem} failed: ${failureDetail}`
+      await executePromptTarget(
+        promptTarget,
+        "Retry Prompt",
+        "Retrying prompt"
       );
     } catch (error) {
       const message = toErrorMessage(error);
-      outputChannel.appendLine(`[execution] executePrompt failed: ${message}`);
-      await vscodeApi.window.showErrorMessage(`Unable to execute prompt: ${message}`);
+      getExecutionOutputChannel().appendLine(`[execution] retryPrompt failed: ${message}`);
+      await vscodeApi.window.showErrorMessage(`Unable to retry prompt: ${message}`);
     } finally {
       treeProvider?.refresh();
     }
@@ -1051,7 +1123,8 @@ export function registerCommands(
         {
           maxParallel: EXECUTE_ALL_MAX_PARALLEL,
           continueOnError: false,
-          timeoutMs: ORCHESTRATOR_TIMEOUT_MS
+          timeoutMs: ORCHESTRATOR_TIMEOUT_MS,
+          executionRegistry: options.executionRegistry
         }
       );
       const readyPrompts = preflightOrchestrator.getReadyPrompts(workpack.meta, state);
@@ -1078,7 +1151,8 @@ export function registerCommands(
             maxParallel: EXECUTE_ALL_MAX_PARALLEL,
             continueOnError: false,
             timeoutMs: ORCHESTRATOR_TIMEOUT_MS,
-            signal
+            signal,
+            executionRegistry: options.executionRegistry
           });
 
           return orchestrator.execute(workpack.meta, statePath);
@@ -1113,5 +1187,109 @@ export function registerCommands(
 
   register(WORKPACK_MANAGER_COMMANDS.refreshTree, async () => {
     treeProvider?.refresh();
+  });
+
+  register(WORKPACK_MANAGER_COMMANDS.stopPromptExecution, async (node?: CommandTreeNode) => {
+    try {
+      if (!options.executionRegistry) {
+        await vscodeApi.window.showWarningMessage(
+          "Execution registry is not configured. Stop Prompt is unavailable."
+        );
+        return;
+      }
+
+      if (node?.runId) {
+        const stopped = options.executionRegistry.stopRun(node.runId);
+        if (!stopped) {
+          await vscodeApi.window.showWarningMessage(
+            "No active prompt execution was found for the selected run."
+          );
+          return;
+        }
+
+        treeProvider?.refresh();
+        await vscodeApi.window.showInformationMessage("Stop requested for the selected prompt.");
+        return;
+      }
+
+      const promptTarget = await resolvePromptTarget(vscodeApi, node, discoverFn);
+      if (!promptTarget) {
+        return;
+      }
+
+      const activeRun = options.executionRegistry.getLatestRunForPrompt(
+        promptTarget.workpackId,
+        promptTarget.promptStem
+      );
+      if (!activeRun || (activeRun.status !== "queued" && activeRun.status !== "in_progress")) {
+        await vscodeApi.window.showWarningMessage(
+          `No active execution found for ${promptTarget.promptStem}.`
+        );
+        return;
+      }
+
+      options.executionRegistry.stopRun(activeRun.runId);
+      treeProvider?.refresh();
+      await vscodeApi.window.showInformationMessage(`Stop requested for ${promptTarget.promptStem}.`);
+    } catch (error) {
+      await vscodeApi.window.showErrorMessage(
+        `Unable to stop prompt execution: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  });
+
+  register(WORKPACK_MANAGER_COMMANDS.provideAgentInput, async (node?: CommandTreeNode) => {
+    try {
+      if (!options.executionRegistry) {
+        await vscodeApi.window.showWarningMessage(
+          "Execution registry is not configured. Provide Input is unavailable."
+        );
+        return;
+      }
+
+      let targetRun = node?.runId ? options.executionRegistry.getRun(node.runId) : undefined;
+      if (!targetRun) {
+        const promptTarget = await resolvePromptTarget(vscodeApi, node, discoverFn);
+        if (!promptTarget) {
+          return;
+        }
+
+        targetRun = options.executionRegistry.getLatestRunForPrompt(
+          promptTarget.workpackId,
+          promptTarget.promptStem
+        );
+      }
+
+      if (!targetRun || targetRun.status !== "human_input_required") {
+        await vscodeApi.window.showWarningMessage(
+          "The selected agent is not waiting for human input."
+        );
+        return;
+      }
+
+      const input = await vscodeApi.window.showInputBox({
+        prompt: targetRun.inputRequest ?? `Provide input for ${targetRun.promptStem}`,
+        placeHolder: "Type the response to send back to the agent"
+      });
+
+      if (input === undefined) {
+        return;
+      }
+
+      const submitted = await options.executionRegistry.submitHumanInput(targetRun.runId, input);
+      if (!submitted) {
+        await vscodeApi.window.showWarningMessage(
+          "The current agent provider cannot resume from human input yet."
+        );
+        return;
+      }
+
+      treeProvider?.refresh();
+      await vscodeApi.window.showInformationMessage(`Input submitted for ${targetRun.promptStem}.`);
+    } catch (error) {
+      await vscodeApi.window.showErrorMessage(
+        `Unable to provide agent input: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
   });
 }

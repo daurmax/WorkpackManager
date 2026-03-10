@@ -2,7 +2,7 @@
   "name": "workpack-manager",
   "displayName": "Workpack Manager",
   "description": "VS Code extension for discovering and managing workpacks.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "publisher": "daurmax",
   "icon": "resources/icon.png",
@@ -26,7 +26,8 @@
   "homepage": "https://github.com/daurmax/WorkpackManager#readme",
   "activationEvents": [
     "onStartupFinished",
-    "onView:workpackManager"
+    "onView:workpackManager",
+    "onView:workpackManager.activeAgents"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -45,6 +46,12 @@
           "id": "workpackManager",
           "name": "Workpacks",
           "icon": "$(tasklist)",
+          "contextualTitle": "Workpack Manager"
+        },
+        {
+          "id": "workpackManager.activeAgents",
+          "name": "Active Agents",
+          "icon": "$(pulse)",
           "contextualTitle": "Workpack Manager"
         }
       ]
@@ -101,6 +108,21 @@
         "category": "Workpack"
       },
       {
+        "command": "workpackManager.stopPromptExecution",
+        "title": "Stop Prompt",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.retryPrompt",
+        "title": "Retry Prompt",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.provideAgentInput",
+        "title": "Provide Agent Input",
+        "category": "Workpack"
+      },
+      {
         "command": "workpackManager.refreshTree",
         "title": "Refresh",
         "category": "Workpack",
@@ -112,6 +134,11 @@
         {
           "command": "workpackManager.refreshTree",
           "when": "view == workpackManager",
+          "group": "navigation"
+        },
+        {
+          "command": "workpackManager.refreshTree",
+          "when": "view == workpackManager.activeAgents",
           "group": "navigation"
         }
       ],
@@ -148,13 +175,28 @@
         },
         {
           "command": "workpackManager.assignAgent",
-          "when": "viewItem == prompt",
+          "when": "viewItem =~ /^prompt\\./",
           "group": "1_agent@1"
         },
         {
           "command": "workpackManager.executePrompt",
-          "when": "viewItem == prompt",
+          "when": "viewItem == prompt.pending",
           "group": "1_agent@2"
+        },
+        {
+          "command": "workpackManager.stopPromptExecution",
+          "when": "viewItem == prompt.queued || viewItem == prompt.inProgress || viewItem == prompt.humanInputRequired || viewItem == activeAgent.queued || viewItem == activeAgent.inProgress || viewItem == activeAgent.humanInputRequired",
+          "group": "1_agent@3"
+        },
+        {
+          "command": "workpackManager.retryPrompt",
+          "when": "viewItem == prompt.blocked || viewItem == prompt.failed || viewItem == prompt.cancelled",
+          "group": "1_agent@4"
+        },
+        {
+          "command": "workpackManager.provideAgentInput",
+          "when": "viewItem == prompt.humanInputRequired || viewItem == activeAgent.humanInputRequired",
+          "group": "1_agent@5"
         }
       ]
     },
@@ -195,6 +237,7 @@
     "lint:fix": "eslint src/ --ext .ts --fix",
     "vscode:prepublish": "npm run build",
     "package:vsix": "vsce package",
+    "install:local-vsix": "node ./scripts/install-local-vsix.mjs",
     "package:vsix:list": "vsce ls",
     "watch": "tsc -watch -p .",
     "test": "vitest run",

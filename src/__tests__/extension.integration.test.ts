@@ -9,6 +9,7 @@ const activationMocks = vi.hoisted(() => {
   const treeProviderInstances: Array<{
     refresh: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
+    setExecutionRegistry: ReturnType<typeof vi.fn>;
   }> = [];
 
   class DiscovererWorkpackParser {}
@@ -16,6 +17,7 @@ const activationMocks = vi.hoisted(() => {
   class WorkpackTreeProvider {
     readonly refresh = vi.fn();
     readonly dispose = vi.fn();
+    readonly setExecutionRegistry = vi.fn();
 
     constructor(
       parser: unknown,
@@ -32,6 +34,20 @@ const activationMocks = vi.hoisted(() => {
     dispose: ReturnType<typeof vi.fn>;
   }> = [];
 
+  const activeAgentsProviderInstances: Array<{
+    refresh: ReturnType<typeof vi.fn>;
+    dispose: ReturnType<typeof vi.fn>;
+  }> = [];
+
+  class ActiveAgentsTreeProvider {
+    readonly refresh = vi.fn();
+    readonly dispose = vi.fn();
+
+    constructor(_registry: unknown) {
+      activeAgentsProviderInstances.push(this);
+    }
+  }
+
   class WorkpackDiagnosticProvider {
     readonly publishDiagnostics = vi.fn(async () => undefined);
     readonly dispose = vi.fn();
@@ -46,8 +62,10 @@ const activationMocks = vi.hoisted(() => {
     treeProviderCtor,
     treeProviderInstances,
     diagnosticInstances,
+    activeAgentsProviderInstances,
     DiscovererWorkpackParser,
     WorkpackTreeProvider,
+    ActiveAgentsTreeProvider,
     WorkpackDiagnosticProvider
   };
 });
@@ -57,6 +75,7 @@ vi.mock("../commands", () => ({
 }));
 
 vi.mock("../views", () => ({
+  ActiveAgentsTreeProvider: activationMocks.ActiveAgentsTreeProvider,
   DiscovererWorkpackParser: activationMocks.DiscovererWorkpackParser,
   WorkpackTreeProvider: activationMocks.WorkpackTreeProvider
 }));
@@ -69,6 +88,7 @@ import { activate } from "../extension";
 
 interface TestContext {
   subscriptions: Array<{ dispose(): void }>;
+  extensionUri: vscode.Uri;
 }
 
 interface TestVscodeWorkspace {
@@ -87,7 +107,8 @@ interface TestVscodeWindow {
 
 function createContext(): TestContext {
   return {
-    subscriptions: []
+    subscriptions: [],
+    extensionUri: vscode.Uri.file("C:/workspace/.vscode/extensions/workpack-manager")
   };
 }
 
@@ -97,6 +118,7 @@ describe("extension activation integration", () => {
     activationMocks.treeProviderCtor.mockReset();
     activationMocks.treeProviderInstances.length = 0;
     activationMocks.diagnosticInstances.length = 0;
+    activationMocks.activeAgentsProviderInstances.length = 0;
   });
 
   it("wires tree provider, command registration, and diagnostics callback on activate", async () => {
@@ -123,7 +145,7 @@ describe("extension activation integration", () => {
     assert.deepEqual(workspacePathsArg, ["C:/workspace"]);
     assert.deepEqual(optionsArg, { watchFileSystem: true });
 
-    assert.equal(createTreeViewMock.mock.calls.length, 1);
+    assert.equal(createTreeViewMock.mock.calls.length, 2);
     const [viewId, treeViewOptions] = createTreeViewMock.mock.calls[0] as unknown as [
       string,
       { treeDataProvider: unknown; showCollapseAll: boolean }
@@ -132,9 +154,19 @@ describe("extension activation integration", () => {
     assert.equal(treeViewOptions.treeDataProvider, activationMocks.treeProviderInstances[0]);
     assert.equal(treeViewOptions.showCollapseAll, true);
 
-    assert.equal(context.subscriptions.length, 4);
+    const [activeViewId, activeTreeViewOptions] = createTreeViewMock.mock.calls[1] as unknown as [
+      string,
+      { treeDataProvider: unknown; showCollapseAll: boolean }
+    ];
+    assert.equal(activeViewId, "workpackManager.activeAgents");
+    assert.equal(activeTreeViewOptions.treeDataProvider, activationMocks.activeAgentsProviderInstances[0]);
+    assert.equal(activeTreeViewOptions.showCollapseAll, false);
+
+    assert.equal(context.subscriptions.length, 7);
     assert.equal(context.subscriptions[0], activationMocks.treeProviderInstances[0]);
-    assert.equal(context.subscriptions[2], activationMocks.diagnosticInstances[0]);
+    assert.equal(context.subscriptions[1], activationMocks.activeAgentsProviderInstances[0]);
+    assert.equal(context.subscriptions[4], activationMocks.diagnosticInstances[0]);
+    assert.equal(activationMocks.treeProviderInstances[0].setExecutionRegistry.mock.calls.length, 1);
 
     assert.equal(activationMocks.registerCommands.mock.calls.length, 1);
     const [registeredContext, registerOptions] = activationMocks.registerCommands.mock.calls[0] as [
@@ -143,6 +175,8 @@ describe("extension activation integration", () => {
         vscodeApi: unknown;
         treeProvider: unknown;
         providerRegistry: { listAll(): Array<{ id: string }> };
+        executionRegistry: { listRuns(): unknown[] };
+        extensionUri: vscode.Uri;
         onLintWorkpack(workpackFolderPath: string): Promise<void>;
       }
     ];
@@ -150,6 +184,8 @@ describe("extension activation integration", () => {
     assert.equal(registeredContext, context);
     assert.equal(registerOptions.vscodeApi, vscode);
     assert.equal(registerOptions.treeProvider, activationMocks.treeProviderInstances[0]);
+    assert.equal(Array.isArray(registerOptions.executionRegistry.listRuns()), true);
+    assert.equal(registerOptions.extensionUri, (context as unknown as { extensionUri?: vscode.Uri }).extensionUri);
     assert.deepEqual(
       registerOptions.providerRegistry.listAll().map((provider) => provider.id).sort(),
       ["codex", "copilot"]
@@ -162,7 +198,7 @@ describe("extension activation integration", () => {
     );
 
     assert.equal(registerOptions.providerRegistry.listAll().length, 2);
-    context.subscriptions[3].dispose();
+    context.subscriptions[6].dispose();
     assert.equal(registerOptions.providerRegistry.listAll().length, 0);
   });
 

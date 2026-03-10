@@ -5,6 +5,8 @@ export type {
   PromptDispatchContext,
   ProviderId,
 } from "./types";
+export { ExecutionRegistry } from "./execution-registry";
+export type { AgentRunSnapshot, AgentRunStatus } from "./execution-registry";
 export { ProviderRegistry } from "./registry";
 export { CopilotProvider } from "./providers/copilot-provider";
 export { CodexProvider } from "./providers/codex-provider";

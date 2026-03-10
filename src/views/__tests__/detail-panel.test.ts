@@ -473,6 +473,31 @@ describe("workpack detail panel", () => {
     });
   });
 
+  it("message handling dispatches prompt control commands", async () => {
+    await withMockedVscode(async ({ WorkpackDetailPanel, context }) => {
+      const workpack = createWorkpackFixture();
+
+      WorkpackDetailPanel.createOrShow(context.extensionUri, workpack);
+      const panel = context.createdPanels[0];
+
+      await panel.webview.fireMessage({
+        command: "retryPrompt",
+        payload: { promptStem: "A2_detail_panel" },
+      });
+      await panel.webview.fireMessage({
+        command: "stopPrompt",
+        payload: { promptStem: "A2_detail_panel" },
+      });
+
+      assert.equal(context.executeCommandCalls.length, 2);
+      assert.equal(context.executeCommandCalls[0]?.[0], "workpackManager.retryPrompt");
+      assert.equal(context.executeCommandCalls[1]?.[0], "workpackManager.stopPromptExecution");
+
+      const panelInstance = WorkpackDetailPanel.currentPanel as { dispose(): void };
+      panelInstance.dispose();
+    });
+  });
+
   it("panel disposes without errors", async () => {
     await withMockedVscode(async ({ WorkpackDetailPanel, context }) => {
       const workpack = createWorkpackFixture();
