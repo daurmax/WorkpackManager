@@ -1,7 +1,7 @@
 {
   "workpack_id": "workpack-manager-v3-pixel-office-ui",
   "overall_status": "in_progress",
-  "last_updated": "2026-03-12T11:39:31.9953103Z",
+  "last_updated": "2026-03-12T11:47:53.2882182Z",
   "prompt_status": {
     "A0_bootstrap": {
       "status": "complete"
@@ -19,7 +19,10 @@
       "completed_at": "2026-03-12T11:39:31.9953103Z"
     },
     "A3_desk_interactions_chat_preview": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-03-12T11:47:53.2882182Z",
+      "completed_at": "2026-03-12T11:47:53.2882182Z"
     },
     "A4_git_diff_side_panel": {
       "status": "pending"
@@ -78,6 +81,20 @@
       "prompt_stem": "A2_agent_animation_runtime",
       "agent": "codex",
       "notes": "Completed avatar runtime mapping, host-to-webview transition messages, reduced-motion fallback, and regression coverage."
+    },
+    {
+      "timestamp": "2026-03-12T11:47:53.2882182Z",
+      "event": "prompt_started",
+      "prompt_stem": "A3_desk_interactions_chat_preview",
+      "agent": "codex",
+      "notes": "Started wiring desk action menus, prompt command dispatch, hover previews, and room accessibility."
+    },
+    {
+      "timestamp": "2026-03-12T11:47:53.2882182Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A3_desk_interactions_chat_preview",
+      "agent": "codex",
+      "notes": "Completed desk interaction menus, host command dispatch, hover chat previews, keyboard accessibility, and regression coverage."
     }
   ],
   "notes": null

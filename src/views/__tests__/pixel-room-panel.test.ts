@@ -3,6 +3,7 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 import { describe, it } from "vitest";
 import type { AgentRunSnapshot } from "../../agents/execution-registry";
+import type { AgentProvider } from "../../agents/types";
 import type { WorkpackInstance } from "../../models";
 import { WorkpackPixelRoomPanel } from "../workpack-pixel-room-panel";
 
@@ -52,6 +53,12 @@ class MockWebview {
   async postMessage(message: unknown): Promise<boolean> {
     this.postMessageCalls.push(message);
     return true;
+  }
+
+  async dispatchMessage(message: unknown): Promise<void> {
+    for (const listener of this.messageListeners) {
+      await listener(message);
+    }
   }
 }
 
@@ -143,19 +150,28 @@ async function waitForTick(): Promise<void> {
 }
 
 async function withMockedPanel<T>(
-  run: (context: { createdPanels: MockWebviewPanel[]; extensionUri: vscode.Uri }) => Promise<T>,
+  run: (context: {
+    createdPanels: MockWebviewPanel[];
+    executeCommandCalls: unknown[][];
+    extensionUri: vscode.Uri;
+  }) => Promise<T>,
 ): Promise<T> {
   const createdPanels: MockWebviewPanel[] = [];
+  const executeCommandCalls: unknown[][] = [];
   const extensionUri = vscode.Uri.file(path.resolve(process.cwd()));
   const windowApi = vscode.window as unknown as {
     createWebviewPanel: typeof vscode.window.createWebviewPanel;
     createOutputChannel?: typeof vscode.window.createOutputChannel;
+  };
+  const commandsApi = vscode.commands as unknown as {
+    executeCommand: typeof vscode.commands.executeCommand;
   };
   const workspaceApi = vscode.workspace as unknown as {
     createFileSystemWatcher: typeof vscode.workspace.createFileSystemWatcher;
   };
   const originalCreateWebviewPanel = windowApi.createWebviewPanel;
   const originalCreateOutputChannel = windowApi.createOutputChannel;
+  const originalExecuteCommand = commandsApi.executeCommand;
   const originalCreateFileSystemWatcher = workspaceApi.createFileSystemWatcher;
 
   windowApi.createWebviewPanel = ((_: string, title: string) => {
@@ -164,18 +180,51 @@ async function withMockedPanel<T>(
     return panel as unknown as ReturnType<typeof vscode.window.createWebviewPanel>;
   }) as typeof vscode.window.createWebviewPanel;
   windowApi.createOutputChannel = (() => new MockOutputChannel() as unknown as vscode.OutputChannel) as unknown as typeof vscode.window.createOutputChannel;
+  commandsApi.executeCommand = (async (...args: unknown[]) => {
+    executeCommandCalls.push(args);
+    return undefined;
+  }) as typeof vscode.commands.executeCommand;
   workspaceApi.createFileSystemWatcher = (() => new MockFileSystemWatcher() as unknown as vscode.FileSystemWatcher) as typeof vscode.workspace.createFileSystemWatcher;
 
   try {
-    return await run({ createdPanels, extensionUri });
+    return await run({ createdPanels, executeCommandCalls, extensionUri });
   } finally {
     windowApi.createWebviewPanel = originalCreateWebviewPanel;
     if (originalCreateOutputChannel) {
       windowApi.createOutputChannel = originalCreateOutputChannel;
     }
+    commandsApi.executeCommand = originalExecuteCommand;
     workspaceApi.createFileSystemWatcher = originalCreateFileSystemWatcher;
     (WorkpackPixelRoomPanel.currentPanel as { dispose(): void } | undefined)?.dispose();
   }
+}
+
+function createMockProvider(id: string, displayName: string): AgentProvider {
+  return {
+    id,
+    displayName,
+    capabilities() {
+      return {
+        multiFileEdit: true,
+        commandExecution: true,
+        longRunning: true,
+        maxPromptTokens: 64_000,
+        tags: ["test"],
+      };
+    },
+    async dispatch() {
+      return {
+        success: true,
+        summary: "ok",
+      };
+    },
+    async isAvailable() {
+      return true;
+    },
+    dispose(): void {
+      // No-op for tests.
+    },
+  };
 }
 
 function createWorkpackFixture(id: string, title: string): WorkpackInstance {
@@ -306,10 +355,14 @@ describe("workpack pixel room panel", () => {
 
       assert.equal(panel.webview.postMessageCalls.length, 2);
 
-      const deskStatusChange = panel.webview.postMessageCalls[0] as {
+      const sceneUpdate = panel.webview.postMessageCalls[0] as {
         type: string;
-        status: string;
-        runId: string;
+        reason: string;
+        scene: {
+          room: {
+            desks: Array<{ promptStem: string; status: string; latestRunId?: string }>;
+          };
+        };
       };
       const avatarTransition = panel.webview.postMessageCalls[1] as {
         type: string;
@@ -317,15 +370,48 @@ describe("workpack pixel room panel", () => {
         avatar: { animationState: string; run: { status: string }; currentStationId?: string };
       };
 
-      assert.equal(deskStatusChange.type, "DeskStatusChange");
-      assert.equal(deskStatusChange.status, "complete");
-      assert.equal(deskStatusChange.runId, "run-1");
+      assert.equal(sceneUpdate.type, "SceneUpdate");
+      assert.equal(sceneUpdate.reason, "runtime_refresh");
+      assert.equal(sceneUpdate.scene.room.desks[0]?.status, "complete");
+      assert.equal(sceneUpdate.scene.room.desks[0]?.latestRunId, "run-1");
 
       assert.equal(avatarTransition.type, "AvatarTransition");
       assert.equal(avatarTransition.from, "working");
       assert.equal(avatarTransition.avatar.animationState, "walking_to_board");
       assert.equal(avatarTransition.avatar.run.status, "complete");
       assert.equal(avatarTransition.avatar.currentStationId, "station:output-board");
+    });
+  });
+
+  it("dispatches room assignment and prompt actions to existing extension commands", async () => {
+    await withMockedPanel(async ({ createdPanels, executeCommandCalls, extensionUri }) => {
+      const workpack = createWorkpackFixture("pixel-room-actions", "Pixel Room Actions");
+      WorkpackPixelRoomPanel.createOrShow(extensionUri, workpack, {
+        providerRegistry: {
+          listAll(): AgentProvider[] {
+            return [createMockProvider("codex", "Codex"), createMockProvider("copilot", "Copilot")];
+          },
+        },
+      });
+
+      const panel = createdPanels[0];
+      await panel.webview.dispatchMessage({
+        type: "AgentAssignRequested",
+        deskId: "desk:A1_pixel_room_shell",
+        promptStem: "A1_pixel_room_shell",
+        providerId: "copilot",
+      });
+      await panel.webview.dispatchMessage({
+        type: "PromptActionRequested",
+        deskId: "desk:A1_pixel_room_shell",
+        promptStem: "A1_pixel_room_shell",
+        action: "stop",
+      });
+
+      assert.equal(executeCommandCalls.length, 2);
+      assert.equal(executeCommandCalls[0]?.[0], "workpackManager.assignAgent");
+      assert.equal((executeCommandCalls[0]?.[1] as { providerId?: string }).providerId, "copilot");
+      assert.equal(executeCommandCalls[1]?.[0], "workpackManager.stopPromptExecution");
     });
   });
 });

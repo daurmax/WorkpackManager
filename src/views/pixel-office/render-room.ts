@@ -1279,11 +1279,18 @@ ${avatarScript}
 
         const providerButton = element.closest("[data-provider-id]");
         if (providerButton) {
+          const deskId = providerButton.getAttribute("data-desk-id");
+          const promptStem = providerButton.getAttribute("data-prompt-stem");
+          const providerId = providerButton.getAttribute("data-provider-id");
+          if (!deskId || !promptStem || !providerId) {
+            return false;
+          }
+
           postWebviewMessage({
             type: "AgentAssignRequested",
-            deskId: providerButton.getAttribute("data-desk-id"),
-            promptStem: providerButton.getAttribute("data-prompt-stem"),
-            providerId: providerButton.getAttribute("data-provider-id"),
+            deskId: deskId,
+            promptStem: promptStem,
+            providerId: providerId,
           });
           closeDeskMenu(false);
           return true;
@@ -1291,14 +1298,20 @@ ${avatarScript}
 
         const actionButton = element.closest("[data-prompt-action]");
         if (actionButton) {
+          const deskId = actionButton.getAttribute("data-desk-id");
+          const promptStem = actionButton.getAttribute("data-prompt-stem");
+          const action = actionButton.getAttribute("data-prompt-action");
+          if (!deskId || !promptStem || !action) {
+            return false;
+          }
+
           postWebviewMessage({
             type: "PromptActionRequested",
-            deskId: actionButton.getAttribute("data-desk-id"),
-            promptStem: actionButton.getAttribute("data-prompt-stem"),
-            action: actionButton.getAttribute("data-prompt-action"),
+            deskId: deskId,
+            promptStem: promptStem,
+            action: action,
           });
 
-          const action = actionButton.getAttribute("data-prompt-action");
           if (action !== "open_prompt" && action !== "open_output") {
             closeDeskMenu(false);
           }

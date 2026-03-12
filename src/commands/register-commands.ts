@@ -60,6 +60,7 @@ interface CommandTreeNode {
   filePath?: string;
   promptStem?: string;
   runId?: string;
+  providerId?: string;
 }
 
 interface OutputChannelLike {
@@ -949,7 +950,8 @@ export function registerCommands(
       const workpack = await parseWorkpackInstance(folderPath);
       const { WorkpackPixelRoomPanel } = await import("../views/workpack-pixel-room-panel");
       WorkpackPixelRoomPanel.createOrShow(options.extensionUri, workpack, {
-        executionRegistry: options.executionRegistry
+        executionRegistry: options.executionRegistry,
+        providerRegistry,
       });
     } catch (error) {
       await vscodeApi.window.showErrorMessage(
@@ -1017,30 +1019,45 @@ export function registerCommands(
         return;
       }
 
-      const pickedProvider = await vscodeApi.window.showQuickPick<ProviderQuickPickItem>(
-        providers.map((provider) => ({
-          label: provider.displayName,
-          description: provider.id,
-          detail: formatProviderCapabilities(provider),
-          provider
-        })),
-        {
-          placeHolder: `Assign an agent to ${promptTarget.promptStem}.`
+      const requestedProviderId = typeof node?.providerId === "string" ? node.providerId : undefined;
+      let selectedProvider: AgentProvider | undefined;
+
+      if (requestedProviderId) {
+        selectedProvider = providers.find((provider) => provider.id === requestedProviderId);
+        if (!selectedProvider) {
+          await vscodeApi.window.showWarningMessage(
+            `Provider '${requestedProviderId}' is not registered.`
+          );
+          return;
         }
-      );
-      if (!pickedProvider) {
-        return;
+      } else {
+        const pickedProvider = await vscodeApi.window.showQuickPick<ProviderQuickPickItem>(
+          providers.map((provider) => ({
+            label: provider.displayName,
+            description: provider.id,
+            detail: formatProviderCapabilities(provider),
+            provider
+          })),
+          {
+            placeHolder: `Assign an agent to ${promptTarget.promptStem}.`
+          }
+        );
+        if (!pickedProvider) {
+          return;
+        }
+
+        selectedProvider = pickedProvider.provider;
       }
 
       const statePath = path.join(promptTarget.folderPath, WORKPACK_FILES.state);
       const assignment = new AssignmentModel(statePath, providerRegistry);
       await assignment.load();
-      await assignment.assign(promptTarget.promptStem, pickedProvider.provider.id);
+      await assignment.assign(promptTarget.promptStem, selectedProvider.id);
       await assignment.save();
       treeProvider?.refresh();
 
       await vscodeApi.window.showInformationMessage(
-        `Assigned ${pickedProvider.provider.displayName} to ${promptTarget.promptStem}.`
+        `Assigned ${selectedProvider.displayName} to ${promptTarget.promptStem}.`
       );
     } catch (error) {
       await vscodeApi.window.showErrorMessage(

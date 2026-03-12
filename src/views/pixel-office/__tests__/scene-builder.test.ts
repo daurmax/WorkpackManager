@@ -148,16 +148,19 @@ describe("pixel office scene builder", () => {
         status: "in_progress",
         startedAt: "2026-03-12T10:44:00Z",
         updatedAt: "2026-03-12T10:44:30Z",
+        summary: "Codex is drafting the room shell update.",
       },
     ];
 
     const scene = buildPixelOfficeSceneState(workpack, {
+      availableProviders: [{ id: "codex", label: "Codex" }],
       generatedAt: "2026-03-12T10:45:00Z",
       runtimeRuns,
     });
 
     assert.equal(scene.version, 1);
     assert.equal(scene.generatedAt, "2026-03-12T10:45:00Z");
+    assert.equal(scene.providers.length, 1);
     assert.equal(scene.room.stations.map((station) => station.label).join(","), "00_request.md,01_plan.md,99_status.md,outputs");
     assert.equal(scene.room.desks.length, 4);
     assert.equal(scene.room.avatars.length, 1);
@@ -166,7 +169,11 @@ describe("pixel office scene builder", () => {
     assert.ok(runtimeDesk);
     assert.equal(runtimeDesk?.status, "in_progress");
     assert.equal(runtimeDesk?.assignedAgentId, "codex");
+    assert.equal(runtimeDesk?.providerDisplayName, "Codex");
     assert.equal(runtimeDesk?.latestRunId, "run-1");
+    assert.deepEqual(runtimeDesk?.actions.map((action) => action.action), ["stop"]);
+    assert.equal(runtimeDesk?.preview.excerpt, "Codex is drafting the room shell update.");
+    assert.equal(runtimeDesk?.preview.providerLabel, "Codex");
 
     const runtimeAvatar = scene.room.avatars.find((avatar) => avatar.promptStem === "A2_prompt_2");
     assert.ok(runtimeAvatar);
@@ -175,6 +182,8 @@ describe("pixel office scene builder", () => {
 
     const outputDesk = scene.room.desks.find((desk) => desk.promptStem === "A1_prompt_1");
     assert.ok(outputDesk?.outputPath?.endsWith(path.join("outputs", "A1_prompt_1.json")));
+    assert.deepEqual(outputDesk?.actions.map((action) => action.action), ["open_output"]);
+    assert.equal(outputDesk?.preview.links.some((link) => link.action === "open_output"), true);
 
     const outputBoard = scene.room.stations.find((station) => station.kind === "output_board");
     assert.equal(outputBoard?.badgeText, "1 artifact");

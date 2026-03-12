@@ -487,6 +487,45 @@ describe("commands", () => {
     assert.equal(statePayload.prompt_status.A0_bootstrap.assigned_agent, "codex");
   });
 
+  it("assignAgent honors a providerId passed by another UI surface", async () => {
+    const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), "cmd-assign-agent-direct-"));
+    tempFolders.push(workspaceRoot);
+
+    const fixture = await createExecutionWorkpackFixture(workspaceRoot, "wp-assign-direct", [
+      { stem: "A0_bootstrap" }
+    ]);
+    const providerRegistry = new ProviderRegistry();
+    providerRegistry.register(createMockProvider("copilot"));
+    providerRegistry.register(createMockProvider("codex"));
+
+    const mock = createMockVscode([workspaceRoot]);
+    const context = createMockContext();
+    registerCommands(context, {
+      vscodeApi: mock.api,
+      providerRegistry,
+      discoverWorkpacksFn: async () => [fixture.instance]
+    });
+
+    const assignCommand = getRegisteredCommand(
+      mock.commandMap,
+      WORKPACK_MANAGER_COMMANDS.assignAgent
+    );
+    await assignCommand({
+      contextValue: "prompt",
+      workpackId: fixture.instance.meta.id,
+      folderPath: fixture.folderPath,
+      promptStem: "A0_bootstrap",
+      providerId: "copilot"
+    });
+
+    const statePayload = JSON.parse(await readFile(fixture.statePath, "utf8")) as {
+      agent_assignments: Record<string, string>;
+    };
+
+    assert.equal(statePayload.agent_assignments.A0_bootstrap, "copilot");
+    assert.equal(mock.quickPickQueue.length, 0);
+  });
+
   it("refreshTree invokes provider refresh", async () => {
     let refreshCount = 0;
     const mock = createMockVscode([]);

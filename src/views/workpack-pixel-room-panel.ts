@@ -5,7 +5,6 @@ import type { WorkpackInstance } from "../models";
 import type { PromptActionKind, PromptDesk, SceneState } from "../models/pixel-office";
 import { WORKPACK_MANAGER_COMMANDS } from "../commands/register-commands";
 import type {
-  DeskStatusChange,
   PixelOfficeHostMessage,
   PixelOfficeWebviewMessage,
   SceneUpdateReason,
@@ -237,34 +236,6 @@ export class WorkpackPixelRoomPanel {
     return workspaceApi.getConfiguration("workbench").get<string>("reduceMotion", "auto") === "on";
   }
 
-  private buildDeskStatusChanges(previousScene: SceneState, nextScene: SceneState): DeskStatusChange[] {
-    const previousByDeskId = new Map(previousScene.room.desks.map((desk) => [desk.id, desk]));
-
-    return nextScene.room.desks.flatMap((desk) => {
-      const previousDesk = previousByDeskId.get(desk.id);
-      if (
-        previousDesk &&
-        previousDesk.status === desk.status &&
-        previousDesk.assignedAgentId === desk.assignedAgentId &&
-        previousDesk.latestRunId === desk.latestRunId
-      ) {
-        return [];
-      }
-
-      return [
-        {
-          type: "DeskStatusChange" as const,
-          deskId: desk.id,
-          promptStem: desk.promptStem,
-          status: desk.status,
-          assignedAgentId: desk.assignedAgentId,
-          runId: desk.latestRunId,
-          occurredAt: nextScene.generatedAt,
-        },
-      ];
-    });
-  }
-
   private async postHostMessage(message: PixelOfficeHostMessage): Promise<void> {
     try {
       await this.panel.webview.postMessage(message);
@@ -284,7 +255,6 @@ export class WorkpackPixelRoomPanel {
     }
 
     const previousScene = this.lastScene;
-    const deskStatusChanges = this.buildDeskStatusChanges(previousScene, nextScene);
     const avatarTransitions = deriveAvatarTransitions(previousScene.room.avatars, nextScene.room.avatars)
       .map((transition) => ({
         type: "AvatarTransition" as const,
@@ -295,10 +265,6 @@ export class WorkpackPixelRoomPanel {
       }));
 
     this.lastScene = nextScene;
-
-    if (deskStatusChanges.length === 0 && avatarTransitions.length === 0) {
-      return;
-    }
 
     // Desk interactions and hover previews depend on the full desk view model,
     // so runtime changes publish the fresh scene before any incremental avatar updates.
