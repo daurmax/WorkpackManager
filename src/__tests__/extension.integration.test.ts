@@ -38,6 +38,10 @@ const activationMocks = vi.hoisted(() => {
     refresh: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
   }> = [];
+  const gitDiffProviderInstances: Array<{
+    refresh: ReturnType<typeof vi.fn>;
+    dispose: ReturnType<typeof vi.fn>;
+  }> = [];
 
   class ActiveAgentsTreeProvider {
     readonly refresh = vi.fn();
@@ -45,6 +49,15 @@ const activationMocks = vi.hoisted(() => {
 
     constructor(_registry: unknown) {
       activeAgentsProviderInstances.push(this);
+    }
+  }
+
+  class GitDiffTreeProvider {
+    readonly refresh = vi.fn();
+    readonly dispose = vi.fn();
+
+    constructor(_getWorkspacePaths: unknown) {
+      gitDiffProviderInstances.push(this);
     }
   }
 
@@ -63,9 +76,11 @@ const activationMocks = vi.hoisted(() => {
     treeProviderInstances,
     diagnosticInstances,
     activeAgentsProviderInstances,
+    gitDiffProviderInstances,
     DiscovererWorkpackParser,
     WorkpackTreeProvider,
     ActiveAgentsTreeProvider,
+    GitDiffTreeProvider,
     WorkpackDiagnosticProvider
   };
 });
@@ -78,6 +93,10 @@ vi.mock("../views", () => ({
   ActiveAgentsTreeProvider: activationMocks.ActiveAgentsTreeProvider,
   DiscovererWorkpackParser: activationMocks.DiscovererWorkpackParser,
   WorkpackTreeProvider: activationMocks.WorkpackTreeProvider
+}));
+
+vi.mock("../views/git-diff-tree-provider", () => ({
+  GitDiffTreeProvider: activationMocks.GitDiffTreeProvider
 }));
 
 vi.mock("../validation", () => ({
@@ -119,6 +138,7 @@ describe("extension activation integration", () => {
     activationMocks.treeProviderInstances.length = 0;
     activationMocks.diagnosticInstances.length = 0;
     activationMocks.activeAgentsProviderInstances.length = 0;
+    activationMocks.gitDiffProviderInstances.length = 0;
   });
 
   it("wires tree provider, command registration, and diagnostics callback on activate", async () => {
@@ -145,7 +165,7 @@ describe("extension activation integration", () => {
     assert.deepEqual(workspacePathsArg, ["C:/workspace"]);
     assert.deepEqual(optionsArg, { watchFileSystem: true });
 
-    assert.equal(createTreeViewMock.mock.calls.length, 2);
+    assert.equal(createTreeViewMock.mock.calls.length, 3);
     const [viewId, treeViewOptions] = createTreeViewMock.mock.calls[0] as unknown as [
       string,
       { treeDataProvider: unknown; showCollapseAll: boolean }
@@ -162,10 +182,19 @@ describe("extension activation integration", () => {
     assert.equal(activeTreeViewOptions.treeDataProvider, activationMocks.activeAgentsProviderInstances[0]);
     assert.equal(activeTreeViewOptions.showCollapseAll, false);
 
-    assert.equal(context.subscriptions.length, 7);
-    assert.equal(context.subscriptions[0], activationMocks.treeProviderInstances[0]);
-    assert.equal(context.subscriptions[1], activationMocks.activeAgentsProviderInstances[0]);
-    assert.equal(context.subscriptions[4], activationMocks.diagnosticInstances[0]);
+    const [gitDiffViewId, gitDiffTreeViewOptions] = createTreeViewMock.mock.calls[2] as unknown as [
+      string,
+      { treeDataProvider: unknown; showCollapseAll: boolean }
+    ];
+    assert.equal(gitDiffViewId, "workpackManager.gitDiff");
+    assert.equal(gitDiffTreeViewOptions.treeDataProvider, activationMocks.gitDiffProviderInstances[0]);
+    assert.equal(gitDiffTreeViewOptions.showCollapseAll, true);
+
+    assert.equal(context.subscriptions.length, 11);
+    assert.equal(context.subscriptions[2], activationMocks.treeProviderInstances[0]);
+    assert.equal(context.subscriptions[3], activationMocks.activeAgentsProviderInstances[0]);
+    assert.equal(context.subscriptions[4], activationMocks.gitDiffProviderInstances[0]);
+    assert.equal(context.subscriptions[8], activationMocks.diagnosticInstances[0]);
     assert.equal(activationMocks.treeProviderInstances[0].setExecutionRegistry.mock.calls.length, 1);
 
     assert.equal(activationMocks.registerCommands.mock.calls.length, 1);
@@ -198,7 +227,7 @@ describe("extension activation integration", () => {
     );
 
     assert.equal(registerOptions.providerRegistry.listAll().length, 2);
-    context.subscriptions[6].dispose();
+    context.subscriptions[10].dispose();
     assert.equal(registerOptions.providerRegistry.listAll().length, 0);
   });
 

@@ -17,6 +17,7 @@ export default defineConfig({
       "src/__tests__/extension.integration.test.ts",
       "src/views/__tests__/tree-provider.test.ts",
       "src/views/__tests__/status-icons.test.ts",
+      "src/views/__tests__/git-diff-model.test.ts",
       "src/views/__tests__/pixel-room-panel.test.ts",
       "src/views/__tests__/workpack-tree-item.test.ts",
       "src/views/pixel-office/__tests__/scene-builder.test.ts",

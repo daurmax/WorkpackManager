@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { CodexProvider, CopilotProvider, ExecutionRegistry, ProviderRegistry } from "./agents";
 import { registerCommands } from "./commands";
 import { WorkpackDiagnosticProvider } from "./validation";
+import { GitDiffTreeProvider } from "./views/git-diff-tree-provider";
 import { ActiveAgentsTreeProvider, DiscovererWorkpackParser, WorkpackTreeProvider } from "./views";
 
 function getAllWorkspacePaths(): string[] {
@@ -40,6 +41,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const executionRegistry = new ExecutionRegistry();
   treeProvider.setExecutionRegistry(executionRegistry);
   const activeAgentsProvider = new ActiveAgentsTreeProvider(executionRegistry);
+  const gitDiffProvider = new GitDiffTreeProvider(() => getAllWorkspacePaths());
   const diagnosticProvider = new WorkpackDiagnosticProvider();
   const providerRegistry = createProviderRegistry();
 
@@ -51,12 +53,28 @@ export function activate(context: vscode.ExtensionContext): void {
     treeDataProvider: activeAgentsProvider,
     showCollapseAll: false
   });
+  const gitDiffView = vscode.window.createTreeView("workpackManager.gitDiff", {
+    treeDataProvider: gitDiffProvider,
+    showCollapseAll: true
+  });
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("workpackManager.showDiffPanel", async () => {
+      await vscode.commands.executeCommand("workbench.view.explorer");
+      await vscode.commands.executeCommand("workpackManager.gitDiff.focus");
+    }),
+    vscode.commands.registerCommand("workpackManager.refreshGitDiff", () => {
+      gitDiffProvider.refresh();
+    })
+  );
 
   context.subscriptions.push(
     treeProvider,
     activeAgentsProvider,
+    gitDiffProvider,
     treeView,
     activeAgentsView,
+    gitDiffView,
     diagnosticProvider,
     executionRegistry
   );
