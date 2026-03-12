@@ -541,7 +541,7 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
       .desk-overlay {
         width: 228px;
         padding: 10px 12px;
-        pointer-events: none;
+        pointer-events: auto;
       }
 
       .desk-menu {
@@ -825,7 +825,7 @@ ${avatarStyles}
           return null;
         }
 
-        return target.closest("[data-desk-id]");
+        return target.closest("[data-desk-id]") || target.closest("[data-desk-overlay]");
       }
 
       function getMenuElement(deskId) {
@@ -924,7 +924,8 @@ ${avatarStyles}
 
         return Boolean(
           target.closest('[data-desk-id="' + deskId + '"]') ||
-          target.closest('[data-desk-menu="' + deskId + '"]'),
+          target.closest('[data-desk-menu="' + deskId + '"]') ||
+          target.closest('[data-desk-overlay="' + deskId + '"]'),
         );
       }
 
@@ -1413,7 +1414,7 @@ ${avatarScript}
           return null;
         }
 
-        const deskId = deskElement.getAttribute("data-desk-id");
+        const deskId = deskElement.getAttribute("data-desk-id") || deskElement.getAttribute("data-desk-overlay");
         return deskId ? findDeskById(currentScene, deskId) : null;
       }
 

@@ -516,8 +516,10 @@ export class AssignmentModel {
       }
     }
 
-    for (const providerId of Object.values(mergedAssignments)) {
-      this.ensureProviderExists(providerId);
+    for (const [key, providerId] of Object.entries(mergedAssignments)) {
+      if (!this.registry.get(providerId)) {
+        delete mergedAssignments[key];
+      }
     }
 
     this.assignments = mergedAssignments;
