@@ -2,9 +2,9 @@
 
 ## Overall Status
 
-🔴 Not Started
+🟡 In Progress
 
-Last Updated: 2026-03-10
+Last Updated: 2026-03-12
 
 ## Checklist
 
@@ -20,7 +20,7 @@ Last Updated: 2026-03-10
 
 ### Implementation Progress (A-series)
 
-- [ ] A0_bootstrap completed
+- [x] A0_bootstrap completed
 - [ ] A1_pixel_room_shell completed
 - [ ] A2_agent_animation_runtime completed
 - [ ] A3_desk_interactions_chat_preview completed
@@ -43,7 +43,7 @@ No B-series prompts yet.
 
 | Prompt | Output JSON Path | Status |
 |--------|------------------|--------|
-| A0_bootstrap | `outputs/A0_bootstrap.json` | Not Created |
+| A0_bootstrap | `outputs/A0_bootstrap.json` | Created |
 | A1_pixel_room_shell | `outputs/A1_pixel_room_shell.json` | Not Created |
 | A2_agent_animation_runtime | `outputs/A2_agent_animation_runtime.json` | Not Created |
 | A3_desk_interactions_chat_preview | `outputs/A3_desk_interactions_chat_preview.json` | Not Created |
