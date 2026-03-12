@@ -171,4 +171,24 @@ describe("provider registry", () => {
     assert.equal(matches.length, 1);
     assert.equal(matches[0]?.id, "codex");
   });
+
+  it("listAvailable filters out providers where isAvailable returns false", async () => {
+    const registry = new ProviderRegistry();
+    const available = createMockProvider("copilot");
+    const unavailable: AgentProvider = {
+      ...createMockProvider("codex"),
+      async isAvailable() {
+        return false;
+      },
+    };
+
+    registry.register(available);
+    registry.register(unavailable);
+
+    const result = await registry.listAvailable();
+    assert.deepEqual(
+      result.map((p) => p.id),
+      ["copilot"]
+    );
+  });
 });

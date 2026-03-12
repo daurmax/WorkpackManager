@@ -391,6 +391,9 @@ describe("workpack pixel room panel", () => {
           listAll(): AgentProvider[] {
             return [createMockProvider("codex", "Codex"), createMockProvider("copilot", "Copilot")];
           },
+          async listAvailable(): Promise<AgentProvider[]> {
+            return [createMockProvider("codex", "Codex"), createMockProvider("copilot", "Copilot")];
+          },
         },
       });
 

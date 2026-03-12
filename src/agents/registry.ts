@@ -69,6 +69,16 @@ export class ProviderRegistry extends EventEmitter {
     return Array.from(this.providers.values());
   }
 
+  async listAvailable(): Promise<AgentProvider[]> {
+    const results = await Promise.all(
+      this.listAll().map(async (provider) => ({
+        provider,
+        available: await provider.isAvailable().catch(() => false),
+      }))
+    );
+    return results.filter((entry) => entry.available).map((entry) => entry.provider);
+  }
+
   findByCapability(filter: Partial<AgentCapability>): AgentProvider[] {
     return this.listAll().filter((provider) =>
       matchesCapabilityFilter(provider.capabilities(), filter)

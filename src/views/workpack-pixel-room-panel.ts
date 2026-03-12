@@ -26,7 +26,7 @@ const PROMPT_ACTION_KINDS: PromptActionKind[] = [
 
 export interface WorkpackPixelRoomPanelOptions {
   executionRegistry?: Pick<ExecutionRegistry, "listRuns" | "onDidChangeRuns">;
-  providerRegistry?: Pick<ProviderRegistry, "listAll">;
+  providerRegistry?: Pick<ProviderRegistry, "listAll" | "listAvailable">;
 }
 
 function isPixelOfficeWebviewMessage(message: unknown): message is PixelOfficeWebviewMessage {
@@ -87,13 +87,14 @@ export class WorkpackPixelRoomPanel {
   private readonly panel: vscode.WebviewPanel;
   private workpack: WorkpackInstance;
   private executionRegistry?: Pick<ExecutionRegistry, "listRuns" | "onDidChangeRuns">;
-  private providerRegistry?: Pick<ProviderRegistry, "listAll">;
+  private providerRegistry?: Pick<ProviderRegistry, "listAll" | "listAvailable">;
   private refreshTimer: NodeJS.Timeout | undefined;
   private outputChannel: vscode.OutputChannel | undefined;
   private runtimeSubscription: vscode.Disposable | undefined;
   private disposed = false;
   private htmlInitialized = false;
   private lastScene: SceneState | undefined;
+  private cachedAvailableProviderIds: Set<string> | undefined;
   private readonly disposables: vscode.Disposable[] = [];
   private readonly fileWatcherDisposables: vscode.Disposable[] = [];
 
@@ -126,6 +127,7 @@ export class WorkpackPixelRoomPanel {
     this.bindExecutionRegistry();
     this.recreateFileWatcher();
     this.update("initial");
+    void this.refreshAvailableProviders();
   }
 
   public static createOrShow(
@@ -141,6 +143,7 @@ export class WorkpackPixelRoomPanel {
       WorkpackPixelRoomPanel.currentPanel.recreateFileWatcher();
       WorkpackPixelRoomPanel.currentPanel.panel.reveal(vscode.ViewColumn.Active);
       WorkpackPixelRoomPanel.currentPanel.update("selection_change");
+      void WorkpackPixelRoomPanel.currentPanel.refreshAvailableProviders();
       return;
     }
 
@@ -214,14 +217,36 @@ export class WorkpackPixelRoomPanel {
   }
 
   private buildScene() {
+    const allProviders = this.providerRegistry?.listAll() ?? [];
+    const availableIds = this.cachedAvailableProviderIds;
+    const filteredProviders = availableIds
+      ? allProviders.filter((p) => availableIds.has(p.id))
+      : allProviders;
     return buildPixelOfficeSceneState(this.workpack, {
-      availableProviders: this.providerRegistry?.listAll().map((provider) => ({
+      availableProviders: filteredProviders.map((provider) => ({
         id: provider.id,
         label: provider.displayName,
       })) ?? [],
       reducedMotion: this.isReducedMotionEnabled(),
       runtimeRuns: this.executionRegistry?.listRuns() ?? [],
     });
+  }
+
+  private async refreshAvailableProviders(): Promise<void> {
+    if (!this.providerRegistry?.listAvailable) {
+      return;
+    }
+    const available = await this.providerRegistry.listAvailable();
+    const ids = new Set(available.map((p) => p.id));
+    const changed = !this.cachedAvailableProviderIds ||
+      ids.size !== this.cachedAvailableProviderIds.size ||
+      [...ids].some((id) => !this.cachedAvailableProviderIds!.has(id));
+    if (changed) {
+      this.cachedAvailableProviderIds = ids;
+      if (this.htmlInitialized) {
+        void this.postSceneUpdate("runtime_refresh");
+      }
+    }
   }
 
   private isReducedMotionEnabled(): boolean {

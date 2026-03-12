@@ -246,6 +246,11 @@
           "default": "https://api.openai.com/v1",
           "description": "OpenAI API base URL"
         },
+        "workpackManager.codex.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI API key. Falls back to OPENAI_API_KEY / CODEX_API_KEY environment variables when empty."
+        },
         "workpackManager.codex.model": {
           "type": "string",
           "default": "gpt-4o",

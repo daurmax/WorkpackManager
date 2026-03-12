@@ -26,7 +26,10 @@ function createProviderRegistry(): ProviderRegistry {
         maxResponseTokens: configuration.get<number>("codex.maxResponseTokens", 4096),
         requestTimeoutMs: configuration.get<number>("codex.requestTimeoutMs", 120_000)
       },
-      async () => process.env.OPENAI_API_KEY ?? process.env.CODEX_API_KEY
+      async () => {
+        const settingsKey = vscode.workspace.getConfiguration("workpackManager").get<string>("codex.apiKey", "");
+        return settingsKey?.trim() || process.env.OPENAI_API_KEY || process.env.CODEX_API_KEY;
+      }
     )
   );
 
