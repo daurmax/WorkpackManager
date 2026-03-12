@@ -1,8 +1,16 @@
 import * as path from "node:path";
 import type { AgentRunSnapshot } from "../../agents/execution-registry";
 import type { WorkpackInstance } from "../../models";
-import type { DeskRuntimeStatus, PromptDesk, RoomStation, SceneState } from "../../models/pixel-office";
+import type {
+  DeskRuntimeStatus,
+  PixelOfficeProvider,
+  PromptDesk,
+  RoomStation,
+  SceneState,
+} from "../../models/pixel-office";
 import { scanOutputs } from "../../state/output-scanner";
+import { buildAgentAvatars } from "./avatar-runtime";
+import { buildDeskPreview, getDeskActionItems } from "./desk-interactions";
 import { createPixelRoomLayout } from "./room-layout";
 
 const REQUEST_FILE = "00_request.md";
@@ -17,6 +25,7 @@ export interface BuildSceneStateOptions {
   selectedDeskId?: string;
   hoveredDeskId?: string;
   runtimeRuns?: AgentRunSnapshot[];
+  availableProviders?: PixelOfficeProvider[];
 }
 
 function humanizeLabel(value: string): string {
@@ -110,13 +119,25 @@ function buildDesks(
   generatedLayout: ReturnType<typeof createPixelRoomLayout>,
   latestRunsByPrompt: ReadonlyMap<string, AgentRunSnapshot>,
   outputByPrompt: ReadonlyMap<string, { filePath: string }>,
+  providerLabelsById: ReadonlyMap<string, string>,
 ): PromptDesk[] {
   return workpack.meta.prompts.map((prompt, index) => {
     const promptState = workpack.state?.promptStatus[prompt.stem];
     const latestRun = latestRunsByPrompt.get(prompt.stem);
     const assignedAgentId = latestRun?.providerId ?? promptState?.assignedAgent ?? workpack.state?.agentAssignments[prompt.stem];
+    const providerDisplayName = assignedAgentId ? providerLabelsById.get(assignedAgentId) ?? assignedAgentId : undefined;
     const outputArtifact = outputByPrompt.get(prompt.stem);
     const frame = generatedLayout.desks[index];
+    const status = resolveDeskStatus(workpack, prompt.stem, latestRun);
+    const interactionState = {
+      status,
+      promptRole: prompt.agentRole,
+      assignedAgentId,
+      providerDisplayName,
+      blockedReason: promptState?.blockedReason,
+      latestRun,
+      outputPath: outputArtifact?.filePath,
+    };
 
     return {
       id: `desk:${prompt.stem}`,
@@ -128,10 +149,13 @@ function buildDesks(
       promptRole: prompt.agentRole,
       dependsOn: prompt.dependsOn,
       repos: prompt.repos,
-      status: resolveDeskStatus(workpack, prompt.stem, latestRun),
+      status,
       assignedAgentId,
+      providerDisplayName,
       latestRunId: latestRun?.runId,
       outputPath: outputArtifact?.filePath,
+      actions: getDeskActionItems(interactionState),
+      preview: buildDeskPreview(interactionState),
     };
   });
 }
@@ -142,16 +166,21 @@ export function buildPixelOfficeSceneState(
 ): SceneState {
   const runtimeRuns = (options.runtimeRuns ?? []).filter((run) => run.workpackId === workpack.meta.id);
   const generatedAt = options.generatedAt ?? new Date().toISOString();
+  const providers = [...(options.availableProviders ?? [])];
+  const providerLabelsById = new Map(providers.map((provider) => [provider.id, provider.label]));
   const outputScan = scanOutputs(path.join(workpack.folderPath, OUTPUTS_DIRECTORY));
   const generatedLayout = createPixelRoomLayout(workpack.meta.prompts.length);
   const latestRunsByPrompt = getLatestRunsByPrompt(runtimeRuns);
   const stations = buildStations(workpack, outputScan.artifacts.length, generatedLayout);
-  const desks = buildDesks(workpack, generatedLayout, latestRunsByPrompt, outputScan.outputByPrompt);
+  const desks = buildDesks(workpack, generatedLayout, latestRunsByPrompt, outputScan.outputByPrompt, providerLabelsById);
+  const outputBoardStation = stations.find((station) => station.kind === "output_board");
+  const avatars = buildAgentAvatars(desks, outputBoardStation, latestRunsByPrompt, generatedAt);
 
   return {
     version: 1,
     generatedAt,
     workpackId: workpack.meta.id,
+    providers,
     selectedDeskId: options.selectedDeskId,
     hoveredDeskId: options.hoveredDeskId,
     reducedMotion: options.reducedMotion ?? false,
@@ -165,7 +194,7 @@ export function buildPixelOfficeSceneState(
       dimensions: generatedLayout.dimensions,
       stations,
       desks,
-      avatars: [],
+      avatars,
     },
   };
 }

@@ -17,6 +17,14 @@ export type RoomStationKind = "request" | "plan" | "status" | "output_board";
 
 export type DeskRuntimeStatus = PromptStatusValue | AgentRunStatus | "unassigned";
 
+export type PromptActionKind =
+  | "open_prompt"
+  | "execute"
+  | "stop"
+  | "retry"
+  | "provide_input"
+  | "open_output";
+
 export type AvatarFacing = "up" | "down" | "left" | "right";
 
 export enum AvatarAnimationState {
@@ -39,6 +47,29 @@ export interface RoomStation {
   isPrimary?: boolean;
 }
 
+export interface PixelOfficeProvider {
+  id: string;
+  label: string;
+}
+
+export interface DeskActionItem {
+  action: PromptActionKind;
+  label: string;
+}
+
+export interface DeskPreviewLink {
+  label: string;
+  action: PromptActionKind;
+}
+
+export interface DeskPreview {
+  providerLabel: string;
+  statusLabel: string;
+  excerpt: string;
+  excerptSource: "summary" | "error" | "input_request" | "blocked_reason" | "output" | "prompt_role";
+  links: DeskPreviewLink[];
+}
+
 export interface PromptDesk {
   id: string;
   promptStem: PromptEntry["stem"];
@@ -51,8 +82,11 @@ export interface PromptDesk {
   repos: PromptEntry["repos"];
   status: DeskRuntimeStatus;
   assignedAgentId?: string;
+  providerDisplayName?: string;
   latestRunId?: string;
   outputPath?: string;
+  actions: DeskActionItem[];
+  preview: DeskPreview;
 }
 
 export interface AgentAvatar {
@@ -85,6 +119,7 @@ export interface SceneState {
   version: 1;
   generatedAt: string;
   workpackId: string;
+  providers: PixelOfficeProvider[];
   selectedDeskId?: string;
   hoveredDeskId?: string;
   reducedMotion: boolean;

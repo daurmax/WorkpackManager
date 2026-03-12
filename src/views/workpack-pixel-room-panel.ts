@@ -1,16 +1,33 @@
 import * as vscode from "vscode";
 import type { ExecutionRegistry } from "../agents/execution-registry";
+import type { ProviderRegistry } from "../agents/registry";
 import type { WorkpackInstance } from "../models";
-import type { PixelOfficeWebviewMessage, SceneUpdateReason } from "./pixel-office";
-import { buildPixelRoomHtml, buildPixelOfficeSceneState } from "./pixel-office";
+import type { PromptActionKind, PromptDesk, SceneState } from "../models/pixel-office";
+import { WORKPACK_MANAGER_COMMANDS } from "../commands/register-commands";
+import type {
+  DeskStatusChange,
+  PixelOfficeHostMessage,
+  PixelOfficeWebviewMessage,
+  SceneUpdateReason,
+} from "./pixel-office";
+import { buildPixelRoomHtml, buildPixelOfficeSceneState, deriveAvatarTransitions } from "./pixel-office";
 import { parseWorkpackInstance } from "../parser/workpack-parser";
 
 const PANEL_VIEW_TYPE = "workpackManager.pixelRoomPanel";
 const REFRESH_DEBOUNCE_MS = 200;
 const OUTPUT_CHANNEL_NAME = "Workpack Manager Pixel Room";
+const PROMPT_ACTION_KINDS: PromptActionKind[] = [
+  "open_prompt",
+  "execute",
+  "stop",
+  "retry",
+  "provide_input",
+  "open_output",
+];
 
 export interface WorkpackPixelRoomPanelOptions {
   executionRegistry?: Pick<ExecutionRegistry, "listRuns" | "onDidChangeRuns">;
+  providerRegistry?: Pick<ProviderRegistry, "listAll">;
 }
 
 function isPixelOfficeWebviewMessage(message: unknown): message is PixelOfficeWebviewMessage {
@@ -51,7 +68,8 @@ function isPixelOfficeWebviewMessage(message: unknown): message is PixelOfficeWe
     return (
       typeof candidate.deskId === "string" &&
       typeof candidate.promptStem === "string" &&
-      typeof candidate.action === "string"
+      typeof candidate.action === "string" &&
+      PROMPT_ACTION_KINDS.includes(candidate.action as PromptActionKind)
     );
   }
 
@@ -70,11 +88,13 @@ export class WorkpackPixelRoomPanel {
   private readonly panel: vscode.WebviewPanel;
   private workpack: WorkpackInstance;
   private executionRegistry?: Pick<ExecutionRegistry, "listRuns" | "onDidChangeRuns">;
+  private providerRegistry?: Pick<ProviderRegistry, "listAll">;
   private refreshTimer: NodeJS.Timeout | undefined;
   private outputChannel: vscode.OutputChannel | undefined;
   private runtimeSubscription: vscode.Disposable | undefined;
   private disposed = false;
   private htmlInitialized = false;
+  private lastScene: SceneState | undefined;
   private readonly disposables: vscode.Disposable[] = [];
   private readonly fileWatcherDisposables: vscode.Disposable[] = [];
 
@@ -86,6 +106,7 @@ export class WorkpackPixelRoomPanel {
     this.panel = panel;
     this.workpack = workpack;
     this.executionRegistry = options.executionRegistry;
+    this.providerRegistry = options.providerRegistry;
 
     this.panel.onDidDispose(
       () => {
@@ -116,6 +137,7 @@ export class WorkpackPixelRoomPanel {
     if (WorkpackPixelRoomPanel.currentPanel) {
       WorkpackPixelRoomPanel.currentPanel.workpack = workpack;
       WorkpackPixelRoomPanel.currentPanel.executionRegistry = options.executionRegistry;
+      WorkpackPixelRoomPanel.currentPanel.providerRegistry = options.providerRegistry;
       WorkpackPixelRoomPanel.currentPanel.bindExecutionRegistry();
       WorkpackPixelRoomPanel.currentPanel.recreateFileWatcher();
       WorkpackPixelRoomPanel.currentPanel.panel.reveal(vscode.ViewColumn.Active);
@@ -146,7 +168,7 @@ export class WorkpackPixelRoomPanel {
     }
 
     this.runtimeSubscription = this.executionRegistry.onDidChangeRuns(() => {
-      void this.postSceneUpdate("runtime_refresh");
+      void this.handleRuntimeRegistryChange();
     });
   }
 
@@ -194,43 +216,58 @@ export class WorkpackPixelRoomPanel {
 
   private buildScene() {
     return buildPixelOfficeSceneState(this.workpack, {
+      availableProviders: this.providerRegistry?.listAll().map((provider) => ({
+        id: provider.id,
+        label: provider.displayName,
+      })) ?? [],
+      reducedMotion: this.isReducedMotionEnabled(),
       runtimeRuns: this.executionRegistry?.listRuns() ?? [],
     });
   }
 
-  private update(reason: SceneUpdateReason): void {
-    this.panel.title = `Pixel Room: ${WorkpackPixelRoomPanel.getWorkpackTitle(this.workpack)}`;
+  private isReducedMotionEnabled(): boolean {
+    const workspaceApi = vscode.workspace as typeof vscode.workspace & {
+      getConfiguration?: typeof vscode.workspace.getConfiguration;
+    };
 
-    if (!this.htmlInitialized) {
-      this.panel.webview.html = this.getHtmlContent();
-      this.htmlInitialized = true;
-      return;
+    if (typeof workspaceApi.getConfiguration !== "function") {
+      return false;
     }
 
-    void this.postSceneUpdate(reason);
+    return workspaceApi.getConfiguration("workbench").get<string>("reduceMotion", "auto") === "on";
   }
 
-  private getHtmlContent(): string {
-    try {
-      return buildPixelRoomHtml(this.panel.webview, this.buildScene());
-    } catch (error) {
-      this.logRenderError(error);
-      return this.getFallbackHtmlContent(error);
-    }
+  private buildDeskStatusChanges(previousScene: SceneState, nextScene: SceneState): DeskStatusChange[] {
+    const previousByDeskId = new Map(previousScene.room.desks.map((desk) => [desk.id, desk]));
+
+    return nextScene.room.desks.flatMap((desk) => {
+      const previousDesk = previousByDeskId.get(desk.id);
+      if (
+        previousDesk &&
+        previousDesk.status === desk.status &&
+        previousDesk.assignedAgentId === desk.assignedAgentId &&
+        previousDesk.latestRunId === desk.latestRunId
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          type: "DeskStatusChange" as const,
+          deskId: desk.id,
+          promptStem: desk.promptStem,
+          status: desk.status,
+          assignedAgentId: desk.assignedAgentId,
+          runId: desk.latestRunId,
+          occurredAt: nextScene.generatedAt,
+        },
+      ];
+    });
   }
 
-  private async postSceneUpdate(reason: SceneUpdateReason): Promise<void> {
-    if (!this.htmlInitialized) {
-      this.update(reason);
-      return;
-    }
-
+  private async postHostMessage(message: PixelOfficeHostMessage): Promise<void> {
     try {
-      await this.panel.webview.postMessage({
-        type: "SceneUpdate",
-        scene: this.buildScene(),
-        reason,
-      });
+      await this.panel.webview.postMessage(message);
     } catch (error) {
       this.logRenderError(error);
       this.panel.webview.html = this.getFallbackHtmlContent(error);
@@ -238,13 +275,176 @@ export class WorkpackPixelRoomPanel {
     }
   }
 
+  private async handleRuntimeRegistryChange(): Promise<void> {
+    const nextScene = this.buildScene();
+
+    if (!this.htmlInitialized || !this.lastScene) {
+      await this.postSceneUpdate("runtime_refresh", nextScene);
+      return;
+    }
+
+    const previousScene = this.lastScene;
+    const deskStatusChanges = this.buildDeskStatusChanges(previousScene, nextScene);
+    const avatarTransitions = deriveAvatarTransitions(previousScene.room.avatars, nextScene.room.avatars)
+      .map((transition) => ({
+        type: "AvatarTransition" as const,
+        avatar: transition.avatar,
+        from: transition.from,
+        occurredAt: nextScene.generatedAt,
+        removeAfterMs: transition.removeAfterMs,
+      }));
+
+    this.lastScene = nextScene;
+
+    if (deskStatusChanges.length === 0 && avatarTransitions.length === 0) {
+      return;
+    }
+
+    // Desk interactions and hover previews depend on the full desk view model,
+    // so runtime changes publish the fresh scene before any incremental avatar updates.
+    await this.postSceneUpdate("runtime_refresh", nextScene);
+
+    for (const message of avatarTransitions) {
+      await this.postHostMessage(message);
+    }
+  }
+
+  private update(reason: SceneUpdateReason): void {
+    this.panel.title = `Pixel Room: ${WorkpackPixelRoomPanel.getWorkpackTitle(this.workpack)}`;
+    const scene = this.buildScene();
+    this.lastScene = scene;
+
+    if (!this.htmlInitialized) {
+      this.panel.webview.html = this.getHtmlContent(scene);
+      this.htmlInitialized = true;
+      return;
+    }
+
+    void this.postSceneUpdate(reason, scene);
+  }
+
+  private getHtmlContent(scene: SceneState): string {
+    try {
+      return buildPixelRoomHtml(this.panel.webview, scene);
+    } catch (error) {
+      this.logRenderError(error);
+      return this.getFallbackHtmlContent(error);
+    }
+  }
+
+  private async postSceneUpdate(reason: SceneUpdateReason, scene: SceneState = this.buildScene()): Promise<void> {
+    if (!this.htmlInitialized) {
+      this.update(reason);
+      return;
+    }
+
+    this.lastScene = scene;
+    await this.postHostMessage({
+      type: "SceneUpdate",
+      scene,
+      reason,
+    });
+  }
+
   private async handleMessage(message: unknown): Promise<void> {
     if (!isPixelOfficeWebviewMessage(message)) {
       return;
     }
 
-    // Interaction handling is added in A3. The host validates the protocol now
-    // so downstream prompts can extend the panel without changing the lifecycle wiring.
+    if (message.type === "DeskClicked" || message.type === "DeskHovered") {
+      return;
+    }
+
+    const scene = this.buildScene();
+    const desk = this.getDesk(scene, message.deskId, message.promptStem);
+    if (!desk) {
+      return;
+    }
+
+    if (message.type === "AgentAssignRequested") {
+      const providerAvailable = scene.providers.some((provider) => provider.id === message.providerId);
+      if (!providerAvailable) {
+        return;
+      }
+
+      await vscode.commands.executeCommand(WORKPACK_MANAGER_COMMANDS.assignAgent, {
+        contextValue: "prompt",
+        workpackId: this.workpack.meta.id,
+        folderPath: this.workpack.folderPath,
+        promptStem: desk.promptStem,
+        providerId: message.providerId,
+      });
+      this.scheduleRefresh();
+      return;
+    }
+
+    if (!this.isDeskActionAllowed(desk, message.action)) {
+      return;
+    }
+
+    await this.dispatchPromptAction(desk, message.action);
+  }
+
+  private getDesk(scene: SceneState, deskId: string, promptStem: string): PromptDesk | undefined {
+    return scene.room.desks.find((desk) => desk.id === deskId && desk.promptStem === promptStem);
+  }
+
+  private isDeskActionAllowed(desk: PromptDesk, action: PromptActionKind): boolean {
+    return (
+      desk.actions.some((item) => item.action === action) ||
+      desk.preview.links.some((link) => link.action === action)
+    );
+  }
+
+  private async dispatchPromptAction(desk: PromptDesk, action: PromptActionKind): Promise<void> {
+    if (action === "open_prompt" && desk.promptFilePath) {
+      await this.openFile(desk.promptFilePath);
+      return;
+    }
+
+    if (action === "open_output" && desk.outputPath) {
+      await this.openFile(desk.outputPath);
+      return;
+    }
+
+    const commandId = this.getCommandIdForAction(action);
+    if (!commandId) {
+      return;
+    }
+
+    await vscode.commands.executeCommand(commandId, {
+      contextValue: "prompt",
+      workpackId: this.workpack.meta.id,
+      folderPath: this.workpack.folderPath,
+      promptStem: desk.promptStem,
+      runId: desk.latestRunId,
+    });
+    this.scheduleRefresh();
+  }
+
+  private getCommandIdForAction(action: PromptActionKind): string | undefined {
+    if (action === "execute") {
+      return WORKPACK_MANAGER_COMMANDS.executePrompt;
+    }
+
+    if (action === "stop") {
+      return WORKPACK_MANAGER_COMMANDS.stopPromptExecution;
+    }
+
+    if (action === "retry") {
+      return WORKPACK_MANAGER_COMMANDS.retryPrompt;
+    }
+
+    if (action === "provide_input") {
+      return WORKPACK_MANAGER_COMMANDS.provideAgentInput;
+    }
+
+    return undefined;
+  }
+
+  private async openFile(filePath: string): Promise<void> {
+    const document = await vscode.workspace.openTextDocument(vscode.Uri.file(filePath));
+    await vscode.window.showTextDocument(document, { preview: false });
   }
 
   private static getWorkpackTitle(workpack: WorkpackInstance): string {

@@ -1,7 +1,7 @@
 {
   "workpack_id": "workpack-manager-v3-pixel-office-ui",
   "overall_status": "in_progress",
-  "last_updated": "2026-03-12T10:57:40Z",
+  "last_updated": "2026-03-12T11:39:31.9953103Z",
   "prompt_status": {
     "A0_bootstrap": {
       "status": "complete"
@@ -13,7 +13,10 @@
       "completed_at": "2026-03-12T10:57:40Z"
     },
     "A2_agent_animation_runtime": {
-      "status": "pending"
+      "status": "complete",
+      "assigned_agent": "codex",
+      "started_at": "2026-03-12T11:13:00Z",
+      "completed_at": "2026-03-12T11:39:31.9953103Z"
     },
     "A3_desk_interactions_chat_preview": {
       "status": "pending"
@@ -61,6 +64,20 @@
       "prompt_stem": "A1_pixel_room_shell",
       "agent": "codex",
       "notes": "Completed the pixel room shell with layout helpers, pixel-art rendering, command wiring, and scene tests."
+    },
+    {
+      "timestamp": "2026-03-12T11:13:00Z",
+      "event": "prompt_started",
+      "prompt_stem": "A2_agent_animation_runtime",
+      "agent": "codex",
+      "notes": "Started wiring runtime-driven avatars, motion choreography, and reduced-motion handling into the pixel room."
+    },
+    {
+      "timestamp": "2026-03-12T11:39:31.9953103Z",
+      "event": "prompt_completed",
+      "prompt_stem": "A2_agent_animation_runtime",
+      "agent": "codex",
+      "notes": "Completed avatar runtime mapping, host-to-webview transition messages, reduced-motion fallback, and regression coverage."
     }
   ],
   "notes": null

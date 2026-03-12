@@ -1,5 +1,6 @@
 import type * as vscode from "vscode";
 import type { SceneState } from "../../models/pixel-office";
+import { buildAvatarRendererScript, buildAvatarRendererStyles } from "./avatar-renderer";
 
 function getNonce(): string {
   const possibleCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -31,6 +32,8 @@ function serializeScene(scene: SceneState): string {
 export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): string {
   const nonce = getNonce();
   const serializedScene = serializeScene(scene);
+  const avatarStyles = buildAvatarRendererStyles();
+  const avatarScript = buildAvatarRendererScript();
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -218,6 +221,12 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         pointer-events: none;
       }
 
+      .room__scene {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
       .station,
       .desk {
         position: absolute;
@@ -352,10 +361,32 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
       }
 
       .desk {
+        appearance: none;
+        text-align: left;
+        cursor: pointer;
+        font: inherit;
         background: var(--wood);
         box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.18);
         color: var(--paper);
         padding: 10px 10px 8px;
+        transition: transform 120ms steps(2), box-shadow 120ms steps(2), outline-offset 120ms steps(2);
+      }
+
+      .desk:hover,
+      .desk:focus-visible,
+      .desk--selected {
+        transform: translate(-2px, -2px);
+        box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.22);
+      }
+
+      .desk:focus-visible {
+        outline: 4px solid var(--sky);
+        outline-offset: 4px;
+      }
+
+      .desk--hovered::before,
+      .desk--selected::before {
+        background: var(--sky);
       }
 
       .desk::before {
@@ -445,6 +476,116 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         white-space: nowrap;
       }
 
+      .desk-overlay,
+      .desk-menu {
+        position: absolute;
+        border: 4px solid var(--outline);
+        background: rgba(22, 18, 31, 0.96);
+        box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.24);
+        z-index: 5;
+      }
+
+      .desk-overlay {
+        width: 228px;
+        padding: 10px 12px;
+        pointer-events: none;
+      }
+
+      .desk-menu {
+        width: 212px;
+        padding: 10px;
+        z-index: 6;
+      }
+
+      .desk-overlay__title,
+      .desk-menu__title {
+        margin: 0 0 6px;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-transform: uppercase;
+      }
+
+      .desk-overlay__meta,
+      .desk-menu__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .desk-overlay__chip,
+      .desk-menu__chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 6px;
+        border: 3px solid var(--outline);
+        background: rgba(247, 235, 200, 0.14);
+        font-size: 9px;
+        line-height: 1.2;
+        text-transform: uppercase;
+      }
+
+      .desk-overlay__text {
+        margin: 0;
+        color: rgba(247, 235, 200, 0.92);
+        font-size: 10px;
+        line-height: 1.45;
+      }
+
+      .desk-overlay__links,
+      .desk-menu__section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .desk-menu__hint {
+        margin: 0;
+        color: var(--paper-shadow);
+        font-size: 10px;
+        line-height: 1.35;
+      }
+
+      .desk-menu__button,
+      .desk-overlay__link {
+        border: 3px solid var(--outline);
+        background: var(--paper);
+        color: var(--ink);
+        padding: 4px 6px;
+        font: inherit;
+        font-size: 9px;
+        line-height: 1.2;
+        text-transform: uppercase;
+        cursor: pointer;
+        pointer-events: auto;
+      }
+
+      .desk-menu__button:hover,
+      .desk-menu__button:focus-visible,
+      .desk-overlay__link:hover,
+      .desk-overlay__link:focus-visible {
+        background: #fff4d5;
+        outline: 3px solid var(--sky);
+        outline-offset: 2px;
+      }
+
+      .desk-menu__button--provider {
+        background: #d9eefc;
+      }
+
+      .desk-menu__button--action {
+        background: #f7ebc8;
+      }
+
+      .desk-menu__close {
+        margin-left: auto;
+        background: rgba(247, 235, 200, 0.18);
+        color: var(--paper);
+      }
+
       .legend {
         display: flex;
         flex-wrap: wrap;
@@ -486,6 +627,8 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         color: var(--muted);
       }
 
+${avatarStyles}
+
       @media (max-width: 900px) {
         .shell {
           padding: 16px;
@@ -505,9 +648,15 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
     <div id="app"></div>
     <script id="pixel-room-state" type="application/json">${serializedScene}</script>
     <script nonce="${nonce}">
+      const vscode = acquireVsCodeApi();
       const app = document.getElementById("app");
       const initialStateElement = document.getElementById("pixel-room-state");
       let currentScene = null;
+      let selectedDeskId = null;
+      let hoveredDeskId = null;
+      let hoverDelayToken = null;
+      let pendingDeskFocusId = null;
+      let pendingMenuFocusId = null;
 
       function escapeHtml(value) {
         return String(value)
@@ -541,6 +690,160 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         }).length;
       }
 
+      function postWebviewMessage(message) {
+        if (!vscode) {
+          return;
+        }
+
+        vscode.postMessage(message);
+      }
+
+      function findDeskById(scene, deskId) {
+        if (!scene || !scene.room || !Array.isArray(scene.room.desks)) {
+          return null;
+        }
+
+        return scene.room.desks.find(function (desk) {
+          return desk.id === deskId;
+        }) || null;
+      }
+
+      function getDeskFromEventTarget(target) {
+        if (!(target instanceof Element)) {
+          return null;
+        }
+
+        return target.closest("[data-desk-id]");
+      }
+
+      function getMenuElement(deskId) {
+        if (!app || !deskId) {
+          return null;
+        }
+
+        return app.querySelector('[data-desk-menu="' + deskId + '"]');
+      }
+
+      function clearHoverDelay() {
+        if (hoverDelayToken) {
+          clearTimeout(hoverDelayToken);
+          hoverDelayToken = null;
+        }
+      }
+
+      function ensureUiState(scene) {
+        if (selectedDeskId && !findDeskById(scene, selectedDeskId)) {
+          selectedDeskId = null;
+        }
+
+        if (hoveredDeskId && !findDeskById(scene, hoveredDeskId)) {
+          hoveredDeskId = null;
+        }
+      }
+
+      function setHoveredDesk(desk, hovered) {
+        if (!desk) {
+          return;
+        }
+
+        const nextDeskId = hovered ? desk.id : null;
+        if (hoveredDeskId === nextDeskId) {
+          return;
+        }
+
+        hoveredDeskId = nextDeskId;
+        postWebviewMessage({
+          type: "DeskHovered",
+          deskId: desk.id,
+          promptStem: desk.promptStem,
+          hovered: hovered,
+        });
+        renderScene(currentScene);
+      }
+
+      function scheduleDeskHover(desk) {
+        clearHoverDelay();
+        hoverDelayToken = setTimeout(function () {
+          hoverDelayToken = null;
+          setHoveredDesk(desk, true);
+        }, 300);
+      }
+
+      function dismissDeskHover(desk) {
+        clearHoverDelay();
+
+        if (!desk || hoveredDeskId !== desk.id) {
+          return;
+        }
+
+        setHoveredDesk(desk, false);
+      }
+
+      function openDeskMenu(desk, button) {
+        if (!desk) {
+          return;
+        }
+
+        selectedDeskId = desk.id;
+        pendingMenuFocusId = desk.id;
+        postWebviewMessage({
+          type: "DeskClicked",
+          deskId: desk.id,
+          promptStem: desk.promptStem,
+          button: button || "primary",
+        });
+        renderScene(currentScene);
+      }
+
+      function closeDeskMenu(restoreFocus) {
+        if (!selectedDeskId) {
+          return;
+        }
+
+        pendingDeskFocusId = restoreFocus ? selectedDeskId : null;
+        selectedDeskId = null;
+        renderScene(currentScene);
+      }
+
+      function isWithinDeskContext(target, deskId) {
+        if (!(target instanceof Element) || !deskId) {
+          return false;
+        }
+
+        return Boolean(
+          target.closest('[data-desk-id="' + deskId + '"]') ||
+          target.closest('[data-desk-menu="' + deskId + '"]'),
+        );
+      }
+
+      function getFloatingPosition(desk, width, height) {
+        const roomWidth = Number(currentScene && currentScene.room && currentScene.room.dimensions
+          ? currentScene.room.dimensions.width
+          : 760);
+        const roomHeight = Number(currentScene && currentScene.room && currentScene.room.dimensions
+          ? currentScene.room.dimensions.height
+          : 560);
+        const desiredRight = desk.position.x + desk.dimensions.width + 12;
+        const fitsRight = desiredRight + width <= roomWidth - 8;
+        const left = fitsRight
+          ? desiredRight
+          : Math.max(8, desk.position.x - width - 12);
+        const top = Math.min(
+          Math.max(8, desk.position.y - 4),
+          Math.max(8, roomHeight - height - 8),
+        );
+
+        return { left: left, top: top };
+      }
+
+      function shouldShowProviderActions(desk, providers) {
+        return Array.isArray(providers) &&
+          providers.length > 0 &&
+          (!desk.assignedAgentId || ["blocked", "failed", "cancelled"].includes(String(desk.status)));
+      }
+
+${avatarScript}
+
       function buildStationMarkup(station) {
         const badgeMarkup = station.badgeText
           ? '<span class="station__badge">' + escapeHtml(station.badgeText) + "</span>"
@@ -570,31 +873,20 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         ].join("");
       }
 
-      function buildDeskMarkup(desk) {
-        const statusClass = toStatusClass(desk.status);
-        const agentMarkup = desk.assignedAgentId
-          ? '<span class="desk__agent">' + escapeHtml(desk.assignedAgentId) + "</span>"
-          : "";
-        const dependsOn = Array.isArray(desk.dependsOn) && desk.dependsOn.length > 0
+      function buildDeskTitle(desk) {
+        return Array.isArray(desk.dependsOn) && desk.dependsOn.length > 0
           ? "Depends on: " + desk.dependsOn.join(", ")
           : "Ready from start";
+      }
+
+      function buildDeskInnerMarkup(desk) {
+        const statusClass = toStatusClass(desk.status);
+        const providerLabel = desk.providerDisplayName || desk.assignedAgentId;
+        const agentMarkup = providerLabel
+          ? '<span class="desk__agent">' + escapeHtml(providerLabel) + "</span>"
+          : "";
 
         return [
-          '<article class="desk status-',
-          statusClass,
-          '" data-desk-id="',
-          escapeHtml(desk.id),
-          '" style="left:',
-          String(desk.position.x),
-          "px; top:",
-          String(desk.position.y),
-          "px; width:",
-          String(desk.dimensions.width),
-          "px; height:",
-          String(desk.dimensions.height),
-          'px;" title="',
-          escapeHtml(dependsOn),
-          '">',
           '<div class="desk__monitor"></div>',
           '<div class="desk__label">',
           escapeHtml(desk.label),
@@ -608,27 +900,200 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
           escapeHtml(humanize(desk.status)),
           "</div>",
           agentMarkup,
-          "</article>",
         ].join("");
       }
 
-      function renderScene(scene) {
-        if (!app || !scene || !scene.room) {
-          return;
+      function buildDeskMarkup(desk) {
+        const statusClass = toStatusClass(desk.status);
+        const stateClassNames = [
+          "desk",
+          "status-" + statusClass,
+          hoveredDeskId === desk.id ? "desk--hovered" : "",
+          selectedDeskId === desk.id ? "desk--selected" : "",
+        ]
+          .filter(function (value) {
+            return value.length > 0;
+          })
+          .join(" ");
+
+        return [
+          '<button type="button" class="',
+          stateClassNames,
+          '" data-desk-id="',
+          escapeHtml(desk.id),
+          '" data-prompt-stem="',
+          escapeHtml(desk.promptStem),
+          '" aria-haspopup="dialog" aria-expanded="',
+          selectedDeskId === desk.id ? "true" : "false",
+          '" style="left:',
+          String(desk.position.x),
+          "px; top:",
+          String(desk.position.y),
+          "px; width:",
+          String(desk.dimensions.width),
+          "px; height:",
+          String(desk.dimensions.height),
+          'px;" title="',
+          escapeHtml(buildDeskTitle(desk)),
+          '">',
+          buildDeskInnerMarkup(desk),
+          "</button>",
+        ].join("");
+      }
+
+      function buildPreviewMarkup(desk) {
+        if (!desk || hoveredDeskId !== desk.id || !desk.preview) {
+          return "";
         }
 
+        const position = getFloatingPosition(desk, 228, 136);
+        const links = Array.isArray(desk.preview.links)
+          ? desk.preview.links.map(function (link) {
+            return [
+              '<button type="button" class="desk-overlay__link" data-prompt-action="',
+              escapeHtml(link.action),
+              '" data-desk-id="',
+              escapeHtml(desk.id),
+              '" data-prompt-stem="',
+              escapeHtml(desk.promptStem),
+              '">',
+              escapeHtml(link.label),
+              "</button>",
+            ].join("");
+          }).join("")
+          : "";
+
+        return [
+          '<aside class="desk-overlay" data-desk-overlay="',
+          escapeHtml(desk.id),
+          '" style="left:',
+          String(position.left),
+          "px; top:",
+          String(position.top),
+          'px;" aria-live="polite">',
+          '<div class="desk-overlay__title">',
+          escapeHtml(desk.label),
+          "</div>",
+          '<div class="desk-overlay__meta">',
+          '<span class="desk-overlay__chip">',
+          escapeHtml(desk.preview.providerLabel),
+          "</span>",
+          '<span class="desk-overlay__chip status-',
+          toStatusClass(desk.status),
+          '">',
+          escapeHtml(desk.preview.statusLabel),
+          "</span>",
+          "</div>",
+          '<p class="desk-overlay__text">',
+          escapeHtml(desk.preview.excerpt),
+          "</p>",
+          '<div class="desk-overlay__links">',
+          links,
+          "</div>",
+          "</aside>",
+        ].join("");
+      }
+
+      function buildMenuProviderButtons(desk, providers) {
+        if (!shouldShowProviderActions(desk, providers)) {
+          return "";
+        }
+
+        const assignVerb = desk.assignedAgentId ? "Reassign" : "Assign";
+        return providers.map(function (provider) {
+          return [
+            '<button type="button" class="desk-menu__button desk-menu__button--provider" data-provider-id="',
+            escapeHtml(provider.id),
+            '" data-desk-id="',
+            escapeHtml(desk.id),
+            '" data-prompt-stem="',
+            escapeHtml(desk.promptStem),
+            '">',
+            escapeHtml(assignVerb + " " + provider.label),
+            "</button>",
+          ].join("");
+        }).join("");
+      }
+
+      function buildMenuActionButtons(desk) {
+        if (!Array.isArray(desk.actions) || desk.actions.length === 0) {
+          return "";
+        }
+
+        return desk.actions.map(function (action) {
+          return [
+            '<button type="button" class="desk-menu__button desk-menu__button--action" data-prompt-action="',
+            escapeHtml(action.action),
+            '" data-desk-id="',
+            escapeHtml(desk.id),
+            '" data-prompt-stem="',
+            escapeHtml(desk.promptStem),
+            '">',
+            escapeHtml(action.label),
+            "</button>",
+          ].join("");
+        }).join("");
+      }
+
+      function buildMenuMarkup(scene) {
+        const desk = findDeskById(scene, selectedDeskId);
+        if (!desk) {
+          return "";
+        }
+
+        const providers = Array.isArray(scene.providers) ? scene.providers : [];
+        const position = getFloatingPosition(desk, 212, 176);
+        const providerButtons = buildMenuProviderButtons(desk, providers);
+        const actionButtons = buildMenuActionButtons(desk);
+        const emptyState = providerButtons.length === 0 && actionButtons.length === 0
+          ? '<p class="desk-menu__hint">No actions are available for this desk right now.</p>'
+          : "";
+
+        return [
+          '<aside class="desk-menu" data-desk-menu="',
+          escapeHtml(desk.id),
+          '" style="left:',
+          String(position.left),
+          "px; top:",
+          String(position.top),
+          'px;" role="dialog" aria-label="Desk actions for ',
+          escapeHtml(desk.label),
+          '">',
+          '<div class="desk-menu__title">',
+          escapeHtml(desk.label),
+          "</div>",
+          '<div class="desk-menu__meta">',
+          '<span class="desk-menu__chip">',
+          escapeHtml(desk.preview.providerLabel),
+          "</span>",
+          '<span class="desk-menu__chip status-',
+          toStatusClass(desk.status),
+          '">',
+          escapeHtml(desk.preview.statusLabel),
+          "</span>",
+          "</div>",
+          providerButtons.length > 0
+            ? '<div class="desk-menu__section">' + providerButtons + "</div>"
+            : "",
+          actionButtons.length > 0
+            ? '<div class="desk-menu__section">' + actionButtons + "</div>"
+            : "",
+          emptyState,
+          '<div class="desk-menu__section">',
+          '<button type="button" class="desk-menu__button desk-menu__close" data-dismiss-menu="true">Close</button>',
+          "</div>",
+          "</aside>",
+        ].join("");
+      }
+
+      function buildHudMarkup(scene) {
         const desks = Array.isArray(scene.room.desks) ? scene.room.desks : [];
-        const stations = Array.isArray(scene.room.stations) ? scene.room.stations : [];
         const completed = countMatchingStatuses(desks, ["complete", "skipped"]);
         const active = countMatchingStatuses(desks, ["queued", "in_progress", "human_input_required"]);
         const blocked = countMatchingStatuses(desks, ["blocked", "failed", "cancelled"]);
-        const stationMarkup = stations.map(buildStationMarkup).join("");
-        const deskMarkup = desks.map(buildDeskMarkup).join("");
         const overallStatusClass = toStatusClass(scene.room.overallStatus);
 
-        app.innerHTML = [
-          '<main class="shell">',
-          '<section class="hud">',
+        return [
           '<div class="hud__top">',
           '<h1 class="hud__title">',
           escapeHtml(scene.room.title),
@@ -666,26 +1131,109 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
           escapeHtml(String(blocked)),
           '</span><span class="hud__stat-label">Blocked / Failed</span></div>',
           "</div>",
-          "</section>",
-          '<section class="viewport">',
-          '<div class="room" style="width:',
+        ].join("");
+      }
+
+      function buildRoomMarkup(scene) {
+        const stations = Array.isArray(scene.room.stations) ? scene.room.stations : [];
+        const desks = Array.isArray(scene.room.desks) ? scene.room.desks : [];
+        const roomClassName = isReducedMotionEnabled() ? "room room--reduced-motion" : "room";
+        const hoveredDesk = findDeskById(scene, hoveredDeskId);
+
+        return [
+          '<div class="',
+          roomClassName,
+          '" data-room style="width:',
           String(scene.room.dimensions.width),
           "px; height:",
           String(scene.room.dimensions.height),
           'px;">',
-          stationMarkup,
-          deskMarkup,
+          '<div class="room__scene">',
+          stations.map(buildStationMarkup).join(""),
+          desks.map(buildDeskMarkup).join(""),
+          '<div class="avatar-layer" data-avatar-layer>',
+          buildAvatarLayerMarkup(scene),
           "</div>",
-          "</section>",
-          '<section class="legend">',
+          buildPreviewMarkup(hoveredDesk),
+          buildMenuMarkup(scene),
+          "</div>",
+          "</div>",
+        ].join("");
+      }
+
+      function buildLegendMarkup() {
+        return [
           '<span class="legend__chip status-pending">Pending</span>',
           '<span class="legend__chip status-in-progress">In Progress</span>',
           '<span class="legend__chip status-complete">Complete</span>',
           '<span class="legend__chip status-blocked">Blocked</span>',
           '<span class="legend__chip status-human-input-required">Needs Input</span>',
+          '<span class="legend__chip">Tab + Enter Opens Desk Actions</span>',
+        ].join("");
+      }
+
+      function renderHud(scene) {
+        const hud = app ? app.querySelector("[data-hud]") : null;
+        if (!hud) {
+          return;
+        }
+
+        hud.innerHTML = buildHudMarkup(scene);
+      }
+
+      function renderRoom(scene) {
+        const viewport = app ? app.querySelector("[data-viewport]") : null;
+        if (!viewport) {
+          return;
+        }
+
+        viewport.innerHTML = buildRoomMarkup(scene);
+        syncAvatarLifecycleTimers();
+      }
+
+      function focusPendingInteractiveElement() {
+        if (!app) {
+          return;
+        }
+
+        if (pendingMenuFocusId) {
+          const menu = getMenuElement(pendingMenuFocusId);
+          const firstButton = menu ? menu.querySelector("button") : null;
+          pendingMenuFocusId = null;
+          if (firstButton instanceof HTMLElement) {
+            firstButton.focus();
+            return;
+          }
+        }
+
+        if (pendingDeskFocusId) {
+          const deskElement = app.querySelector('[data-desk-id="' + pendingDeskFocusId + '"]');
+          pendingDeskFocusId = null;
+          if (deskElement instanceof HTMLElement) {
+            deskElement.focus();
+          }
+        }
+      }
+
+      function renderScene(scene) {
+        if (!app || !scene || !scene.room) {
+          return;
+        }
+
+        ensureUiState(scene);
+        app.innerHTML = [
+          '<main class="shell">',
+          '<section class="hud" data-hud></section>',
+          '<section class="viewport" data-viewport></section>',
+          '<section class="legend">',
+          buildLegendMarkup(),
           "</section>",
           "</main>",
         ].join("");
+
+        renderHud(scene);
+        renderRoom(scene);
+        focusPendingInteractiveElement();
       }
 
       function applyDeskStatusChange(message) {
@@ -702,14 +1250,68 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         }
 
         desk.status = message.status;
-        if (typeof message.assignedAgentId === "string") {
+
+        if (Object.prototype.hasOwnProperty.call(message, "assignedAgentId")) {
           desk.assignedAgentId = message.assignedAgentId;
         }
-        if (typeof message.runId === "string") {
+
+        if (Object.prototype.hasOwnProperty.call(message, "runId")) {
           desk.latestRunId = message.runId;
         }
 
         renderScene(currentScene);
+      }
+
+      function resolveDeskFromTarget(target) {
+        const deskElement = getDeskFromEventTarget(target);
+        if (!deskElement) {
+          return null;
+        }
+
+        const deskId = deskElement.getAttribute("data-desk-id");
+        return deskId ? findDeskById(currentScene, deskId) : null;
+      }
+
+      function postDeskActionFromElement(element) {
+        if (!(element instanceof Element)) {
+          return false;
+        }
+
+        const providerButton = element.closest("[data-provider-id]");
+        if (providerButton) {
+          postWebviewMessage({
+            type: "AgentAssignRequested",
+            deskId: providerButton.getAttribute("data-desk-id"),
+            promptStem: providerButton.getAttribute("data-prompt-stem"),
+            providerId: providerButton.getAttribute("data-provider-id"),
+          });
+          closeDeskMenu(false);
+          return true;
+        }
+
+        const actionButton = element.closest("[data-prompt-action]");
+        if (actionButton) {
+          postWebviewMessage({
+            type: "PromptActionRequested",
+            deskId: actionButton.getAttribute("data-desk-id"),
+            promptStem: actionButton.getAttribute("data-prompt-stem"),
+            action: actionButton.getAttribute("data-prompt-action"),
+          });
+
+          const action = actionButton.getAttribute("data-prompt-action");
+          if (action !== "open_prompt" && action !== "open_output") {
+            closeDeskMenu(false);
+          }
+          return true;
+        }
+
+        const dismissButton = element.closest("[data-dismiss-menu]");
+        if (dismissButton) {
+          closeDeskMenu(true);
+          return true;
+        }
+
+        return false;
       }
 
       window.addEventListener("message", function (event) {
@@ -726,8 +1328,115 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
 
         if (message.type === "DeskStatusChange") {
           applyDeskStatusChange(message);
+          return;
+        }
+
+        if (message.type === "AvatarTransition") {
+          applyAvatarTransition(message);
         }
       });
+
+      if (app) {
+        app.addEventListener("click", function (event) {
+          const target = event.target;
+          if (postDeskActionFromElement(target)) {
+            event.preventDefault();
+            return;
+          }
+
+          const desk = resolveDeskFromTarget(target);
+          if (desk) {
+            event.preventDefault();
+            openDeskMenu(desk, "primary");
+            return;
+          }
+
+          if (selectedDeskId && !isWithinDeskContext(target, selectedDeskId)) {
+            closeDeskMenu(false);
+          }
+        });
+
+        app.addEventListener("contextmenu", function (event) {
+          const desk = resolveDeskFromTarget(event.target);
+          if (!desk) {
+            return;
+          }
+
+          event.preventDefault();
+          openDeskMenu(desk, "secondary");
+        });
+
+        app.addEventListener("keydown", function (event) {
+          const target = event.target;
+
+          if (event.key === "Escape") {
+            if (selectedDeskId) {
+              event.preventDefault();
+              closeDeskMenu(true);
+              return;
+            }
+
+            const focusedDesk = resolveDeskFromTarget(target);
+            if (focusedDesk) {
+              event.preventDefault();
+              dismissDeskHover(focusedDesk);
+            }
+            return;
+          }
+
+          const desk = resolveDeskFromTarget(target);
+          if (!desk) {
+            return;
+          }
+
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openDeskMenu(desk, "primary");
+          }
+        });
+
+        app.addEventListener("focusin", function (event) {
+          const desk = resolveDeskFromTarget(event.target);
+          if (!desk) {
+            return;
+          }
+
+          clearHoverDelay();
+          setHoveredDesk(desk, true);
+        });
+
+        app.addEventListener("focusout", function (event) {
+          const desk = resolveDeskFromTarget(event.target);
+          if (!desk || isWithinDeskContext(event.relatedTarget, desk.id)) {
+            return;
+          }
+
+          dismissDeskHover(desk);
+        });
+
+        app.addEventListener("mouseover", function (event) {
+          const desk = resolveDeskFromTarget(event.target);
+          if (!desk) {
+            return;
+          }
+
+          const previousDesk = resolveDeskFromTarget(event.relatedTarget);
+          if (previousDesk && previousDesk.id === desk.id) {
+            return;
+          }
+
+          scheduleDeskHover(desk);
+        });
+
+        app.addEventListener("mouseout", function (event) {
+          const desk = resolveDeskFromTarget(event.target);
+          if (!desk || isWithinDeskContext(event.relatedTarget, desk.id)) {
+            return;
+          }
+
+          dismissDeskHover(desk);
+        });
+      }
 
       try {
         currentScene = initialStateElement ? JSON.parse(initialStateElement.textContent || "null") : null;

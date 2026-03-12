@@ -22,7 +22,7 @@ Last Updated: 2026-03-12
 
 - [x] A0_bootstrap completed
 - [x] A1_pixel_room_shell completed
-- [ ] A2_agent_animation_runtime completed
+- [x] A2_agent_animation_runtime completed
 - [ ] A3_desk_interactions_chat_preview completed
 - [ ] A4_git_diff_side_panel completed
 - [ ] A5_visual_polish_and_motion completed
@@ -45,7 +45,7 @@ No B-series prompts yet.
 |--------|------------------|--------|
 | A0_bootstrap | `outputs/A0_bootstrap.json` | Created |
 | A1_pixel_room_shell | `outputs/A1_pixel_room_shell.json` | Created |
-| A2_agent_animation_runtime | `outputs/A2_agent_animation_runtime.json` | Not Created |
+| A2_agent_animation_runtime | `outputs/A2_agent_animation_runtime.json` | Created |
 | A3_desk_interactions_chat_preview | `outputs/A3_desk_interactions_chat_preview.json` | Not Created |
 | A4_git_diff_side_panel | `outputs/A4_git_diff_side_panel.json` | Not Created |
 | A5_visual_polish_and_motion | `outputs/A5_visual_polish_and_motion.json` | Not Created |

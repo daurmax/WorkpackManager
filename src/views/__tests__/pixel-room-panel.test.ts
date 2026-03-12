@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import * as path from "node:path";
 import * as vscode from "vscode";
 import { describe, it } from "vitest";
+import type { AgentRunSnapshot } from "../../agents/execution-registry";
 import type { WorkpackInstance } from "../../models";
 import { WorkpackPixelRoomPanel } from "../workpack-pixel-room-panel";
 
@@ -107,6 +108,38 @@ class MockFileSystemWatcher implements MockDisposable {
   dispose(): void {
     // No-op for tests.
   }
+}
+
+class MockExecutionRegistry {
+  private readonly listeners: Array<() => void | Promise<void>> = [];
+
+  constructor(private runs: AgentRunSnapshot[] = []) {}
+
+  listRuns(): AgentRunSnapshot[] {
+    return this.runs;
+  }
+
+  onDidChangeRuns(listener: () => void | Promise<void>): MockDisposable {
+    this.listeners.push(listener);
+
+    return {
+      dispose: () => {
+        const index = this.listeners.indexOf(listener);
+        if (index >= 0) {
+          this.listeners.splice(index, 1);
+        }
+      },
+    };
+  }
+
+  async setRuns(runs: AgentRunSnapshot[]): Promise<void> {
+    this.runs = runs;
+    await Promise.all(this.listeners.map((listener) => listener()));
+  }
+}
+
+async function waitForTick(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 async function withMockedPanel<T>(
@@ -231,6 +264,68 @@ describe("workpack pixel room panel", () => {
       assert.equal(sceneUpdate.type, "SceneUpdate");
       assert.equal(sceneUpdate.reason, "selection_change");
       assert.equal(sceneUpdate.scene.workpackId, "pixel-room-b");
+    });
+  });
+
+  it("posts desk status changes and avatar transitions for runtime updates", async () => {
+    await withMockedPanel(async ({ createdPanels, extensionUri }) => {
+      const workpack = createWorkpackFixture("pixel-room-a", "Pixel Room A");
+      const completionTimestamp = new Date().toISOString();
+      const executionRegistry = new MockExecutionRegistry([
+        {
+          runId: "run-1",
+          workpackId: workpack.meta.id,
+          promptStem: "A1_pixel_room_shell",
+          providerId: "codex",
+          status: "in_progress",
+          startedAt: "2026-03-12T10:44:00Z",
+          updatedAt: "2026-03-12T10:44:30Z",
+        },
+      ]);
+
+      WorkpackPixelRoomPanel.createOrShow(extensionUri, workpack, {
+        executionRegistry: executionRegistry as never,
+      });
+
+      const panel = createdPanels[0];
+      panel.webview.postMessageCalls.length = 0;
+
+      await executionRegistry.setRuns([
+        {
+          runId: "run-1",
+          workpackId: workpack.meta.id,
+          promptStem: "A1_pixel_room_shell",
+          providerId: "codex",
+          status: "complete",
+          startedAt: "2026-03-12T10:44:00Z",
+          updatedAt: completionTimestamp,
+          completedAt: completionTimestamp,
+        },
+      ]);
+      await waitForTick();
+
+      assert.equal(panel.webview.postMessageCalls.length, 2);
+
+      const deskStatusChange = panel.webview.postMessageCalls[0] as {
+        type: string;
+        status: string;
+        runId: string;
+      };
+      const avatarTransition = panel.webview.postMessageCalls[1] as {
+        type: string;
+        from: string;
+        avatar: { animationState: string; run: { status: string }; currentStationId?: string };
+      };
+
+      assert.equal(deskStatusChange.type, "DeskStatusChange");
+      assert.equal(deskStatusChange.status, "complete");
+      assert.equal(deskStatusChange.runId, "run-1");
+
+      assert.equal(avatarTransition.type, "AvatarTransition");
+      assert.equal(avatarTransition.from, "working");
+      assert.equal(avatarTransition.avatar.animationState, "walking_to_board");
+      assert.equal(avatarTransition.avatar.run.status, "complete");
+      assert.equal(avatarTransition.avatar.currentStationId, "station:output-board");
     });
   });
 });

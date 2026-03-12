@@ -5,6 +5,7 @@ import path from "node:path";
 import { afterEach, describe, it } from "vitest";
 import type { AgentRunSnapshot } from "../../../agents/execution-registry";
 import type { WorkpackInstance } from "../../../models";
+import { AvatarAnimationState } from "../../../models/pixel-office";
 import { createPixelRoomLayout } from "../room-layout";
 import { buildPixelOfficeSceneState } from "../scene-builder";
 
@@ -159,13 +160,18 @@ describe("pixel office scene builder", () => {
     assert.equal(scene.generatedAt, "2026-03-12T10:45:00Z");
     assert.equal(scene.room.stations.map((station) => station.label).join(","), "00_request.md,01_plan.md,99_status.md,outputs");
     assert.equal(scene.room.desks.length, 4);
-    assert.equal(scene.room.avatars.length, 0);
+    assert.equal(scene.room.avatars.length, 1);
 
     const runtimeDesk = scene.room.desks.find((desk) => desk.promptStem === "A2_prompt_2");
     assert.ok(runtimeDesk);
     assert.equal(runtimeDesk?.status, "in_progress");
     assert.equal(runtimeDesk?.assignedAgentId, "codex");
     assert.equal(runtimeDesk?.latestRunId, "run-1");
+
+    const runtimeAvatar = scene.room.avatars.find((avatar) => avatar.promptStem === "A2_prompt_2");
+    assert.ok(runtimeAvatar);
+    assert.equal(runtimeAvatar?.animationState, AvatarAnimationState.Working);
+    assert.equal(runtimeAvatar?.currentDeskId, "desk:A2_prompt_2");
 
     const outputDesk = scene.room.desks.find((desk) => desk.promptStem === "A1_prompt_1");
     assert.ok(outputDesk?.outputPath?.endsWith(path.join("outputs", "A1_prompt_1.json")));

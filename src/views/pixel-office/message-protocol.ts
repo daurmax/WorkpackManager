@@ -1,18 +1,12 @@
 import type {
+  AgentAvatar,
   AvatarAnimationState,
   DeskRuntimeStatus,
+  PromptActionKind,
   SceneState,
 } from "../../models/pixel-office";
 
 export type SceneUpdateReason = "initial" | "workpack_refresh" | "runtime_refresh" | "selection_change";
-
-export type PromptActionKind =
-  | "open_prompt"
-  | "execute"
-  | "stop"
-  | "retry"
-  | "provide_input"
-  | "open_output";
 
 export interface SceneUpdate {
   type: "SceneUpdate";
@@ -22,14 +16,10 @@ export interface SceneUpdate {
 
 export interface AvatarTransition {
   type: "AvatarTransition";
-  avatarId: string;
-  runId: string;
-  promptStem: string;
-  from: AvatarAnimationState;
-  to: AvatarAnimationState;
-  targetDeskId?: string;
-  targetStationId?: string;
+  avatar: AgentAvatar;
+  from?: AvatarAnimationState;
   occurredAt: string;
+  removeAfterMs?: number;
 }
 
 export interface DeskStatusChange {
