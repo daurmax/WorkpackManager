@@ -42,6 +42,7 @@ export const WORKPACK_MANAGER_COMMANDS = {
   openRequest: "workpackManager.openRequest",
   openPlan: "workpackManager.openPlan",
   openStatus: "workpackManager.openStatus",
+  openPixelRoom: "workpackManager.openPixelRoom",
   viewDetails: "workpackManager.viewDetails",
   assignAgent: "workpackManager.assignAgent",
   executePrompt: "workpackManager.executePrompt",
@@ -918,6 +919,41 @@ export function registerCommands(
     } catch (error) {
       await vscodeApi.window.showErrorMessage(
         `Unable to show workpack details: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  });
+
+  register(WORKPACK_MANAGER_COMMANDS.openPixelRoom, async (node?: CommandTreeNode) => {
+    try {
+      const folderPath = await resolveWorkpackFolderPath(
+        vscodeApi,
+        node,
+        discoverFn,
+        "Select the workpack to open in the pixel room."
+      );
+      if (!folderPath) {
+        return;
+      }
+
+      const metaPath = path.join(folderPath, WORKPACK_FILES.meta);
+      if (!(await pathExists(metaPath))) {
+        await vscodeApi.window.showWarningMessage(`Metadata file not found: ${metaPath}`);
+        return;
+      }
+
+      if (!options.extensionUri) {
+        await openFileInEditor(vscodeApi, metaPath);
+        return;
+      }
+
+      const workpack = await parseWorkpackInstance(folderPath);
+      const { WorkpackPixelRoomPanel } = await import("../views/workpack-pixel-room-panel");
+      WorkpackPixelRoomPanel.createOrShow(options.extensionUri, workpack, {
+        executionRegistry: options.executionRegistry
+      });
+    } catch (error) {
+      await vscodeApi.window.showErrorMessage(
+        `Unable to open pixel room: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   });

@@ -17,7 +17,9 @@ export default defineConfig({
       "src/__tests__/extension.integration.test.ts",
       "src/views/__tests__/tree-provider.test.ts",
       "src/views/__tests__/status-icons.test.ts",
+      "src/views/__tests__/pixel-room-panel.test.ts",
       "src/views/__tests__/workpack-tree-item.test.ts",
+      "src/views/pixel-office/__tests__/scene-builder.test.ts",
       "src/commands/__tests__/commands.test.ts",
       "src/__mocks__/__tests__/vscode-mock.test.ts"
     ],

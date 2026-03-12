@@ -885,6 +885,7 @@ describe("commands", () => {
       [WORKPACK_MANAGER_COMMANDS.openRequest]: "viewItem == workpack",
       [WORKPACK_MANAGER_COMMANDS.openPlan]: "viewItem == workpack",
       [WORKPACK_MANAGER_COMMANDS.openStatus]: "viewItem == workpack",
+      [WORKPACK_MANAGER_COMMANDS.openPixelRoom]: "viewItem == workpack",
       [WORKPACK_MANAGER_COMMANDS.viewDetails]: "viewItem == workpack",
       [WORKPACK_MANAGER_COMMANDS.lintWorkpack]: "viewItem == workpack",
       [WORKPACK_MANAGER_COMMANDS.executeAll]: "viewItem == workpack",

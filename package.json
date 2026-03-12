@@ -27,7 +27,9 @@
   "activationEvents": [
     "onStartupFinished",
     "onView:workpackManager",
-    "onView:workpackManager.activeAgents"
+    "onView:workpackManager.activeAgents",
+    "onView:workpackManager.gitDiff",
+    "onCommand:workpackManager.showDiffPanel"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -52,6 +54,12 @@
           "id": "workpackManager.activeAgents",
           "name": "Active Agents",
           "icon": "$(pulse)",
+          "contextualTitle": "Workpack Manager"
+        },
+        {
+          "id": "workpackManager.gitDiff",
+          "name": "Git Diff",
+          "icon": "$(git-compare)",
           "contextualTitle": "Workpack Manager"
         }
       ]
@@ -85,6 +93,21 @@
       {
         "command": "workpackManager.openStatus",
         "title": "Open Status",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.openPixelRoom",
+        "title": "Open Pixel Room",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.showDiffPanel",
+        "title": "Show Git Diff Panel",
+        "category": "Workpack"
+      },
+      {
+        "command": "workpackManager.refreshGitDiff",
+        "title": "Refresh Git Diff",
         "category": "Workpack"
       },
       {
@@ -140,6 +163,11 @@
           "command": "workpackManager.refreshTree",
           "when": "view == workpackManager.activeAgents",
           "group": "navigation"
+        },
+        {
+          "command": "workpackManager.refreshGitDiff",
+          "when": "view == workpackManager.gitDiff",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -162,6 +190,11 @@
           "command": "workpackManager.viewDetails",
           "when": "viewItem == workpack",
           "group": "1_open@4"
+        },
+        {
+          "command": "workpackManager.openPixelRoom",
+          "when": "viewItem == workpack",
+          "group": "1_open@5"
         },
         {
           "command": "workpackManager.lintWorkpack",
