@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.2",
+  "workpack": "workpack-manager-v3-pixel-office-ui",
+  "prompt": "A5_visual_polish_and_motion",
+  "component": "visual-polish",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/workpack-manager-v3-pixel-office-ui",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": ["d137d83c9a0f51ab936371dbc85a6be5258c804b"],
+    "branch_verified": false
+  },
+  "changes": {
+    "files_modified": [
+      "src/views/pixel-office/render-room.ts",
+      "src/views/pixel-office/avatar-renderer.ts"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A5_visual_polish_and_motion.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      { "cmd": "npm run build", "result": "pass", "notes": "" },
+      { "cmd": "npm test", "result": "pass", "notes": "14 test files, 101 tests all pass" }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Visual polish applied: palette consolidation (12 room + 6 avatar + 6 status + 6 shell-chrome CSS custom properties), VS Code theme integration (dark/light/high-contrast via vscode-* body classes and CSS variable fallbacks), animation easing refined to ease-in-out, prefers-reduced-motion compliance at both CSS media-query and JS levels, focus indicators using --focus-ring everywhere, font-size minimum raised to 10px, contain: layout paint on room/desk/avatar for repaint isolation, loading and empty state visual treatment.",
+    "next_steps": ["V1_integration_meta can now run"],
+    "known_issues": []
+  },
+  "repos": ["WorkpackManager"],
+  "execution": {
+    "model": "claude-opus-4-6",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "file": "src/views/pixel-office/render-room.ts",
+      "description": "Palette consolidation: expanded :root with --skin, --pants, --shoe, --provider-copilot/codex/unassigned, --shell-bg/fg/border, --focus-ring. Theme integration: body background adapts via body.vscode-dark/light/high-contrast rules; .hud/.legend get light and HC overrides. Font sizes: bumped 8-9px to 10px minimum for .desk__status, .desk__agent, .desk-overlay__chip, .desk-menu__chip, .desk-menu__button, .desk-overlay__link. Focus rings: all :focus-visible selectors use var(--focus-ring). Performance: contain: layout style on .room, contain: layout paint on .desk. Reduced motion: CSS @media (prefers-reduced-motion: reduce) block. Loading/empty: new .loading-state and .empty-state CSS; renderScene shows loading spinner before data arrives and empty state when no desks."
+    },
+    {
+      "file": "src/views/pixel-office/avatar-renderer.ts",
+      "description": "Avatar palette: replaced hardcoded #f1c58a with var(--skin), #5f92ff with var(--active), #2d3d5e with var(--pants), #2a2026 with var(--shoe), provider colors with var(--provider-*). Animation easing: changed avatar-work/walk/pin from steps(2, end) to ease-in-out for smoother motion; avatar-work reduced from 700ms to 600ms. Font size: badge and provider labels bumped from 8px to 10px. Performance: contain: layout paint on .avatar. Reduced motion: added CSS @media (prefers-reduced-motion: reduce) block alongside JS .room--reduced-motion class."
+    }
+  ],
+  "notes": "All changes are visual-only refinements. No data model, message protocol, or feature changes. The room's decorative pixel-art palette (12 colors) stays fixed across themes; only the shell chrome (hud, legend, viewport frame, body background) adapts to VS Code's theme via CSS variable fallbacks."
+}

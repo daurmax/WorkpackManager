@@ -47,7 +47,9 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
     <title>${escapeHtml(scene.room.title)}</title>
     <style>
       :root {
-        color-scheme: dark;
+        color-scheme: dark light;
+
+        /* ── Pixel-art room palette (decorative, fixed across themes) ── */
         --ink: #241d2f;
         --outline: #3e314f;
         --wall: #705f79;
@@ -61,12 +63,28 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         --wood: #925f44;
         --wood-shadow: #6b4533;
         --sky: #8cc5ff;
+
+        /* ── Status palette ── */
         --pending: #d1b06a;
         --active: #5f92ff;
         --complete: #63bf73;
         --blocked: #e26068;
         --muted: #9a90a3;
         --attention: #f0a03d;
+
+        /* ── Avatar palette ── */
+        --skin: #f1c58a;
+        --pants: #2d3d5e;
+        --shoe: #2a2026;
+        --provider-copilot: #2fbca5;
+        --provider-codex: #5f92ff;
+        --provider-unassigned: #a091b2;
+
+        /* ── Theme-adaptive shell chrome ── */
+        --shell-bg: var(--vscode-editor-background, #0f0c16);
+        --shell-fg: var(--vscode-editor-foreground, var(--paper));
+        --shell-border: var(--vscode-panel-border, var(--outline));
+        --focus-ring: var(--vscode-focusBorder, var(--sky));
       }
 
       * {
@@ -77,15 +95,27 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
       body {
         margin: 0;
         min-height: 100%;
-        background:
-          radial-gradient(circle at top, rgba(140, 197, 255, 0.18), transparent 30%),
-          linear-gradient(180deg, #15121d 0%, #0f0c16 100%);
-        color: var(--paper);
-        font-family: "Courier New", monospace;
+        background: var(--shell-bg);
+        color: var(--shell-fg);
+        font-family: "Courier New", Consolas, "Liberation Mono", monospace;
       }
 
       body {
         min-height: 100vh;
+      }
+
+      body.vscode-dark {
+        background:
+          radial-gradient(circle at top, rgba(140, 197, 255, 0.18), transparent 30%),
+          linear-gradient(180deg, #15121d 0%, #0f0c16 100%);
+      }
+
+      body.vscode-high-contrast {
+        background: var(--vscode-editor-background, #000);
+      }
+
+      body.vscode-high-contrast-light {
+        background: var(--vscode-editor-background, #fff);
       }
 
       .shell {
@@ -97,9 +127,24 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
 
       .hud,
       .legend {
-        border: 4px solid var(--outline);
+        border: 4px solid var(--shell-border);
         background: rgba(36, 29, 47, 0.94);
         box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.28);
+      }
+
+      body.vscode-light .hud,
+      body.vscode-light .legend {
+        background: var(--vscode-sideBar-background, rgba(250, 248, 244, 0.96));
+        color: var(--vscode-foreground, #333);
+      }
+
+      body.vscode-high-contrast .hud,
+      body.vscode-high-contrast .legend,
+      body.vscode-high-contrast-light .hud,
+      body.vscode-high-contrast-light .legend {
+        border-color: var(--vscode-contrastBorder, var(--outline));
+        background: var(--vscode-editor-background, #000);
+        color: var(--vscode-foreground, #fff);
       }
 
       .hud {
@@ -197,6 +242,13 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         background:
           linear-gradient(180deg, var(--wall) 0 34%, var(--floor) 34% 100%);
         overflow: hidden;
+        contain: layout style;
+        image-rendering: pixelated;
+      }
+
+      body.vscode-high-contrast .room,
+      body.vscode-high-contrast-light .room {
+        border-color: var(--vscode-contrastBorder, var(--outline));
       }
 
       .room::before {
@@ -370,6 +422,7 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         color: var(--paper);
         padding: 10px 10px 8px;
         transition: transform 120ms steps(2), box-shadow 120ms steps(2), outline-offset 120ms steps(2);
+        contain: layout paint;
       }
 
       .desk:hover,
@@ -380,7 +433,7 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
       }
 
       .desk:focus-visible {
-        outline: 4px solid var(--sky);
+        outline: 4px solid var(--focus-ring);
         outline-offset: 4px;
       }
 
@@ -447,7 +500,7 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         left: 10px;
         bottom: 8px;
         padding: 2px 6px;
-        font-size: 9px;
+        font-size: 10px;
         color: var(--ink);
         background: var(--paper);
       }
@@ -469,7 +522,7 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         border: 3px solid var(--outline);
         background: rgba(36, 29, 47, 0.72);
         color: var(--paper);
-        font-size: 9px;
+        font-size: 10px;
         text-transform: uppercase;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -522,7 +575,7 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         padding: 2px 6px;
         border: 3px solid var(--outline);
         background: rgba(247, 235, 200, 0.14);
-        font-size: 9px;
+        font-size: 10px;
         line-height: 1.2;
         text-transform: uppercase;
       }
@@ -556,7 +609,7 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
         color: var(--ink);
         padding: 4px 6px;
         font: inherit;
-        font-size: 9px;
+        font-size: 10px;
         line-height: 1.2;
         text-transform: uppercase;
         cursor: pointer;
@@ -564,11 +617,14 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
       }
 
       .desk-menu__button:hover,
+      .desk-overlay__link:hover {
+        background: #fff4d5;
+      }
+
       .desk-menu__button:focus-visible,
-      .desk-overlay__link:hover,
       .desk-overlay__link:focus-visible {
         background: #fff4d5;
-        outline: 3px solid var(--sky);
+        outline: 3px solid var(--focus-ring);
         outline-offset: 2px;
       }
 
@@ -629,6 +685,52 @@ export function buildPixelRoomHtml(webview: vscode.Webview, scene: SceneState): 
 
 ${avatarStyles}
 
+      .loading-state,
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 240px;
+        border: 4px dashed var(--outline);
+        padding: 32px;
+        text-align: center;
+        color: var(--paper-shadow);
+        image-rendering: pixelated;
+      }
+
+      .loading-state__icon,
+      .empty-state__icon {
+        display: block;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        border: 6px solid var(--outline);
+        background: var(--wall);
+      }
+
+      .loading-state__icon {
+        animation: loading-pulse 1.4s ease-in-out infinite;
+      }
+
+      .loading-state__label,
+      .empty-state__label {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .empty-state__hint {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      @keyframes loading-pulse {
+        0%, 100% { opacity: 0.4; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.08); }
+      }
+
       @media (max-width: 900px) {
         .shell {
           padding: 16px;
@@ -640,6 +742,16 @@ ${avatarStyles}
 
         .viewport {
           padding: 8px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .desk,
+        .avatar,
+        .avatar__sprite,
+        .loading-state__icon {
+          animation: none !important;
+          transition: none !important;
         }
       }
     </style>
@@ -1216,15 +1328,46 @@ ${avatarScript}
       }
 
       function renderScene(scene) {
-        if (!app || !scene || !scene.room) {
+        if (!app) {
+          return;
+        }
+
+        if (!scene || !scene.room) {
+          app.innerHTML = [
+            '<main class="shell">',
+            '<section class="hud" data-hud>',
+            '<h1 class="hud__title">Pixel Office</h1>',
+            '</section>',
+            '<section class="viewport" data-viewport>',
+            '<div class="loading-state">',
+            '<span class="loading-state__icon" aria-hidden="true"></span>',
+            '<span class="loading-state__label">Loading workspace\u2026</span>',
+            '</div>',
+            '</section>',
+            '</main>',
+          ].join("");
           return;
         }
 
         ensureUiState(scene);
+
+        var hasDesks = Array.isArray(scene.room.desks) && scene.room.desks.length > 0;
+        var viewportContent = hasDesks
+          ? ""
+          : [
+            '<div class="empty-state">',
+            '<span class="empty-state__icon" aria-hidden="true"></span>',
+            '<span class="empty-state__label">No prompt desks</span>',
+            '<span class="empty-state__hint">This workpack has no prompts configured yet.</span>',
+            '</div>',
+          ].join("");
+
         app.innerHTML = [
           '<main class="shell">',
           '<section class="hud" data-hud></section>',
-          '<section class="viewport" data-viewport></section>',
+          '<section class="viewport" data-viewport>',
+          viewportContent,
+          '</section>',
           '<section class="legend">',
           buildLegendMarkup(),
           "</section>",
@@ -1232,7 +1375,9 @@ ${avatarScript}
         ].join("");
 
         renderHud(scene);
-        renderRoom(scene);
+        if (hasDesks) {
+          renderRoom(scene);
+        }
         focusPendingInteractiveElement();
       }
 

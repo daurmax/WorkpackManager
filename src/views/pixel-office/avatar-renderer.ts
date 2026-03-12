@@ -20,6 +20,7 @@ export function buildAvatarRendererStyles(): string {
         transform-origin: bottom center;
         image-rendering: pixelated;
         will-change: transform, opacity;
+        contain: layout paint;
       }
 
       .avatar__sprite {
@@ -43,7 +44,7 @@ export function buildAvatarRendererStyles(): string {
         top: 0;
         width: 12px;
         height: 10px;
-        background: #f1c58a;
+        background: var(--skin);
       }
 
       .avatar__body {
@@ -51,7 +52,7 @@ export function buildAvatarRendererStyles(): string {
         top: 10px;
         width: 10px;
         height: 11px;
-        background: #5f92ff;
+        background: var(--active);
       }
 
       .avatar__arm {
@@ -73,7 +74,7 @@ export function buildAvatarRendererStyles(): string {
         top: 19px;
         width: 4px;
         height: 4px;
-        background: #f1c58a;
+        background: var(--skin);
       }
 
       .avatar__hand--left {
@@ -89,14 +90,14 @@ export function buildAvatarRendererStyles(): string {
         top: 21px;
         width: 10px;
         height: 9px;
-        background: #2d3d5e;
+        background: var(--pants);
       }
 
       .avatar__shoe {
         top: 28px;
         width: 5px;
         height: 4px;
-        background: #2a2026;
+        background: var(--shoe);
       }
 
       .avatar__shoe--left {
@@ -116,7 +117,7 @@ export function buildAvatarRendererStyles(): string {
         border: 2px solid var(--outline);
         background: var(--paper);
         color: var(--ink);
-        font-size: 8px;
+        font-size: 10px;
         line-height: 1;
         text-align: center;
         text-transform: uppercase;
@@ -132,7 +133,7 @@ export function buildAvatarRendererStyles(): string {
         border: 2px solid var(--outline);
         background: rgba(36, 29, 47, 0.82);
         color: var(--paper);
-        font-size: 8px;
+        font-size: 10px;
         line-height: 1;
         white-space: nowrap;
         overflow: hidden;
@@ -142,31 +143,31 @@ export function buildAvatarRendererStyles(): string {
       .avatar--provider-copilot .avatar__body,
       .avatar--provider-copilot .avatar__arm,
       .avatar--provider-copilot .avatar__legs {
-        background: #2fbca5;
+        background: var(--provider-copilot);
       }
 
       .avatar--provider-codex .avatar__body,
       .avatar--provider-codex .avatar__arm,
       .avatar--provider-codex .avatar__legs {
-        background: #5f92ff;
+        background: var(--provider-codex);
       }
 
       .avatar--provider-unassigned .avatar__body,
       .avatar--provider-unassigned .avatar__arm,
       .avatar--provider-unassigned .avatar__legs {
-        background: #a091b2;
+        background: var(--provider-unassigned);
       }
 
       .avatar--working .avatar__sprite {
-        animation: avatar-work 700ms steps(2, end) infinite;
+        animation: avatar-work 600ms ease-in-out infinite;
       }
 
       .avatar--walking-to-board .avatar__sprite {
-        animation: avatar-walk 280ms steps(2, end) infinite;
+        animation: avatar-walk 280ms ease-in-out infinite;
       }
 
       .avatar--pinning-output .avatar__sprite {
-        animation: avatar-pin 900ms steps(2, end) infinite;
+        animation: avatar-pin 900ms ease-in-out infinite;
       }
 
       .avatar--hand-raised .avatar__arm--right,
@@ -206,6 +207,14 @@ export function buildAvatarRendererStyles(): string {
       .room--reduced-motion .avatar__sprite {
         animation: none !important;
         transition: none !important;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .avatar,
+        .avatar__sprite {
+          animation: none !important;
+          transition: none !important;
+        }
       }
 
       @keyframes avatar-work {
