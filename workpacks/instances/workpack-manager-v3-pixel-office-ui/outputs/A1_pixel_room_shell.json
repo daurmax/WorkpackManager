@@ -1,0 +1,172 @@
+{
+  "schema_version": "1.2",
+  "workpack": "workpack-manager-v3-pixel-office-ui",
+  "prompt": "A1_pixel_room_shell",
+  "component": "room-shell",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/workpack-manager-v3-pixel-office-ui",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "3a3127f"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "package.json",
+      "src/commands/__tests__/commands.test.ts",
+      "src/commands/register-commands.ts",
+      "src/views/pixel-office/index.ts",
+      "vitest.config.ts",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json"
+    ],
+    "files_created": [
+      "src/views/__tests__/pixel-room-panel.test.ts",
+      "src/views/pixel-office/__tests__/scene-builder.test.ts",
+      "src/views/pixel-office/render-room.ts",
+      "src/views/pixel-office/room-layout.ts",
+      "src/views/pixel-office/scene-builder.ts",
+      "src/views/workpack-pixel-room-panel.ts"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript compilation passed after the pixel-room panel, scene builder, and test additions."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "Vitest passed with 13 files and 96 tests, including the new scene-builder and pixel-room-panel coverage."
+      },
+      {
+        "cmd": "node - (Ajv2020 validation against workpacks/WORKPACK_OUTPUT_SCHEMA.json)",
+        "result": "pass",
+        "notes": "Validated outputs/A1_pixel_room_shell.json against the workpack output schema using ajv/dist/2020."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added unit coverage for the room layout/scene builder and the pixel-room panel singleton refresh flow."
+  },
+  "handoff": {
+    "summary": "Implemented a message-driven pixel room webview with fixed workpack stations, prompt desk layout, pixel-art rendering, and tree command integration backed by real workpack data.",
+    "next_steps": [
+      "A2_agent_animation_runtime can layer avatars onto buildPixelOfficeSceneState and WorkpackPixelRoomPanel without reshaping the room shell.",
+      "A3_desk_interactions_chat_preview can attach desk hover/click behavior on top of the existing message protocol and desk DOM structure."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "package.json",
+      "action": "modified",
+      "lines_added": 34,
+      "lines_removed": 1
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/commands/__tests__/commands.test.ts",
+      "action": "modified",
+      "lines_added": 1,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/commands/register-commands.ts",
+      "action": "modified",
+      "lines_added": 36,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/__tests__/pixel-room-panel.test.ts",
+      "action": "created",
+      "lines_added": 236,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/__tests__/scene-builder.test.ts",
+      "action": "created",
+      "lines_added": 176,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/index.ts",
+      "action": "modified",
+      "lines_added": 3,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/render-room.ts",
+      "action": "created",
+      "lines_added": 745,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/room-layout.ts",
+      "action": "created",
+      "lines_added": 116,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/scene-builder.ts",
+      "action": "created",
+      "lines_added": 171,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/workpack-pixel-room-panel.ts",
+      "action": "created",
+      "lines_added": 371,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "vitest.config.ts",
+      "action": "modified",
+      "lines_added": 2,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "action": "modified",
+      "lines_added": 2,
+      "lines_removed": 2
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json",
+      "action": "modified",
+      "lines_added": 19,
+      "lines_removed": 2
+    }
+  ],
+  "notes": "Per the workpack commit-tracking rule, source and status updates were committed first and this output artifact was written afterward, so outputs/A1_pixel_room_shell.json is intentionally excluded from changes and change_details. Shared command/package files on the branch also carried additive git-diff command scaffolding in the same commit boundaries; the pixel-room implementation itself is limited to the files listed above."
+}

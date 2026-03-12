@@ -1,0 +1,178 @@
+{
+  "schema_version": "1.2",
+  "workpack": "workpack-manager-v3-pixel-office-ui",
+  "prompt": "A2_agent_animation_runtime",
+  "component": "avatar-runtime",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/workpack-manager-v3-pixel-office-ui",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "bcf56ba"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "src/models/pixel-office/scene-contracts.ts",
+      "src/views/__tests__/pixel-room-panel.test.ts",
+      "src/views/pixel-office/__tests__/scene-builder.test.ts",
+      "src/views/pixel-office/index.ts",
+      "src/views/pixel-office/message-protocol.ts",
+      "src/views/pixel-office/render-room.ts",
+      "src/views/pixel-office/scene-builder.ts",
+      "src/views/workpack-pixel-room-panel.ts",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json"
+    ],
+    "files_created": [
+      "src/views/pixel-office/__tests__/avatar-runtime.test.ts",
+      "src/views/pixel-office/avatar-renderer.ts",
+      "src/views/pixel-office/avatar-runtime.ts",
+      "src/views/pixel-office/desk-interactions.ts"
+    ],
+    "contracts_changed": [
+      "src/models/pixel-office/scene-contracts.ts",
+      "src/views/pixel-office/message-protocol.ts"
+    ],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript compilation passed after the avatar runtime modules, scene wiring, and panel updates."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "Vitest passed with 14 files and 99 tests, including new avatar-runtime and pixel-room-panel transition coverage."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added unit coverage for status-to-animation mapping, avatar linger/transition planning, scene avatar projection, and panel runtime message dispatch."
+  },
+  "handoff": {
+    "summary": "Agent avatars now render at prompt desks from live ExecutionRegistry state, animate toward the output board on completion, raise a hand for manual input, and degrade to static status badges when motion is reduced.",
+    "next_steps": [
+      "A3_desk_interactions_chat_preview can reuse the desk preview/action metadata now present in the scene builder.",
+      "A5_visual_polish_and_motion can tune avatar timing and sprite polish after A3 and A4 land."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/pixel-office/scene-contracts.ts",
+      "action": "modified",
+      "lines_added": 35,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/__tests__/pixel-room-panel.test.ts",
+      "action": "modified",
+      "lines_added": 95,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/__tests__/avatar-runtime.test.ts",
+      "action": "created",
+      "lines_added": 132,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/__tests__/scene-builder.test.ts",
+      "action": "modified",
+      "lines_added": 7,
+      "lines_removed": 1
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/avatar-renderer.ts",
+      "action": "created",
+      "lines_added": 678,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/avatar-runtime.ts",
+      "action": "created",
+      "lines_added": 260,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/desk-interactions.ts",
+      "action": "created",
+      "lines_added": 166,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/index.ts",
+      "action": "modified",
+      "lines_added": 2,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/message-protocol.ts",
+      "action": "modified",
+      "lines_added": 5,
+      "lines_removed": 15
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/render-room.ts",
+      "action": "modified",
+      "lines_added": 745,
+      "lines_removed": 36
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/scene-builder.ts",
+      "action": "modified",
+      "lines_added": 33,
+      "lines_removed": 4
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/workpack-pixel-room-panel.ts",
+      "action": "modified",
+      "lines_added": 222,
+      "lines_removed": 22
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "action": "modified",
+      "lines_added": 2,
+      "lines_removed": 2
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json",
+      "action": "modified",
+      "lines_added": 19,
+      "lines_removed": 2
+    }
+  ],
+  "notes": "Per the workpack commit-tracking rule, source and status updates were committed first and this output artifact was written afterward, so outputs/A2_agent_animation_runtime.json is intentionally excluded from changes and change_details. Unrelated unstaged branch edits remain in src/commands/register-commands.ts and src/views/index.ts."
+}

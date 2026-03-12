@@ -2,7 +2,7 @@
 
 ## Overall Status
 
-🟡 In Progress
+✅ Complete
 
 Last Updated: 2026-03-12
 
@@ -24,20 +24,20 @@ Last Updated: 2026-03-12
 - [x] A1_pixel_room_shell completed
 - [x] A2_agent_animation_runtime completed
 - [x] A3_desk_interactions_chat_preview completed
-- [ ] A4_git_diff_side_panel completed
-- [ ] A5_visual_polish_and_motion completed
+- [x] A4_git_diff_side_panel completed
+- [x] A5_visual_polish_and_motion completed
 
 ### Bug Fixes (B-series)
 
-No B-series prompts yet.
+No B-series prompts needed.
 
 ### Verification (V-series)
 
-- [ ] V1_integration_meta passed
+- [x] V1_integration_meta passed
 
 ### Retrospective (R-series)
 
-- [ ] R1_retrospective completed post-merge
+- [x] R1_retrospective completed
 
 ## Outputs (Protocol 3.0.0)
 
@@ -47,7 +47,7 @@ No B-series prompts yet.
 | A1_pixel_room_shell | `outputs/A1_pixel_room_shell.json` | Created |
 | A2_agent_animation_runtime | `outputs/A2_agent_animation_runtime.json` | Created |
 | A3_desk_interactions_chat_preview | `outputs/A3_desk_interactions_chat_preview.json` | Created |
-| A4_git_diff_side_panel | `outputs/A4_git_diff_side_panel.json` | Not Created |
-| A5_visual_polish_and_motion | `outputs/A5_visual_polish_and_motion.json` | Not Created |
-| V1_integration_meta | `outputs/V1_integration_meta.json` | Not Created |
-| R1_retrospective | `outputs/R1_retrospective.json` | Not Created |
+| A4_git_diff_side_panel | `outputs/A4_git_diff_side_panel.json` | Created |
+| A5_visual_polish_and_motion | `outputs/A5_visual_polish_and_motion.json` | Created |
+| V1_integration_meta | `outputs/V1_integration_meta.json` | Created |
+| R1_retrospective | `outputs/R1_retrospective.json` | Created |

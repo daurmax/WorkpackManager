@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.2",
+  "workpack": "workpack-manager-v3-pixel-office-ui",
+  "prompt": "R1_retrospective",
+  "component": "retrospective",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/workpack-manager-v3-pixel-office-ui",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": ["d41bef9"],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/R1_retrospective.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Retrospective completed. 8 prompts executed, 0 B-series needed. All 9 request-level ACs delivered. V1 passed on iteration 2 after fixing bookkeeping-only blockers. 7 action items documented for future workpacks.",
+    "next_steps": ["Merge PR to master", "Archive workpack instance"],
+    "known_issues": []
+  },
+  "repos": ["WorkpackManager"],
+  "execution": {
+    "model": "claude-opus-4-6",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/R1_retrospective.json",
+      "action": "created",
+      "lines_added": 1,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json",
+      "action": "modified",
+      "lines_added": 10,
+      "lines_removed": 2
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "action": "modified",
+      "lines_added": 2,
+      "lines_removed": 2
+    }
+  ],
+  "notes": "## 1. Scope and Delivery Summary\n\n**Requested**: A pixel-art workspace view for WorkpackManager 0.0.3 where workpacks render as rooms, prompts as desks, agent avatars animate by state, desk interactions support assignment/controls, hover reveals chat previews, a side panel shows Git diffs grouped by repository, and the whole UI has visual polish with accessibility fallbacks.\n\n**Delivered**: All 9 request-level acceptance criteria passed with evidence (see V1 AC coverage table). The feature branch adds 40 changed files with ~7,900 lines of insertions across source, tests, and workpack metadata. No scope reductions were made. One minor scope deferral: the hover preview 'View Full Chat' link opens the prompt file rather than a dedicated transcript panel (noted in A3 known_issues).\n\n## 2. What Went Well\n\n**Prompt decomposition was effective.** The A0 bootstrap → A1/A4 parallel → A2/A3 parallel → A5 chain matched the natural dependency structure. A1 and A4 had no mutual dependencies and could proceed independently. A2 and A3 both built on A1's room shell and A0's contracts without stepping on each other.\n\n**A0 scene contracts served as glue.** The `scene-contracts.ts` types (SceneState, DeskState, AvatarState) and `message-protocol.ts` definitions established at bootstrap were consumed unchanged by A1, A2, A3, and A5. This prevented integration surprises between prompts.\n\n**Message protocol reuse.** The host↔webview messaging pattern from the existing WorkpackDetailPanel was successfully reused for the pixel room panel, reducing design decisions and keeping the extension architecture consistent.\n\n**Test coverage grew organically.** Each implementation prompt (A1–A4) added targeted tests for its new modules. The test count grew from 91 (baseline) to 101 (+10 tests) with no test regressions.\n\n**Zero B-series prompts.** No bug-fix prompts were needed — the first-pass implementation from A1–A5 was sufficient to pass V1 on all functional criteria.\n\n## 3. What Caused Friction\n\n**Commit SHA drift from amend/rebase.** The most significant V1 blocker was that all 6 output JSON commit_shas became stale after commits were amended or rebased. This is a systemic issue with the workpack protocol's requirement to record exact SHAs in output artifacts that are written after the commit. When a subsequent prompt amends or rebases, earlier output SHAs become unreachable. The V1 gate correctly detected this, but fixing it required touching all 6 output files.\n\n**A5 output was hand-authored with schema violations.** The A5 change_details used a freeform `description` field instead of the schema-required `repo` and `action` fields. This suggests the agent that executed A5 didn't validate its output against the schema before writing it.\n\n**State file updates lagged behind actual execution.** A4 and A5 completed and produced output JSONs, but workpack.state.json and 99_status.md were not updated to reflect their completion. This bookkeeping gap was caught by V1 but shouldn't have existed.\n\n**CSS-only pixel art limitations.** The CSS approach with `image-rendering: pixelated` and box-shadow sprites works for the current level of visual complexity, but scaling to more detailed animations or larger rooms would benefit from Canvas 2D rendering. The current approach requires very large CSS strings (render-room.ts is 745+ lines of template HTML/CSS).\n\n**Theme integration was verbose.** Supporting dark/light/high-contrast required separate CSS rule blocks for each VS Code body class. This is inherently repetitive and would benefit from a CSS preprocessor or a theme-token abstraction layer.\n\n## 4. Defects and Rework Analysis\n\n**B-series count: 0.** No dedicated bug-fix prompts were created.\n\n**V1 rework: iteration 1 failed, iteration 2 passed.** Root causes:\n- SHA drift: systemic protocol issue, not an implementation defect.\n- A5 schema violation: agent output validation gap.\n- State update omission: process gap in A4/A5 execution.\n\nAll three root causes are bookkeeping/process issues, not functional defects. No A-series prompt required functional rework.\n\n## 5. Estimation Accuracy\n\n**Planned vs actual DAG**: Identical. 6 A-series prompts (A0–A5) + V1 + R1 = 8 prompts. No prompts were added or removed.\n\n**Effort estimates from plan**:\n| Prompt | Estimated | Actual Observation |\n|--------|-----------|-------------------|\n| A0_bootstrap | S (30m-2h) | Completed without timestamps (likely <1h) |\n| A1_pixel_room_shell | L (4h-8h) | ~14min (10:43–10:57) — faster than estimated |\n| A2_agent_animation_runtime | L (4h-8h) | ~26min (11:13–11:39) — fastest large prompt |\n| A3_desk_interactions_chat_preview | L (4h-8h) | Near-instant in timestamps (same start/complete) |\n| A4_git_diff_side_panel | M (2h-4h) | ~15min (estimated from state) |\n| A5_visual_polish_and_motion | M (2h-4h) | ~30min (estimated from state) |\n\nThe L-estimated prompts (A1, A2, A3) all completed well under the 4–8 hour range. This suggests that for agent-executed prompts with well-defined contracts, the effort scale should be recalibrated — current estimates assume human-speed execution. If estimating wall-clock time for agents specifically, all prompts were effectively S or M.\n\n**Decomposition assessment**: The 6-prompt split was appropriate. Merging A2+A3 would have been possible (they share the desk interaction surface) but keeping them separate kept each prompt focused and the change_details clean.\n\n## 6. Pixel-Office-Specific Lessons\n\n**Visual design quality**: The pixel-art aesthetic was achieved through CSS custom properties defining a 24-color palette (12 room, 6 avatar, 6 status) plus 6 shell-chrome variables. The look is coherent but relatively simple. Improvement path: add actual pixel-art sprite sheets (PNG or base64) for agent avatars instead of CSS box-shadow constructions.\n\n**Animation performance**: The `contain: layout paint` CSS property on room, desk, and avatar elements isolates repaints. Animation easing was refined from `steps(2, end)` to `ease-in-out`. No jank reported in testing, but the test environment doesn't stress-test with many simultaneous avatar animations. Recommendation: add a performance benchmark with 20+ simultaneous desk animations.\n\n**Webview architecture**: A single webview panel (`WorkpackPixelRoomPanel`) was the right first choice — it keeps the activation surface simple and avoids multi-panel coordination. If future iterations need persistent sidebar presence or multi-room views, consider migrating to a `WebviewViewProvider` registered in the sidebar.\n\n**Accessibility**: Adequate for v1. `prefers-reduced-motion` is respected at both CSS media-query and JS class levels. Focus indicators use `var(--focus-ring)` everywhere. Font minimum is 10px. Improvement: add ARIA live regions for state transitions so screen readers announce desk status changes.\n\n**Developer experience**: The module structure (scene-contracts → scene-builder → render-room → avatar-runtime → avatar-renderer → desk-interactions) follows a clear data-flow DAG. A new contributor can modify the palette by editing CSS custom properties in render-room.ts:root, add new desk actions in desk-interactions.ts, or change avatar animation in avatar-renderer.ts without touching other modules. The main DX friction is that render-room.ts is a very large file (~900+ lines) combining CSS, HTML template, and JS — splitting it into separate template/style/script modules would help.\n\n## 7. Action Items\n\n| # | Action | Owner | Target |\n|---|--------|-------|--------|\n| 1 | Add output schema validation as a pre-commit or CI check so agents cannot write invalid change_details | team | next workpack |\n| 2 | Automate SHA correction in output JSONs after amend/rebase (post-rebase hook or V1 auto-fix mode) | team | protocol v3.1 |\n| 3 | Split render-room.ts into separate template, style, and script modules for maintainability | agent | next pixel-office iteration |\n| 4 | Add ARIA live regions to the pixel room for screen reader state-change announcements | agent | next pixel-office iteration |\n| 5 | Add a pixel-room performance benchmark test (20+ simultaneous desk animations) | agent | next workpack |\n| 6 | Evaluate Canvas 2D rendering for avatar sprites if visual complexity increases | team | future planning |\n| 7 | Require workpack.state.json update as part of each prompt's commit (enforce in V1 checks or pre-commit) | team | protocol v3.1 |\n\n## Metrics\n\n| Metric | Value |\n|--------|-------|\n| Total prompts executed | 8 (A0–A5 + V1 + R1) |\n| First-pass completions (no B-series needed) | 6/6 A-series |\n| B-series bug-fix count | 0 |\n| Total elapsed wall-clock time | ~5h (09:51 → ~15:00) |\n| Longest single prompt duration | A5 ~30min (estimated) |\n| Lines of code added (src/ only) | ~5,934 |\n| Lines of code added (total incl. metadata) | ~7,896 |\n| Test count delta | 91 → 101 (+10) |\n| V1 iterations to pass | 2 (iteration 1: 3 bookkeeping blockers; iteration 2: pass) |\n| Files changed on feature branch | 40 |"
+}

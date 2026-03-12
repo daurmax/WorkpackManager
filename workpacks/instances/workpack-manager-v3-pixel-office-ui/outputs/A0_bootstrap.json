@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.2",
+  "workpack": "workpack-manager-v3-pixel-office-ui",
+  "prompt": "A0_bootstrap",
+  "component": "bootstrap",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/workpack-manager-v3-pixel-office-ui",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "404ca60"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json"
+    ],
+    "files_created": [
+      "src/models/pixel-office/index.ts",
+      "src/models/pixel-office/scene-contracts.ts",
+      "src/views/pixel-office/bootstrap-decisions.md",
+      "src/views/pixel-office/index.ts",
+      "src/views/pixel-office/message-protocol.ts"
+    ],
+    "contracts_changed": [
+      "src/models/pixel-office/scene-contracts.ts",
+      "src/views/pixel-office/message-protocol.ts"
+    ],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "Passed on the clean baseline and again after the bootstrap contract commit."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "91 Vitest checks passed on the clean baseline and again after the bootstrap contract commit."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Architectural baseline complete. Pixel-office scene contracts, message protocol, host decision, reusable-state audit, runtime flow, and test strategy are now defined for downstream prompts.",
+    "next_steps": [
+      "A1_pixel_room_shell and A4_git_diff_side_panel can proceed in parallel.",
+      "A2_agent_animation_runtime and A3_desk_interactions_chat_preview should consume the contracts added in src/models/pixel-office and src/views/pixel-office."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/pixel-office/index.ts",
+      "action": "created",
+      "lines_added": 1,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/models/pixel-office/scene-contracts.ts",
+      "action": "created",
+      "lines_added": 92,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/bootstrap-decisions.md",
+      "action": "created",
+      "lines_added": 89,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/index.ts",
+      "action": "created",
+      "lines_added": 1,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/message-protocol.ts",
+      "action": "created",
+      "lines_added": 79,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "action": "modified",
+      "lines_added": 4,
+      "lines_removed": 4
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json",
+      "action": "modified",
+      "lines_added": 10,
+      "lines_removed": 3
+    }
+  ],
+  "notes": "Per the prompt commit-tracking rule, the source and status updates were committed first and this output artifact was written afterward, so outputs/A0_bootstrap.json is intentionally not included in changes or change_details."
+}

@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.2",
+  "workpack": "workpack-manager-v3-pixel-office-ui",
+  "prompt": "V1_integration_meta",
+  "component": "verification",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/workpack-manager-v3-pixel-office-ui",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "e749a45",
+      "d41bef9"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A0_bootstrap.json",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A1_pixel_room_shell.json",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A2_agent_animation_runtime.json",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A3_desk_interactions_chat_preview.json",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A4_git_diff_side_panel.json",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A5_visual_polish_and_motion.json",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md"
+    ],
+    "files_created": [
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/V1_integration_meta.json"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript compilation exits 0."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "Vitest: 14 test files, 101 tests, all pass."
+      },
+      {
+        "cmd": "git log --oneline feature/workpack-manager-v3-pixel-office-ui",
+        "result": "pass",
+        "notes": "7 feature commits above master merge-base: 9e7ba76 404ca60 3a3127f e4f3a16 bcf56ba 362c530 e749a45."
+      }
+    ],
+    "regression_added": false,
+    "regression_notes": ""
+  },
+  "handoff": {
+    "summary": "Integration gate PASS (iteration 2). Build and tests pass. All 9 request-level ACs verified with evidence. All 6 output JSON commit SHAs corrected to branch-reachable values. A5 change_details schema violation fixed. State and status files updated. Branch is merge-ready.",
+    "next_steps": [
+      "R1_retrospective",
+      "Merge PR to master"
+    ],
+    "known_issues": [
+      "Iteration 1 failed due to 3 bookkeeping blockers (stale commit SHAs, A5 schema violation, state/status not updated for A4+A5). All resolved in iteration 2.",
+      "A3 known issue: hover preview 'View Full Chat' link opens the prompt file as a dedicated transcript surface does not exist yet."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "claude-opus-4-6",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/V1_integration_meta.json",
+      "action": "created",
+      "lines_added": 1,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A0_bootstrap.json",
+      "action": "modified",
+      "lines_added": 2,
+      "lines_removed": 2
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A1_pixel_room_shell.json",
+      "action": "modified",
+      "lines_added": 1,
+      "lines_removed": 1
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A2_agent_animation_runtime.json",
+      "action": "modified",
+      "lines_added": 1,
+      "lines_removed": 1
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A3_desk_interactions_chat_preview.json",
+      "action": "modified",
+      "lines_added": 1,
+      "lines_removed": 1
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A4_git_diff_side_panel.json",
+      "action": "modified",
+      "lines_added": 1,
+      "lines_removed": 1
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/outputs/A5_visual_polish_and_motion.json",
+      "action": "modified",
+      "lines_added": 14,
+      "lines_removed": 10
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json",
+      "action": "modified",
+      "lines_added": 40,
+      "lines_removed": 8
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "action": "modified",
+      "lines_added": 7,
+      "lines_removed": 7
+    }
+  ],
+  "notes": "V1 gate iteration 2: PASS.\n\nIteration 1 identified 3 blockers (all bookkeeping, not functional):\n1. All 6 output commit_shas were pre-amend objects unreachable from branch tip — corrected to actual branch SHAs.\n2. A5 change_details used non-schema fields (description instead of repo+action) — fixed.\n3. workpack.state.json and 99_status.md were not updated for A4/A5 completions — updated.\n\nAll blockers resolved. Re-validation results:\n\n## Output JSON Schema Validation — ALL PASS\n\n| Output | schema_version | workpack | prompt | repos | change_details | Result |\n|--------|:-:|:-:|:-:|:-:|:-:|:-:|\n| A0_bootstrap | 1.2 | match | match | WorkpackManager | valid | PASS |\n| A1_pixel_room_shell | 1.2 | match | match | WorkpackManager | valid | PASS |\n| A2_agent_animation_runtime | 1.2 | match | match | WorkpackManager | valid | PASS |\n| A3_desk_interactions_chat_preview | 1.2 | match | match | WorkpackManager | valid | PASS |\n| A4_git_diff_side_panel | 1.2 | match | match | WorkpackManager | valid | PASS |\n| A5_visual_polish_and_motion | 1.2 | match | match | WorkpackManager | valid | PASS |\n\n## Commit SHA Verification — ALL PASS\n\n| Prompt | SHA | On Branch |\n|--------|-----|:-:|\n| A0 | 404ca60 | YES |\n| A1 | 3a3127f | YES |\n| A2 | bcf56ba | YES |\n| A3 | 362c530 | YES |\n| A4 | e4f3a16 | YES |\n| A5 | e749a45 | YES |\n\n## DAG Verification — PASS\nAcyclic. Topological sort: A0→A1→A2/A3/A4→A5→V1→R1.\n\n## State/Status Consistency — PASS\nAll A-series prompts and V1 marked complete in workpack.state.json. 99_status.md updated.\n\n## Request-Level AC Coverage — ALL 9 PASS\n\n| AC | Criterion | Prompt(s) | Status | Evidence |\n|:-:|-----------|-----------|:-:|----------|\n| AC1 | Pixel room with desks + fixed stations | A1 | pass | room-layout.ts, scene-builder.ts, render-room.ts |\n| AC2 | Desks show live runtime state | A1, A2 | pass | Scene builder binds ExecutionRegistry status |\n| AC3 | Animated agent avatars | A2 | pass | avatar-runtime.ts walk-to-board, hand-raise; tests verify |\n| AC4 | Desk interaction assigns/controls | A3 | pass | desk-interactions.ts menus + command dispatch |\n| AC5 | Hover reveals chat preview | A3 | pass | render-room.ts desk overlay |\n| AC6 | Git diff side panel grouped by repo | A4 | pass | git-diff-model.ts repo grouping; tests validate |\n| AC7 | Visual polish, coherent pixel-art | A5 | pass | 24-color palette, theme integration |\n| AC8 | Accessibility/reduced-motion | A5 | pass | prefers-reduced-motion CSS+JS, focus indicators |\n| AC9 | Build and tests pass | V1 | pass | npm run build 0, npm test 101/101 |\n\n## V1 Gate ACs — ALL PASS\n| AC | Description | Status |\n|:-:|-------------|:-:|\n| AC1 | All outputs/*.json valid | PASS |\n| AC2 | npm run build exits 0 | PASS |\n| AC3 | npm test exits 0 | PASS |\n| AC4 | All commit SHAs on branch | PASS |\n| AC5 | File declarations match commits | PASS |\n| AC6 | All 9 request ACs have evidence | PASS |\n| AC7 | branch_verified set correctly | PASS (true) |\n\nDecision: MERGE-READY."
+}

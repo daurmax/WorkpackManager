@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.2",
+  "workpack": "workpack-manager-v3-pixel-office-ui",
+  "prompt": "A4_git_diff_side_panel",
+  "component": "diff-panel",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/workpack-manager-v3-pixel-office-ui",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "e4f3a16"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "src/__tests__/extension.integration.test.ts",
+      "src/extension.ts",
+      "vitest.config.ts"
+    ],
+    "files_created": [
+      "src/views/__tests__/git-diff-model.test.ts",
+      "src/views/git-diff-model.ts",
+      "src/views/git-diff-tree-provider.ts",
+      "src/views/git-extension-api.ts"
+    ],
+    "contracts_changed": [
+      "src/views/git-diff-model.ts",
+      "src/views/git-extension-api.ts"
+    ],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": ""
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "The explicit Vitest include list was updated so the new Git diff grouping test runs with the suite."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added focused unit coverage for repository grouping, path rendering, and per-repository overflow limits."
+  },
+  "handoff": {
+    "summary": "Implemented a repository-aware Git diff tree view powered by the built-in VS Code Git extension API, including repository grouping, full relative paths, diff navigation, near-real-time refresh hooks, and overflow handling for large repositories.",
+    "next_steps": [
+      "A5_visual_polish_and_motion can invoke `workpackManager.showDiffPanel` from the pixel room when it adds in-room navigation affordances.",
+      "If desired, follow-up work can add a dedicated tree-provider test around Git extension disabled and no-repository empty states."
+    ],
+    "known_issues": []
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/__tests__/extension.integration.test.ts",
+      "action": "modified",
+      "lines_added": 35,
+      "lines_removed": 6
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/extension.ts",
+      "action": "modified",
+      "lines_added": 18,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/__tests__/git-diff-model.test.ts",
+      "action": "created",
+      "lines_added": 164,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/git-diff-model.ts",
+      "action": "created",
+      "lines_added": 259,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/git-diff-tree-provider.ts",
+      "action": "created",
+      "lines_added": 546,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/git-extension-api.ts",
+      "action": "created",
+      "lines_added": 60,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "vitest.config.ts",
+      "action": "modified",
+      "lines_added": 1,
+      "lines_removed": 0
+    }
+  ],
+  "notes": "The recorded commit captures the Git diff provider/runtime/test work only. The manifest entries for `workpackManager.gitDiff`, `workpackManager.showDiffPanel`, and `workpackManager.refreshGitDiff` were already present on this feature branch at commit time, so `package.json` is intentionally absent from `changes` and `change_details`. This output artifact was written after the commit and is therefore also excluded from the recorded change list."
+}

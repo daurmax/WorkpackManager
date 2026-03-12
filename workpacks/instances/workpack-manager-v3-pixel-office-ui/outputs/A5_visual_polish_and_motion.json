@@ -11,8 +11,8 @@
   },
   "artifacts": {
     "pr_url": "",
-    "commit_shas": ["d137d83c9a0f51ab936371dbc85a6be5258c804b"],
-    "branch_verified": false
+    "commit_shas": ["e749a45"],
+    "branch_verified": true
   },
   "changes": {
     "files_modified": [
@@ -47,12 +47,18 @@
   },
   "change_details": [
     {
+      "repo": "WorkpackManager",
       "file": "src/views/pixel-office/render-room.ts",
-      "description": "Palette consolidation: expanded :root with --skin, --pants, --shoe, --provider-copilot/codex/unassigned, --shell-bg/fg/border, --focus-ring. Theme integration: body background adapts via body.vscode-dark/light/high-contrast rules; .hud/.legend get light and HC overrides. Font sizes: bumped 8-9px to 10px minimum for .desk__status, .desk__agent, .desk-overlay__chip, .desk-menu__chip, .desk-menu__button, .desk-overlay__link. Focus rings: all :focus-visible selectors use var(--focus-ring). Performance: contain: layout style on .room, contain: layout paint on .desk. Reduced motion: CSS @media (prefers-reduced-motion: reduce) block. Loading/empty: new .loading-state and .empty-state CSS; renderScene shows loading spinner before data arrives and empty state when no desks."
+      "action": "modified",
+      "lines_added": 161,
+      "lines_removed": 16
     },
     {
+      "repo": "WorkpackManager",
       "file": "src/views/pixel-office/avatar-renderer.ts",
-      "description": "Avatar palette: replaced hardcoded #f1c58a with var(--skin), #5f92ff with var(--active), #2d3d5e with var(--pants), #2a2026 with var(--shoe), provider colors with var(--provider-*). Animation easing: changed avatar-work/walk/pin from steps(2, end) to ease-in-out for smoother motion; avatar-work reduced from 700ms to 600ms. Font size: badge and provider labels bumped from 8px to 10px. Performance: contain: layout paint on .avatar. Reduced motion: added CSS @media (prefers-reduced-motion: reduce) block alongside JS .room--reduced-motion class."
+      "action": "modified",
+      "lines_added": 22,
+      "lines_removed": 13
     }
   ],
   "notes": "All changes are visual-only refinements. No data model, message protocol, or feature changes. The room's decorative pixel-art palette (12 colors) stays fixed across themes; only the shell chrome (hud, legend, viewport frame, body background) adapts to VS Code's theme via CSS variable fallbacks."

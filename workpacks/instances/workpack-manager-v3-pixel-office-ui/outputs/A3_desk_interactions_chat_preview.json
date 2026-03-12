@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.2",
+  "workpack": "workpack-manager-v3-pixel-office-ui",
+  "prompt": "A3_desk_interactions_chat_preview",
+  "component": "desk-interactions",
+  "delivery_mode": "pr",
+  "branch": {
+    "base": "master",
+    "work": "feature/workpack-manager-v3-pixel-office-ui",
+    "merge_target": "master"
+  },
+  "artifacts": {
+    "pr_url": "",
+    "commit_shas": [
+      "362c530"
+    ],
+    "branch_verified": true
+  },
+  "changes": {
+    "files_modified": [
+      "src/commands/__tests__/commands.test.ts",
+      "src/commands/register-commands.ts",
+      "src/views/__tests__/pixel-room-panel.test.ts",
+      "src/views/pixel-office/__tests__/scene-builder.test.ts",
+      "src/views/pixel-office/index.ts",
+      "src/views/pixel-office/render-room.ts",
+      "src/views/workpack-pixel-room-panel.ts",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json"
+    ],
+    "files_created": [
+      "src/views/pixel-office/__tests__/desk-interactions.test.ts"
+    ],
+    "contracts_changed": [],
+    "breaking_change": false
+  },
+  "verification": {
+    "commands": [
+      {
+        "cmd": "npm run build",
+        "result": "pass",
+        "notes": "TypeScript compilation passed after the desk interaction scene wiring, host dispatch, and webview updates."
+      },
+      {
+        "cmd": "npm test",
+        "result": "pass",
+        "notes": "Vitest passed with 14 files and 101 tests, including new room interaction and action-availability coverage."
+      }
+    ],
+    "regression_added": true,
+    "regression_notes": "Added coverage for room action availability, direct provider assignment dispatch, scene interaction metadata, and pixel-room host message routing."
+  },
+  "handoff": {
+    "summary": "Desk interactions now expose in-room action menus, provider assignment, prompt command dispatch, hover status/chat previews, and keyboard-accessible desk controls.",
+    "next_steps": [
+      "A5_visual_polish_and_motion can refine the new desk menus and preview overlays after A4 completes."
+    ],
+    "known_issues": [
+      "The preview overlay's \"View Full Chat\" link currently opens the prompt file because a dedicated transcript surface does not exist yet."
+    ]
+  },
+  "repos": [
+    "WorkpackManager"
+  ],
+  "execution": {
+    "model": "gpt-5-codex",
+    "tokens_in": 0,
+    "tokens_out": 0,
+    "duration_ms": 0
+  },
+  "change_details": [
+    {
+      "repo": "WorkpackManager",
+      "file": "src/commands/__tests__/commands.test.ts",
+      "action": "modified",
+      "lines_added": 39,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/commands/register-commands.ts",
+      "action": "modified",
+      "lines_added": 32,
+      "lines_removed": 15
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/__tests__/pixel-room-panel.test.ts",
+      "action": "modified",
+      "lines_added": 94,
+      "lines_removed": 8
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/__tests__/desk-interactions.test.ts",
+      "action": "created",
+      "lines_added": 134,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/__tests__/scene-builder.test.ts",
+      "action": "modified",
+      "lines_added": 9,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/index.ts",
+      "action": "modified",
+      "lines_added": 1,
+      "lines_removed": 0
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/pixel-office/render-room.ts",
+      "action": "modified",
+      "lines_added": 20,
+      "lines_removed": 7
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "src/views/workpack-pixel-room-panel.ts",
+      "action": "modified",
+      "lines_added": 0,
+      "lines_removed": 34
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/99_status.md",
+      "action": "modified",
+      "lines_added": 2,
+      "lines_removed": 2
+    },
+    {
+      "repo": "WorkpackManager",
+      "file": "workpacks/instances/workpack-manager-v3-pixel-office-ui/workpack.state.json",
+      "action": "modified",
+      "lines_added": 19,
+      "lines_removed": 2
+    }
+  ],
+  "notes": "Per the workpack commit-tracking rule, source and status updates were committed first and this output artifact was written afterward, so outputs/A3_desk_interactions_chat_preview.json is intentionally excluded from changes and change_details."
+}
