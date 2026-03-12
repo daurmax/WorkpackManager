@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Pixel Office Lobby — a main hub panel (`Workpack: Open Pixel Lobby` command) that shows all discovered workpacks as room doors, grouped by their `group` field.
+- Inline settings editor in the Lobby for configuring Codex API key, base URL, model, and Copilot max prompt tokens, persisted directly to VS Code settings.
+
+### Fixed
+
+- Hover preview no longer disappears when moving the cursor over the desk overlay.
+- Assign agent no longer errors when the provider in the state file is unknown.
+- Workpack status no longer shows UNKNOWN when `completed_at` is missing from the state file.
+- Codex provider is now hidden from the desk assignment menu when no API key is configured.
+
 ## [0.0.2] - 2026-03-10
 
 ### Added

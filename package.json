@@ -101,6 +101,11 @@
         "category": "Workpack"
       },
       {
+        "command": "workpackManager.openLobby",
+        "title": "Open Pixel Lobby",
+        "category": "Workpack"
+      },
+      {
         "command": "workpackManager.showDiffPanel",
         "title": "Show Git Diff Panel",
         "category": "Workpack"

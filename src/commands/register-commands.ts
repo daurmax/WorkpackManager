@@ -50,7 +50,8 @@ export const WORKPACK_MANAGER_COMMANDS = {
   stopPromptExecution: "workpackManager.stopPromptExecution",
   retryPrompt: "workpackManager.retryPrompt",
   provideAgentInput: "workpackManager.provideAgentInput",
-  refreshTree: "workpackManager.refreshTree"
+  refreshTree: "workpackManager.refreshTree",
+  openLobby: "workpackManager.openLobby"
 } as const;
 
 interface CommandTreeNode {
@@ -956,6 +957,22 @@ export function registerCommands(
     } catch (error) {
       await vscodeApi.window.showErrorMessage(
         `Unable to open pixel room: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  });
+
+  register(WORKPACK_MANAGER_COMMANDS.openLobby, async () => {
+    try {
+      if (!options.extensionUri) {
+        await vscodeApi.window.showWarningMessage("Extension URI is not available. Cannot open lobby.");
+        return;
+      }
+
+      const { WorkpackLobbyPanel } = await import("../views/workpack-lobby-panel");
+      WorkpackLobbyPanel.createOrShow(options.extensionUri);
+    } catch (error) {
+      await vscodeApi.window.showErrorMessage(
+        `Unable to open lobby: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   });
